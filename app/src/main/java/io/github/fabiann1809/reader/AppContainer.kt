@@ -2,6 +2,8 @@ package io.github.fabiann1809.reader
 
 import android.content.Context
 import io.github.fabiann1809.reader.data.AppDatabase
+import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
+import io.github.fabiann1809.reader.data.apikey.KeystoreApiKeyStore
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
 import io.github.fabiann1809.reader.data.note.DefaultNoteRepository
@@ -19,4 +21,6 @@ class AppContainer(context: Context) {
     val bookRepository: BookRepository by lazy { DefaultBookRepository(database.bookDao()) }
 
     val noteRepository: NoteRepository by lazy { DefaultNoteRepository(database.noteDao()) }
+
+    val apiKeyStore: ApiKeyStore by lazy { KeystoreApiKeyStore(appContext) }
 }
