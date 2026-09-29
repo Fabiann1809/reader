@@ -152,7 +152,7 @@ Cada tarea debe poder completarse en una sesión corta.
 - [x] **T2.2 Agregar libro.** Formulario con título, autor y total de páginas opcional. *Hecho cuando:* el libro aparece en la lista.
 - [x] **T2.3 Detalle del libro.** Muestra datos, progreso y estado. *Hecho cuando:* se abre desde la lista.
 - [x] **T2.4 Actualizar progreso.** Cambiar página actual y estado. *Hecho cuando:* los cambios persisten al reiniciar la app.
-- [ ] **T2.5 Eliminar libro.** Con confirmación. *Hecho cuando:* también se borran sus notas.
+- [x] **T2.5 Eliminar libro.** Con confirmación. *Hecho cuando:* también se borran sus notas.
 
 ### Fase 3 — Notas
 - [ ] **T3.1 Lista de notas por libro.** En el detalle del libro. *Hecho cuando:* muestra las notas ordenadas por fecha.

@@ -3,6 +3,7 @@
     <string name="navigate_up">Volver</string>
     <string name="action_save">Guardar</string>
     <string name="action_cancel">Cancelar</string>
+    <string name="action_delete">Eliminar</string>
     <string name="field_optional">Opcional</string>
 
     <!-- Library -->
@@ -30,6 +31,8 @@
     <string name="book_field_status">Estado</string>
     <string name="book_page_invalid">Escribe un número de página válido</string>
     <string name="book_page_out_of_range">Debe estar entre 0 y %1$d</string>
+    <string name="delete_book_title">Eliminar libro</string>
+    <string name="delete_book_message">Se eliminará «%1$s» junto con todas sus notas. Esta acción no se puede deshacer.</string>
 
     <!-- Add book -->
     <string name="add_book_title">Agregar libro</string>

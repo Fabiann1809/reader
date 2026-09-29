@@ -9,6 +9,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -56,5 +58,16 @@ class BookDetailViewModelTest {
         assertEquals(150, stored?.currentPage)
         assertEquals(BookStatus.READING, stored?.status)
         assertEquals("Dune", stored?.title)
+    }
+
+    @Test
+    fun deleteBookRemovesItAndSignalsDeletion() = runTest {
+        val repository = FakeBookRepository(listOf(book))
+        val viewModel = BookDetailViewModel(bookId = 1, bookRepository = repository)
+
+        viewModel.deleteBook()
+
+        assertNull(repository.getBook(1))
+        assertTrue(viewModel.isDeleted.value)
     }
 }
