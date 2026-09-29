@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.ui.bookdetail
 
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.collect
@@ -42,5 +43,18 @@ class BookDetailViewModelTest {
         repository.deleteBook(book)
 
         assertEquals(BookDetailUiState.NotFound, viewModel.uiState.value)
+    }
+
+    @Test
+    fun updateProgressPersistsPageAndStatus() = runTest {
+        val repository = FakeBookRepository(listOf(book))
+        val viewModel = BookDetailViewModel(bookId = 1, bookRepository = repository)
+
+        viewModel.updateProgress(currentPage = 150, status = BookStatus.READING)
+
+        val stored = repository.getBook(1)
+        assertEquals(150, stored?.currentPage)
+        assertEquals(BookStatus.READING, stored?.status)
+        assertEquals("Dune", stored?.title)
     }
 }

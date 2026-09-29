@@ -2,6 +2,7 @@
     <string name="app_name">Reader</string>
     <string name="navigate_up">Volver</string>
     <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
     <string name="field_optional">Opcional</string>
 
     <!-- Library -->
@@ -24,6 +25,11 @@
     <string name="book_detail_title">Detalle del libro</string>
     <string name="book_not_found">Este libro ya no existe.</string>
     <string name="book_added_on">Agregado el %1$s</string>
+    <string name="update_progress_title">Actualizar progreso</string>
+    <string name="book_field_current_page">Página actual</string>
+    <string name="book_field_status">Estado</string>
+    <string name="book_page_invalid">Escribe un número de página válido</string>
+    <string name="book_page_out_of_range">Debe estar entre 0 y %1$d</string>
 
     <!-- Add book -->
     <string name="add_book_title">Agregar libro</string>

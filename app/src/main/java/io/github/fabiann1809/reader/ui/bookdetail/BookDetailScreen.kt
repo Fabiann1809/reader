@@ -11,10 +11,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -39,13 +43,18 @@ fun BookDetailScreen(
     viewModel: BookDetailViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    BookDetailContent(uiState = uiState, onNavigateUp = onNavigateUp)
+    BookDetailContent(
+        uiState = uiState,
+        onNavigateUp = onNavigateUp,
+        onUpdateProgress = viewModel::updateProgress,
+    )
 }
 
 @Composable
 fun BookDetailContent(
     uiState: BookDetailUiState,
     onNavigateUp: () -> Unit,
+    onUpdateProgress: (currentPage: Int, status: BookStatus) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -64,13 +73,23 @@ fun BookDetailContent(
             BookDetailUiState.NotFound -> Box(contentModifier.padding(32.dp), contentAlignment = Alignment.Center) {
                 Text(stringResource(R.string.book_not_found))
             }
-            is BookDetailUiState.Success -> BookInfo(book = uiState.book, modifier = contentModifier)
+            is BookDetailUiState.Success -> BookInfo(
+                book = uiState.book,
+                onUpdateProgress = onUpdateProgress,
+                modifier = contentModifier,
+            )
         }
     }
 }
 
 @Composable
-private fun BookInfo(book: Book, modifier: Modifier = Modifier) {
+private fun BookInfo(
+    book: Book,
+    onUpdateProgress: (currentPage: Int, status: BookStatus) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var showProgressDialog by rememberSaveable { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
@@ -97,6 +116,20 @@ private fun BookInfo(book: Book, modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        OutlinedButton(onClick = { showProgressDialog = true }, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.update_progress_title))
+        }
+    }
+
+    if (showProgressDialog) {
+        UpdateProgressDialog(
+            book = book,
+            onConfirm = { page, status ->
+                onUpdateProgress(page, status)
+                showProgressDialog = false
+            },
+            onDismiss = { showProgressDialog = false },
+        )
     }
 }
 
@@ -116,6 +149,7 @@ private fun BookDetailPreview() {
                 ),
             ),
             onNavigateUp = {},
+            onUpdateProgress = { _, _ -> },
         )
     }
 }
