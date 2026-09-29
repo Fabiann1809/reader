@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ui.settings
 
+import io.github.fabiann1809.reader.testing.FakeAiProvider
 import io.github.fabiann1809.reader.testing.FakeApiKeyStore
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.collect
@@ -20,9 +21,10 @@ class SettingsViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val keyStore = FakeApiKeyStore()
+    private val aiProvider = FakeAiProvider()
 
     // Lazy so it is built after MainDispatcherRule swaps Dispatchers.Main (viewModelScope needs it).
-    private val viewModel by lazy { SettingsViewModel(keyStore) }
+    private val viewModel by lazy { SettingsViewModel(keyStore, aiProvider) }
 
     private fun TestScope.collectUiState() {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
@@ -73,5 +75,38 @@ class SettingsViewModelTest {
         viewModel.onMessageShown()
 
         assertNull(viewModel.uiState.value.message)
+    }
+
+    @Test
+    fun cannotTestWithoutStoredKey() = runTest {
+        collectUiState()
+
+        assertFalse(viewModel.uiState.value.canTestKey)
+    }
+
+    @Test
+    fun successfulTestShowsSampleResponse() = runTest {
+        keyStore.saveApiKey("AIza-existing")
+        aiProvider.result = Result.success("Las plantas fabrican su alimento con luz.")
+        collectUiState()
+
+        viewModel.testKey()
+
+        assertEquals(
+            KeyTestState.Success("Las plantas fabrican su alimento con luz."),
+            viewModel.uiState.value.keyTest,
+        )
+        assertEquals(1, aiProvider.requests.size)
+    }
+
+    @Test
+    fun failedTestShowsFailure() = runTest {
+        keyStore.saveApiKey("AIza-bad")
+        aiProvider.result = Result.failure(IllegalStateException("HTTP 400"))
+        collectUiState()
+
+        viewModel.testKey()
+
+        assertEquals(KeyTestState.Failure, viewModel.uiState.value.keyTest)
     }
 }

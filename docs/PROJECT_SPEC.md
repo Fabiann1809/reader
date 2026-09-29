@@ -163,7 +163,7 @@ Cada tarea debe poder completarse en una sesión corta.
 - [x] **T4.1 Interfaz `AiProvider`.** Con `explain(text)`. *Hecho cuando:* existe y hay una implementación falsa para pruebas.
 - [x] **T4.2 Guardado seguro de la clave.** Con Android Keystore. *Hecho cuando:* la clave se guarda y se lee, y no aparece en logs.
 - [x] **T4.3 Pantalla de configuración de IA.** Campo para la clave, botón "Probar clave", botón "Borrar clave" y una guía corta de cómo obtenerla. *Hecho cuando:* se puede guardar y borrar la clave.
-- [ ] **T4.4 Primer proveedor real.** Implementar un proveedor con capa gratuita (elegir uno; ver "Pendientes"). *Hecho cuando:* "Probar clave" devuelve una respuesta real.
+- [x] **T4.4 Primer proveedor real.** Implementar un proveedor con capa gratuita (elegir uno; ver "Pendientes"). *Hecho cuando:* "Probar clave" devuelve una respuesta real.
 - [ ] **T4.5 Manejo de errores.** Mensajes claros para clave inválida, cuota agotada, límite de peticiones y sin internet. *Hecho cuando:* cada caso muestra un mensaje distinto.
 
 ### Fase 5 — Cámara y OCR
@@ -215,7 +215,7 @@ Cada tarea debe poder completarse en una sesión corta.
 ## 11. Pendientes por decidir
 
 - Nombre definitivo de la app (provisional: `Reader`).
-- Primer proveedor de IA (criterio: facilidad de obtener una clave gratuita y calidad de las explicaciones). Se recomienda probar 20 párrafos reales antes de fijarlo.
+- ~~Primer proveedor de IA~~ → decidido: **Google Gemini** (`gemini-flash-latest`, clave gratuita de Google AI Studio).
 - Idioma de las explicaciones (por defecto, el idioma del texto o español).
 
 ---

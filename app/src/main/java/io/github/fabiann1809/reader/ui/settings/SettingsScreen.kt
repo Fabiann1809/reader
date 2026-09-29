@@ -7,11 +7,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -63,6 +67,7 @@ fun SettingsScreen(
         onKeyInputChange = viewModel::onKeyInputChange,
         onSaveKey = viewModel::saveKey,
         onClearKey = viewModel::clearKey,
+        onTestKey = viewModel::testKey,
         onMessageShown = viewModel::onMessageShown,
         onNavigateUp = onNavigateUp,
     )
@@ -74,6 +79,7 @@ fun SettingsContent(
     onKeyInputChange: (String) -> Unit,
     onSaveKey: () -> Unit,
     onClearKey: () -> Unit,
+    onTestKey: () -> Unit,
     onMessageShown: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
@@ -124,6 +130,10 @@ fun SettingsContent(
                     Text(stringResource(R.string.settings_clear_key))
                 }
             }
+            FilledTonalButton(onClick = onTestKey, enabled = uiState.canTestKey, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.settings_test_key))
+            }
+            KeyTestResult(uiState.keyTest)
             ApiKeyGuide()
         }
     }
@@ -151,6 +161,36 @@ private fun ApiKeyField(value: String, onValueChange: (String) -> Unit) {
         },
         modifier = Modifier.fillMaxWidth(),
     )
+}
+
+@Composable
+private fun KeyTestResult(state: KeyTestState) {
+    when (state) {
+        KeyTestState.Idle -> Unit
+        KeyTestState.Testing -> Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+            Text(stringResource(R.string.settings_testing_key))
+        }
+        is KeyTestState.Success -> Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = stringResource(R.string.settings_test_success),
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleSmall,
+            )
+            Text(
+                text = state.sampleResponse,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        KeyTestState.Failure -> Text(
+            text = stringResource(R.string.settings_test_failure),
+            color = MaterialTheme.colorScheme.error,
+        )
+    }
 }
 
 @Composable
@@ -195,6 +235,7 @@ private fun SettingsPreview() {
             onKeyInputChange = {},
             onSaveKey = {},
             onClearKey = {},
+            onTestKey = {},
             onMessageShown = {},
             onNavigateUp = {},
         )

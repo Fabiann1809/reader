@@ -43,7 +43,10 @@ object AppViewModelProvider {
             )
         }
         initializer {
-            SettingsViewModel(readerApplication().container.apiKeyStore)
+            SettingsViewModel(
+                apiKeyStore = readerApplication().container.apiKeyStore,
+                aiProvider = readerApplication().container.aiProvider,
+            )
         }
     }
 }

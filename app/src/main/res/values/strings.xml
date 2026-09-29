@@ -61,6 +61,10 @@
     <string name="settings_clear_key">Borrar clave</string>
     <string name="settings_key_saved">Clave guardada</string>
     <string name="settings_key_cleared">Clave eliminada</string>
+    <string name="settings_test_key">Probar clave</string>
+    <string name="settings_testing_key">Probando la clave…</string>
+    <string name="settings_test_success">¡La clave funciona! Respuesta de prueba:</string>
+    <string name="settings_test_failure">No se pudo usar la clave. Revisa que sea correcta y que tengas conexión.</string>
     <string name="settings_guide_title">Cómo obtener tu clave gratuita</string>
     <string name="settings_guide_step1">1. Abre</string>
     <string name="settings_guide_step2">2. Inicia sesión con tu cuenta de Google.</string>
