@@ -48,7 +48,10 @@
 
     <!-- Capture -->
     <string name="capture_title">Capturar página</string>
-    <string name="capture_camera_ready">Cámara lista.</string>
+    <string name="capture_take_photo">Tomar foto</string>
+    <string name="capture_retake">Volver a tomar</string>
+    <string name="capture_photo_description">Foto de la página</string>
+    <string name="capture_error">No se pudo tomar la foto. Inténtalo de nuevo.</string>
     <string name="camera_permission_title">Permite el acceso a la cámara</string>
     <string name="camera_permission_message">Reader usa la cámara para fotografiar páginas de tus libros y extraer su texto. Las fotos se procesan en tu teléfono y no se guardan.</string>
     <string name="camera_permission_denied_message">Denegaste el acceso a la cámara. Para fotografiar páginas, actívalo en los ajustes de la app.</string>
