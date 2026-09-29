@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import io.github.fabiann1809.reader.ui.addbook.AddBookScreen
 import io.github.fabiann1809.reader.ui.library.LibraryScreen
 import io.github.fabiann1809.reader.ui.settings.SettingsScreen
 
@@ -20,7 +21,13 @@ fun ReaderNavHost(
         modifier = modifier,
     ) {
         composable<LibraryRoute> {
-            LibraryScreen(onOpenSettings = { navController.navigate(SettingsRoute) })
+            LibraryScreen(
+                onAddBook = { navController.navigate(AddBookRoute) },
+                onOpenSettings = { navController.navigate(SettingsRoute) },
+            )
+        }
+        composable<AddBookRoute> {
+            AddBookScreen(onNavigateUp = { navController.navigateUp() })
         }
         composable<SettingsRoute> {
             SettingsScreen(onNavigateUp = { navController.navigateUp() })

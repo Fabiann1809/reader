@@ -8,4 +8,7 @@ import kotlinx.serialization.Serializable
 data object LibraryRoute
 
 @Serializable
+data object AddBookRoute
+
+@Serializable
 data object SettingsRoute

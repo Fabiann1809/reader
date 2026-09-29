@@ -14,14 +14,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -37,29 +36,31 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
+import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 @Composable
 fun LibraryScreen(
+    onAddBook: () -> Unit,
     onOpenSettings: () -> Unit,
     viewModel: LibraryViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    LibraryContent(uiState = uiState, onOpenSettings = onOpenSettings)
+    LibraryContent(uiState = uiState, onAddBook = onAddBook, onOpenSettings = onOpenSettings)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryContent(
     uiState: LibraryUiState,
+    onAddBook: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.library_title)) },
+            ReaderTopAppBar(
+                title = stringResource(R.string.library_title),
                 actions = {
                     IconButton(onClick = onOpenSettings) {
                         Icon(
@@ -69,6 +70,14 @@ fun LibraryContent(
                     }
                 },
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onAddBook) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_add),
+                    contentDescription = stringResource(R.string.add_book_title),
+                )
+            }
         },
     ) { innerPadding ->
         val contentModifier = Modifier
@@ -176,6 +185,7 @@ private fun LibraryWithBooksPreview() {
                 ),
                 isLoading = false,
             ),
+            onAddBook = {},
             onOpenSettings = {},
         )
     }
@@ -185,6 +195,6 @@ private fun LibraryWithBooksPreview() {
 @Composable
 private fun EmptyLibraryPreview() {
     ReaderTheme {
-        LibraryContent(uiState = LibraryUiState(isLoading = false), onOpenSettings = {})
+        LibraryContent(uiState = LibraryUiState(isLoading = false), onAddBook = {}, onOpenSettings = {})
     }
 }

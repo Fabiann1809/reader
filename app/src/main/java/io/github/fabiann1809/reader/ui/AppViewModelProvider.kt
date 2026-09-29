@@ -5,6 +5,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.fabiann1809.reader.ReaderApplication
+import io.github.fabiann1809.reader.ui.addbook.AddBookViewModel
 import io.github.fabiann1809.reader.ui.library.LibraryViewModel
 
 /** Creates every ViewModel with its dependencies taken from the AppContainer. */
@@ -12,6 +13,9 @@ object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer {
             LibraryViewModel(readerApplication().container.bookRepository)
+        }
+        initializer {
+            AddBookViewModel(readerApplication().container.bookRepository)
         }
     }
 }
