@@ -169,7 +169,7 @@ Cada tarea debe poder completarse en una sesión corta.
 ### Fase 5 — Cámara y OCR
 - [x] **T5.1 Permiso de cámara.** Solicitud en tiempo de ejecución con explicación. *Hecho cuando:* se maneja aceptar y rechazar.
 - [x] **T5.2 Vista de cámara.** Vista previa con CameraX y botón de captura. *Hecho cuando:* se toma una foto.
-- [ ] **T5.3 Elegir imagen de galería.** Alternativa a la cámara. *Hecho cuando:* se puede seleccionar una imagen.
+- [x] **T5.3 Elegir imagen de galería.** Alternativa a la cámara. *Hecho cuando:* se puede seleccionar una imagen.
 - [ ] **T5.4 OCR.** Envoltorio de ML Kit que recibe una imagen y devuelve texto. *Hecho cuando:* extrae texto de una página de prueba.
 - [ ] **T5.5 Pantalla de texto extraído.** Texto editable antes de enviarlo, con límite de longitud. *Hecho cuando:* el usuario puede corregir el texto.
 

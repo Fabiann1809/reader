@@ -3,6 +3,9 @@ package io.github.fabiann1809.reader.ui.capture
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -45,6 +49,14 @@ fun CaptureScreen(onNavigateUp: () -> Unit) {
     // Survives rotation so the photo isn't lost.
     var capturedUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
+    // System photo picker: needs no storage permission and only exposes the chosen image.
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) capturedUri = uri
+    }
+    val pickFromGallery = {
+        galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
+
     Scaffold(
         topBar = {
             ReaderTopAppBar(title = stringResource(R.string.capture_title), onNavigateUp = onNavigateUp)
@@ -63,12 +75,14 @@ fun CaptureScreen(onNavigateUp: () -> Unit) {
                 onError = {
                     scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.capture_error)) }
                 },
+                onPickFromGallery = pickFromGallery,
                 modifier = contentModifier,
             )
         } else {
             CameraPermissionRequest(
                 status = permission.status,
                 onRequestPermission = permission.request,
+                onPickFromGallery = pickFromGallery,
                 onOpenSettings = {
                     context.startActivity(
                         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)),
@@ -85,6 +99,7 @@ fun CameraPermissionRequest(
     status: CameraPermissionStatus,
     onRequestPermission: () -> Unit,
     onOpenSettings: () -> Unit,
+    onPickFromGallery: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -123,6 +138,10 @@ fun CameraPermissionRequest(
                 Text(stringResource(R.string.camera_permission_allow))
             }
         }
+        // The gallery works without the camera permission.
+        OutlinedButton(onClick = onPickFromGallery, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.capture_pick_gallery))
+        }
     }
 }
 
@@ -134,6 +153,7 @@ private fun CameraPermissionRequestPreview() {
             status = CameraPermissionStatus.NOT_REQUESTED,
             onRequestPermission = {},
             onOpenSettings = {},
+            onPickFromGallery = {},
         )
     }
 }

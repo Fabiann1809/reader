@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.util.decodeScaledBitmap
@@ -36,8 +38,10 @@ fun CapturedImagePreview(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    val bitmap by produceState<Bitmap?>(initialValue = null, imageUri) {
-        value = withContext(Dispatchers.IO) { decodeScaledBitmap(context, imageUri, PREVIEW_MAX_DIMENSION) }
+    // null while loading; a failed result if the image can't be read.
+    val bitmap by produceState<Result<Bitmap>?>(initialValue = null, imageUri) {
+        val decoded = withContext(Dispatchers.IO) { decodeScaledBitmap(context, imageUri, PREVIEW_MAX_DIMENSION) }
+        value = decoded?.let { Result.success(it) } ?: Result.failure(IllegalStateException("Unreadable image"))
     }
 
     Column(
@@ -45,11 +49,16 @@ fun CapturedImagePreview(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-            val image = bitmap
-            if (image == null) {
-                CircularProgressIndicator()
-            } else {
-                Image(
+            val result = bitmap
+            val image = result?.getOrNull()
+            when {
+                result == null -> CircularProgressIndicator()
+                image == null -> Text(
+                    text = stringResource(R.string.capture_image_unreadable),
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                )
+                else -> Image(
                     bitmap = image.asImageBitmap(),
                     contentDescription = stringResource(R.string.capture_photo_description),
                     contentScale = ContentScale.Fit,

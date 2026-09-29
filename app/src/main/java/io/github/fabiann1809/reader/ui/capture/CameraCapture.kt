@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -36,6 +37,7 @@ import io.github.fabiann1809.reader.util.newCaptureFile
 fun CameraCapture(
     onImageCaptured: (Uri) -> Unit,
     onError: () -> Unit,
+    onPickFromGallery: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -64,6 +66,18 @@ fun CameraCapture(
             },
             modifier = Modifier.fillMaxSize(),
         )
+        FilledTonalIconButton(
+            onClick = onPickFromGallery,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 32.dp, bottom = 40.dp)
+                .size(56.dp),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_photo_library),
+                contentDescription = stringResource(R.string.capture_pick_gallery),
+            )
+        }
         FloatingActionButton(
             onClick = {
                 if (isCapturing) return@FloatingActionButton
