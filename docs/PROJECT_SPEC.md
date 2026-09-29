@@ -164,7 +164,7 @@ Cada tarea debe poder completarse en una sesión corta.
 - [x] **T4.2 Guardado seguro de la clave.** Con Android Keystore. *Hecho cuando:* la clave se guarda y se lee, y no aparece en logs.
 - [x] **T4.3 Pantalla de configuración de IA.** Campo para la clave, botón "Probar clave", botón "Borrar clave" y una guía corta de cómo obtenerla. *Hecho cuando:* se puede guardar y borrar la clave.
 - [x] **T4.4 Primer proveedor real.** Implementar un proveedor con capa gratuita (elegir uno; ver "Pendientes"). *Hecho cuando:* "Probar clave" devuelve una respuesta real.
-- [ ] **T4.5 Manejo de errores.** Mensajes claros para clave inválida, cuota agotada, límite de peticiones y sin internet. *Hecho cuando:* cada caso muestra un mensaje distinto.
+- [x] **T4.5 Manejo de errores.** Mensajes claros para clave inválida, cuota agotada, límite de peticiones y sin internet. *Hecho cuando:* cada caso muestra un mensaje distinto.
 
 ### Fase 5 — Cámara y OCR
 - [ ] **T5.1 Permiso de cámara.** Solicitud en tiempo de ejecución con explicación. *Hecho cuando:* se maneja aceptar y rechazar.

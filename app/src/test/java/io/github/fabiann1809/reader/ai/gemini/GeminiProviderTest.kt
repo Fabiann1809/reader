@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ai.gemini
 
+import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.testing.FakeApiKeyStore
 import kotlinx.coroutines.test.runTest
 import mockwebserver3.MockResponse
@@ -7,9 +8,11 @@ import mockwebserver3.MockWebServer
 import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.TimeUnit
 
 class GeminiProviderTest {
 
@@ -23,7 +26,7 @@ class GeminiProviderTest {
         provider = GeminiProvider(
             apiKeyStore = keyStore,
             systemInstruction = "Explain simply.",
-            httpClient = OkHttpClient(),
+            httpClient = OkHttpClient.Builder().readTimeout(1, TimeUnit.SECONDS).build(),
             baseUrl = server.url("/").toString().trimEnd('/'),
             model = "test-model",
         )
@@ -36,6 +39,12 @@ class GeminiProviderTest {
 
     private fun enqueue(code: Int, body: String) {
         server.enqueue(MockResponse.Builder().code(code).body(body).build())
+    }
+
+    private suspend inline fun <reified T : AiError> assertFailsWith() {
+        val error = provider.explain("text").exceptionOrNull()
+        assertNotNull(error)
+        assertTrue("Expected ${T::class.simpleName} but was $error", error is T)
     }
 
     @Test
@@ -73,33 +82,100 @@ class GeminiProviderTest {
     }
 
     @Test
-    fun failsWithoutStoredKeyAndDoesNotCallTheApi() = runTest {
+    fun missingKeyFailsWithoutCallingTheApi() = runTest {
         keyStore.clearApiKey()
 
-        val result = provider.explain("text")
-
-        assertTrue(result.isFailure)
+        assertFailsWith<AiError.MissingApiKey>()
         assertEquals(0, server.requestCount)
     }
 
     @Test
-    fun failsOnHttpError() = runTest {
-        enqueue(400, """{"error":{"code":400,"status":"INVALID_ARGUMENT"}}""")
+    fun invalidKeyResponseMapsToInvalidApiKey() = runTest {
+        // Real response captured from the Gemini API with a bogus key.
+        enqueue(
+            400,
+            """
+            {"error":{"code":400,"message":"API key not valid. Please pass a valid API key.",
+              "status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo",
+              "reason":"API_KEY_INVALID","domain":"googleapis.com"}]}}
+            """.trimIndent(),
+        )
 
-        assertTrue(provider.explain("text").isFailure)
+        assertFailsWith<AiError.InvalidApiKey>()
     }
 
     @Test
-    fun failsWhenPromptIsBlocked() = runTest {
+    fun permissionDeniedMapsToInvalidApiKey() = runTest {
+        enqueue(403, """{"error":{"code":403,"status":"PERMISSION_DENIED"}}""")
+
+        assertFailsWith<AiError.InvalidApiKey>()
+    }
+
+    @Test
+    fun dailyQuotaMapsToQuotaExhausted() = runTest {
+        enqueue(
+            429,
+            """
+            {"error":{"code":429,"status":"RESOURCE_EXHAUSTED","details":[
+              {"@type":"type.googleapis.com/google.rpc.QuotaFailure","violations":[
+                {"quotaId":"GenerateRequestsPerDayPerProjectPerModel-FreeTier"}]}]}}
+            """.trimIndent(),
+        )
+
+        assertFailsWith<AiError.QuotaExhausted>()
+    }
+
+    @Test
+    fun perMinuteLimitMapsToRateLimited() = runTest {
+        enqueue(
+            429,
+            """
+            {"error":{"code":429,"status":"RESOURCE_EXHAUSTED","details":[
+              {"@type":"type.googleapis.com/google.rpc.QuotaFailure","violations":[
+                {"quotaId":"GenerateRequestsPerMinutePerProjectPerModel-FreeTier"}]}]}}
+            """.trimIndent(),
+        )
+
+        assertFailsWith<AiError.RateLimited>()
+    }
+
+    @Test
+    fun serverErrorMapsToServiceUnavailable() = runTest {
+        enqueue(503, """{"error":{"code":503,"status":"UNAVAILABLE"}}""")
+
+        assertFailsWith<AiError.ServiceUnavailable>()
+    }
+
+    @Test
+    fun unreachableServerMapsToNoInternet() = runTest {
+        server.close()
+
+        assertFailsWith<AiError.NoInternet>()
+    }
+
+    @Test
+    fun slowResponseMapsToTimeout() = runTest {
+        server.enqueue(
+            MockResponse.Builder()
+                .body("""{"candidates":[{"content":{"parts":[{"text":"late"}]}}]}""")
+                .headersDelay(3, TimeUnit.SECONDS)
+                .build(),
+        )
+
+        assertFailsWith<AiError.Timeout>()
+    }
+
+    @Test
+    fun blockedPromptMapsToContentBlocked() = runTest {
         enqueue(200, """{"promptFeedback":{"blockReason":"SAFETY"}}""")
 
-        assertTrue(provider.explain("text").isFailure)
+        assertFailsWith<AiError.ContentBlocked>()
     }
 
     @Test
-    fun failsOnMalformedJson() = runTest {
+    fun malformedJsonMapsToUnknown() = runTest {
         enqueue(200, "not json")
 
-        assertTrue(provider.explain("text").isFailure)
+        assertFailsWith<AiError.Unknown>()
     }
 }

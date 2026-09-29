@@ -23,7 +23,7 @@ sealed interface KeyTestState {
 
     data class Success(val sampleResponse: String) : KeyTestState
 
-    data object Failure : KeyTestState
+    data class Failure(val error: Throwable) : KeyTestState
 }
 
 data class SettingsUiState(
@@ -80,7 +80,7 @@ class SettingsViewModel(
             val result = aiProvider.explain(TEST_TEXT)
             val keyTest = result.fold(
                 onSuccess = { KeyTestState.Success(it.take(MAX_SAMPLE_LENGTH)) },
-                onFailure = { KeyTestState.Failure },
+                onFailure = { KeyTestState.Failure(it) },
             )
             formState.update { it.copy(keyTest = keyTest) }
         }

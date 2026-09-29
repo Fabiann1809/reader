@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ui.settings
 
+import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.testing.FakeAiProvider
 import io.github.fabiann1809.reader.testing.FakeApiKeyStore
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
@@ -102,11 +103,12 @@ class SettingsViewModelTest {
     @Test
     fun failedTestShowsFailure() = runTest {
         keyStore.saveApiKey("AIza-bad")
-        aiProvider.result = Result.failure(IllegalStateException("HTTP 400"))
+        val error = AiError.InvalidApiKey()
+        aiProvider.result = Result.failure(error)
         collectUiState()
 
         viewModel.testKey()
 
-        assertEquals(KeyTestState.Failure, viewModel.uiState.value.keyTest)
+        assertEquals(KeyTestState.Failure(error), viewModel.uiState.value.keyTest)
     }
 }

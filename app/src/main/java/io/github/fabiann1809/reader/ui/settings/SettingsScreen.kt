@@ -52,6 +52,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
+import io.github.fabiann1809.reader.ui.components.aiErrorMessageRes
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 private const val API_KEY_URL = "https://aistudio.google.com/apikey"
@@ -186,8 +187,8 @@ private fun KeyTestResult(state: KeyTestState) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        KeyTestState.Failure -> Text(
-            text = stringResource(R.string.settings_test_failure),
+        is KeyTestState.Failure -> Text(
+            text = stringResource(aiErrorMessageRes(state.error)),
             color = MaterialTheme.colorScheme.error,
         )
     }

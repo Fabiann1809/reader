@@ -46,6 +46,17 @@
     <string name="note_field_content">Nota</string>
     <string name="note_field_page">Página</string>
 
+    <!-- AI errors -->
+    <string name="ai_error_missing_key">Primero configura tu clave de API en Configuración.</string>
+    <string name="ai_error_invalid_key">La clave de API no es válida. Revísala o crea una nueva en Google AI Studio.</string>
+    <string name="ai_error_quota_exhausted">Se agotó la cuota gratuita de hoy. Vuelve a intentarlo mañana.</string>
+    <string name="ai_error_rate_limited">Demasiadas peticiones seguidas. Espera un minuto y vuelve a intentarlo.</string>
+    <string name="ai_error_no_internet">No hay conexión a internet. Revisa tu conexión y vuelve a intentarlo.</string>
+    <string name="ai_error_timeout">La IA tardó demasiado en responder. Vuelve a intentarlo.</string>
+    <string name="ai_error_unavailable">El servicio de IA no está disponible en este momento. Inténtalo más tarde.</string>
+    <string name="ai_error_blocked">La IA no pudo procesar este texto por sus filtros de seguridad.</string>
+    <string name="ai_error_unknown">Ocurrió un error inesperado con la IA. Vuelve a intentarlo.</string>
+
     <!-- Add book -->
     <string name="add_book_title">Agregar libro</string>
 
@@ -64,7 +75,6 @@
     <string name="settings_test_key">Probar clave</string>
     <string name="settings_testing_key">Probando la clave…</string>
     <string name="settings_test_success">¡La clave funciona! Respuesta de prueba:</string>
-    <string name="settings_test_failure">No se pudo usar la clave. Revisa que sea correcta y que tengas conexión.</string>
     <string name="settings_guide_title">Cómo obtener tu clave gratuita</string>
     <string name="settings_guide_step1">1. Abre</string>
     <string name="settings_guide_step2">2. Inicia sesión con tu cuenta de Google.</string>

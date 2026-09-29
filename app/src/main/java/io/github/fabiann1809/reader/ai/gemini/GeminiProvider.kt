@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ai.gemini
 
+import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
 import kotlinx.coroutines.Dispatchers
@@ -11,12 +12,14 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
+import java.net.SocketTimeoutException
 
 /**
  * [AiProvider] backed by Google Gemini (REST `models.generateContent`).
  *
  * The API key is read from [apiKeyStore] on every call and sent only in the
  * `x-goog-api-key` header. Nothing here logs requests, headers or the key.
+ * Every failure is reported as an [AiError].
  */
 class GeminiProvider(
     private val apiKeyStore: ApiKeyStore,
@@ -32,8 +35,7 @@ class GeminiProvider(
     }
 
     override suspend fun explain(text: String): Result<String> {
-        val apiKey = apiKeyStore.getApiKey()
-            ?: return Result.failure(IllegalStateException("No API key configured"))
+        val apiKey = apiKeyStore.getApiKey() ?: return Result.failure(AiError.MissingApiKey())
 
         val request = GenerateContentRequest(
             systemInstruction = Content(parts = listOf(Part(text = systemInstruction))),
@@ -43,12 +45,15 @@ class GeminiProvider(
         return withContext(Dispatchers.IO) {
             try {
                 Result.success(send(apiKey, request))
+            } catch (e: AiError) {
+                Result.failure(e)
+            } catch (e: SocketTimeoutException) {
+                Result.failure(AiError.Timeout(e))
             } catch (e: IOException) {
-                Result.failure(e)
+                // DNS failures, refused connections, dropped connections...: treat as connectivity problems.
+                Result.failure(AiError.NoInternet(e))
             } catch (e: SerializationException) {
-                Result.failure(e)
-            } catch (e: IllegalStateException) {
-                Result.failure(e)
+                Result.failure(AiError.Unknown("Unexpected Gemini response", e))
             }
         }
     }
@@ -62,19 +67,24 @@ class GeminiProvider(
 
         httpClient.newCall(httpRequest).execute().use { response ->
             val responseBody = response.body.string()
-            check(response.isSuccessful) { "Gemini request failed with HTTP ${response.code}" }
+            if (!response.isSuccessful) throw GeminiErrorParser.parse(response.code, responseBody)
             return extractText(json.decodeFromString<GenerateContentResponse>(responseBody))
         }
     }
 
     private fun extractText(response: GenerateContentResponse): String {
-        response.promptFeedback?.blockReason?.let { error("Prompt blocked: $it") }
-        val text = response.candidates.firstOrNull()?.content?.parts.orEmpty()
+        response.promptFeedback?.blockReason?.let { throw AiError.ContentBlocked(it) }
+        val candidate = response.candidates.firstOrNull() ?: throw AiError.Unknown("Gemini returned no candidates")
+        val text = candidate.content?.parts.orEmpty()
             .filter { it.thought != true }
             .mapNotNull { it.text }
             .joinToString(separator = "")
             .trim()
-        check(text.isNotEmpty()) { "Gemini returned no text" }
+        if (text.isEmpty()) {
+            // An empty answer with a finish reason like SAFETY means the output was filtered.
+            throw candidate.finishReason?.takeIf { it != "STOP" }?.let { AiError.ContentBlocked(it) }
+                ?: AiError.Unknown("Gemini returned no text")
+        }
         return text
     }
 
