@@ -157,7 +157,7 @@ Cada tarea debe poder completarse en una sesión corta.
 ### Fase 3 — Notas
 - [x] **T3.1 Lista de notas por libro.** En el detalle del libro. *Hecho cuando:* muestra las notas ordenadas por fecha.
 - [x] **T3.2 Crear nota manual.** Con página opcional. *Hecho cuando:* se guarda y se ve en la lista.
-- [ ] **T3.3 Editar y borrar nota.** *Hecho cuando:* los cambios persisten.
+- [x] **T3.3 Editar y borrar nota.** *Hecho cuando:* los cambios persisten.
 
 ### Fase 4 — Configuración de IA
 - [ ] **T4.1 Interfaz `AiProvider`.** Con `explain(text)`. *Hecho cuando:* existe y hay una implementación falsa para pruebas.

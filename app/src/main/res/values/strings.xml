@@ -40,6 +40,9 @@
     <string name="note_page">Pág. %1$d</string>
     <string name="note_type_explanation">Explicación IA</string>
     <string name="note_new_title">Nueva nota</string>
+    <string name="note_edit_title">Editar nota</string>
+    <string name="delete_note_title">Eliminar nota</string>
+    <string name="delete_note_message">Esta nota se eliminará definitivamente.</string>
     <string name="note_field_content">Nota</string>
     <string name="note_field_page">Página</string>
 

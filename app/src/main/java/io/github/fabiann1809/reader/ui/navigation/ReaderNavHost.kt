@@ -39,6 +39,7 @@ fun ReaderNavHost(
             BookDetailScreen(
                 onNavigateUp = { navController.navigateUp() },
                 onAddNote = { navController.navigate(NoteEditorRoute(bookId)) },
+                onNoteClick = { noteId -> navController.navigate(NoteEditorRoute(bookId, noteId)) },
             )
         }
         composable<NoteEditorRoute> {

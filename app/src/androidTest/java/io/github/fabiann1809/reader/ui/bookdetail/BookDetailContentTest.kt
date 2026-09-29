@@ -31,6 +31,7 @@ class BookDetailContentTest {
                     onUpdateProgress = { _, _ -> },
                     onDeleteBook = {},
                     onAddNote = {},
+                    onNoteClick = {},
                 )
             }
         }

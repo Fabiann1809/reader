@@ -19,8 +19,8 @@ import io.github.fabiann1809.reader.data.note.NoteType
 import io.github.fabiann1809.reader.util.formatDate
 
 @Composable
-fun NoteItem(note: Note, modifier: Modifier = Modifier) {
-    OutlinedCard(modifier = modifier.fillMaxWidth()) {
+fun NoteItem(note: Note, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    OutlinedCard(onClick = onClick, modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (note.type == NoteType.EXPLANATION) {
                 Text(

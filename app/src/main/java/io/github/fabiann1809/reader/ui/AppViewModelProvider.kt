@@ -34,8 +34,10 @@ object AppViewModelProvider {
             )
         }
         initializer {
+            val route = createSavedStateHandle().toRoute<NoteEditorRoute>()
             NoteEditorViewModel(
-                bookId = createSavedStateHandle().toRoute<NoteEditorRoute>().bookId,
+                bookId = route.bookId,
+                noteId = route.noteId,
                 noteRepository = readerApplication().container.noteRepository,
             )
         }

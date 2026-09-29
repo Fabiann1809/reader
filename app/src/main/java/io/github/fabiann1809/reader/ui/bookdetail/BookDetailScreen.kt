@@ -52,6 +52,7 @@ import io.github.fabiann1809.reader.util.formatDate
 fun BookDetailScreen(
     onNavigateUp: () -> Unit,
     onAddNote: () -> Unit,
+    onNoteClick: (Long) -> Unit,
     viewModel: BookDetailViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -67,6 +68,7 @@ fun BookDetailScreen(
         onUpdateProgress = viewModel::updateProgress,
         onDeleteBook = viewModel::deleteBook,
         onAddNote = onAddNote,
+        onNoteClick = onNoteClick,
     )
 }
 
@@ -77,6 +79,7 @@ fun BookDetailContent(
     onUpdateProgress: (currentPage: Int, status: BookStatus) -> Unit,
     onDeleteBook: () -> Unit,
     onAddNote: () -> Unit,
+    onNoteClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
@@ -124,6 +127,7 @@ fun BookDetailContent(
                 book = uiState.book,
                 notes = uiState.notes,
                 onUpdateProgressClick = { showProgressDialog = true },
+                onNoteClick = onNoteClick,
                 modifier = contentModifier,
             )
         }
@@ -171,6 +175,7 @@ private fun BookDetailBody(
     book: Book,
     notes: List<Note>,
     onUpdateProgressClick: () -> Unit,
+    onNoteClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -195,7 +200,7 @@ private fun BookDetailBody(
             }
         } else {
             items(notes, key = { it.id }) { note ->
-                NoteItem(note = note)
+                NoteItem(note = note, onClick = { onNoteClick(note.id) })
             }
         }
     }
@@ -260,6 +265,7 @@ private fun BookDetailPreview() {
             onUpdateProgress = { _, _ -> },
             onDeleteBook = {},
             onAddNote = {},
+            onNoteClick = {},
         )
     }
 }
