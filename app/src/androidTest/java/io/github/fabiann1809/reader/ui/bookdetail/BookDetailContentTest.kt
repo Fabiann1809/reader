@@ -30,6 +30,7 @@ class BookDetailContentTest {
                     onNavigateUp = {},
                     onUpdateProgress = { _, _ -> },
                     onDeleteBook = {},
+                    onAddNote = {},
                 )
             }
         }

@@ -14,4 +14,7 @@ data object AddBookRoute
 data class BookDetailRoute(val bookId: Long)
 
 @Serializable
+data class NoteEditorRoute(val bookId: Long)
+
+@Serializable
 data object SettingsRoute

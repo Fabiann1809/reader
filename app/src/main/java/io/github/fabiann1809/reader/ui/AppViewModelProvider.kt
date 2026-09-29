@@ -11,6 +11,8 @@ import io.github.fabiann1809.reader.ui.addbook.AddBookViewModel
 import io.github.fabiann1809.reader.ui.bookdetail.BookDetailViewModel
 import io.github.fabiann1809.reader.ui.library.LibraryViewModel
 import io.github.fabiann1809.reader.ui.navigation.BookDetailRoute
+import io.github.fabiann1809.reader.ui.navigation.NoteEditorRoute
+import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
 
 /**
  * Creates every ViewModel with its dependencies taken from the AppContainer.
@@ -28,6 +30,12 @@ object AppViewModelProvider {
             BookDetailViewModel(
                 bookId = createSavedStateHandle().toRoute<BookDetailRoute>().bookId,
                 bookRepository = readerApplication().container.bookRepository,
+                noteRepository = readerApplication().container.noteRepository,
+            )
+        }
+        initializer {
+            NoteEditorViewModel(
+                bookId = createSavedStateHandle().toRoute<NoteEditorRoute>().bookId,
                 noteRepository = readerApplication().container.noteRepository,
             )
         }

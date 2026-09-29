@@ -39,6 +39,9 @@
     <string name="notes_empty">Aún no hay notas para este libro.</string>
     <string name="note_page">Pág. %1$d</string>
     <string name="note_type_explanation">Explicación IA</string>
+    <string name="note_new_title">Nueva nota</string>
+    <string name="note_field_content">Nota</string>
+    <string name="note_field_page">Página</string>
 
     <!-- Add book -->
     <string name="add_book_title">Agregar libro</string>

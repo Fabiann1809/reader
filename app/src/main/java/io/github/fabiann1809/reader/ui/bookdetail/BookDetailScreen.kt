@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +51,7 @@ import io.github.fabiann1809.reader.util.formatDate
 @Composable
 fun BookDetailScreen(
     onNavigateUp: () -> Unit,
+    onAddNote: () -> Unit,
     viewModel: BookDetailViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -64,6 +66,7 @@ fun BookDetailScreen(
         onNavigateUp = onNavigateUp,
         onUpdateProgress = viewModel::updateProgress,
         onDeleteBook = viewModel::deleteBook,
+        onAddNote = onAddNote,
     )
 }
 
@@ -73,6 +76,7 @@ fun BookDetailContent(
     onNavigateUp: () -> Unit,
     onUpdateProgress: (currentPage: Int, status: BookStatus) -> Unit,
     onDeleteBook: () -> Unit,
+    onAddNote: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
@@ -95,6 +99,15 @@ fun BookDetailContent(
                     }
                 },
             )
+        },
+        floatingActionButton = {
+            if (uiState is BookDetailUiState.Success) {
+                ExtendedFloatingActionButton(
+                    onClick = onAddNote,
+                    icon = { Icon(painter = painterResource(R.drawable.ic_add), contentDescription = null) },
+                    text = { Text(stringResource(R.string.note_new_title)) },
+                )
+            }
         },
     ) { innerPadding ->
         val contentModifier = Modifier
@@ -162,7 +175,7 @@ private fun BookDetailBody(
 ) {
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = FAB_CLEARANCE),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item(key = "book") {
@@ -217,6 +230,8 @@ private fun BookInfo(book: Book, onUpdateProgressClick: () -> Unit, modifier: Mo
     }
 }
 
+private val FAB_CLEARANCE = 88.dp
+
 @Preview(showBackground = true)
 @Composable
 private fun BookDetailPreview() {
@@ -244,6 +259,7 @@ private fun BookDetailPreview() {
             onNavigateUp = {},
             onUpdateProgress = { _, _ -> },
             onDeleteBook = {},
+            onAddNote = {},
         )
     }
 }
