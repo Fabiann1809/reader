@@ -32,6 +32,7 @@ class BookDetailContentTest {
                     onDeleteBook = {},
                     onAddNote = {},
                     onNoteClick = {},
+                    onCapturePage = {},
                 )
             }
         }

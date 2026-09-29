@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import io.github.fabiann1809.reader.ui.addbook.AddBookScreen
 import io.github.fabiann1809.reader.ui.bookdetail.BookDetailScreen
+import io.github.fabiann1809.reader.ui.capture.CaptureScreen
 import io.github.fabiann1809.reader.ui.library.LibraryScreen
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorScreen
 import io.github.fabiann1809.reader.ui.settings.SettingsScreen
@@ -40,10 +41,14 @@ fun ReaderNavHost(
                 onNavigateUp = { navController.navigateUp() },
                 onAddNote = { navController.navigate(NoteEditorRoute(bookId)) },
                 onNoteClick = { noteId -> navController.navigate(NoteEditorRoute(bookId, noteId)) },
+                onCapturePage = { navController.navigate(CaptureRoute(bookId)) },
             )
         }
         composable<NoteEditorRoute> {
             NoteEditorScreen(onNavigateUp = { navController.navigateUp() })
+        }
+        composable<CaptureRoute> {
+            CaptureScreen(onNavigateUp = { navController.navigateUp() })
         }
         composable<SettingsRoute> {
             SettingsScreen(onNavigateUp = { navController.navigateUp() })

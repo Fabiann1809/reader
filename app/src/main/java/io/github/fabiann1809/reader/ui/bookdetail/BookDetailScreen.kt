@@ -19,6 +19,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -53,6 +54,7 @@ fun BookDetailScreen(
     onNavigateUp: () -> Unit,
     onAddNote: () -> Unit,
     onNoteClick: (Long) -> Unit,
+    onCapturePage: () -> Unit,
     viewModel: BookDetailViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -69,6 +71,7 @@ fun BookDetailScreen(
         onDeleteBook = viewModel::deleteBook,
         onAddNote = onAddNote,
         onNoteClick = onNoteClick,
+        onCapturePage = onCapturePage,
     )
 }
 
@@ -80,6 +83,7 @@ fun BookDetailContent(
     onDeleteBook: () -> Unit,
     onAddNote: () -> Unit,
     onNoteClick: (Long) -> Unit,
+    onCapturePage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
@@ -105,11 +109,22 @@ fun BookDetailContent(
         },
         floatingActionButton = {
             if (uiState is BookDetailUiState.Success) {
-                ExtendedFloatingActionButton(
-                    onClick = onAddNote,
-                    icon = { Icon(painter = painterResource(R.drawable.ic_add), contentDescription = null) },
-                    text = { Text(stringResource(R.string.note_new_title)) },
-                )
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    SmallFloatingActionButton(onClick = onCapturePage) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_photo_camera),
+                            contentDescription = stringResource(R.string.capture_title),
+                        )
+                    }
+                    ExtendedFloatingActionButton(
+                        onClick = onAddNote,
+                        icon = { Icon(painter = painterResource(R.drawable.ic_add), contentDescription = null) },
+                        text = { Text(stringResource(R.string.note_new_title)) },
+                    )
+                }
             }
         },
     ) { innerPadding ->
@@ -235,7 +250,7 @@ private fun BookInfo(book: Book, onUpdateProgressClick: () -> Unit, modifier: Mo
     }
 }
 
-private val FAB_CLEARANCE = 88.dp
+private val FAB_CLEARANCE = 148.dp
 
 @Preview(showBackground = true)
 @Composable
@@ -266,6 +281,7 @@ private fun BookDetailPreview() {
             onDeleteBook = {},
             onAddNote = {},
             onNoteClick = {},
+            onCapturePage = {},
         )
     }
 }

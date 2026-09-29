@@ -3,6 +3,13 @@
 
     <!-- Needed to call the user's AI provider. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Used to photograph book pages; the gallery works without it. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Not required: devices without a camera can still pick images from the gallery. -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
 
     <application
         android:name=".ReaderApplication"

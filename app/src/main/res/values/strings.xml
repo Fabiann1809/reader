@@ -46,6 +46,15 @@
     <string name="note_field_content">Nota</string>
     <string name="note_field_page">Página</string>
 
+    <!-- Capture -->
+    <string name="capture_title">Capturar página</string>
+    <string name="capture_camera_ready">Cámara lista.</string>
+    <string name="camera_permission_title">Permite el acceso a la cámara</string>
+    <string name="camera_permission_message">Reader usa la cámara para fotografiar páginas de tus libros y extraer su texto. Las fotos se procesan en tu teléfono y no se guardan.</string>
+    <string name="camera_permission_denied_message">Denegaste el acceso a la cámara. Para fotografiar páginas, actívalo en los ajustes de la app.</string>
+    <string name="camera_permission_allow">Permitir cámara</string>
+    <string name="camera_permission_open_settings">Abrir ajustes</string>
+
     <!-- AI errors -->
     <string name="ai_error_missing_key">Primero configura tu clave de API en Configuración.</string>
     <string name="ai_error_invalid_key">La clave de API no es válida. Revísala o crea una nueva en Google AI Studio.</string>

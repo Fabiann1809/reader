@@ -18,4 +18,7 @@ data class BookDetailRoute(val bookId: Long)
 data class NoteEditorRoute(val bookId: Long, val noteId: Long = NEW_NOTE_ID)
 
 @Serializable
+data class CaptureRoute(val bookId: Long)
+
+@Serializable
 data object SettingsRoute

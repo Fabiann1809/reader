@@ -167,7 +167,7 @@ Cada tarea debe poder completarse en una sesión corta.
 - [x] **T4.5 Manejo de errores.** Mensajes claros para clave inválida, cuota agotada, límite de peticiones y sin internet. *Hecho cuando:* cada caso muestra un mensaje distinto.
 
 ### Fase 5 — Cámara y OCR
-- [ ] **T5.1 Permiso de cámara.** Solicitud en tiempo de ejecución con explicación. *Hecho cuando:* se maneja aceptar y rechazar.
+- [x] **T5.1 Permiso de cámara.** Solicitud en tiempo de ejecución con explicación. *Hecho cuando:* se maneja aceptar y rechazar.
 - [ ] **T5.2 Vista de cámara.** Vista previa con CameraX y botón de captura. *Hecho cuando:* se toma una foto.
 - [ ] **T5.3 Elegir imagen de galería.** Alternativa a la cámara. *Hecho cuando:* se puede seleccionar una imagen.
 - [ ] **T5.4 OCR.** Envoltorio de ML Kit que recibe una imagen y devuelve texto. *Hecho cuando:* extrae texto de una página de prueba.
