@@ -20,6 +20,11 @@
     <string name="book_field_total_pages">Total de páginas</string>
     <string name="book_pages_invalid">Debe ser un número mayor que 0</string>
 
+    <!-- Book detail -->
+    <string name="book_detail_title">Detalle del libro</string>
+    <string name="book_not_found">Este libro ya no existe.</string>
+    <string name="book_added_on">Agregado el %1$s</string>
+
     <!-- Add book -->
     <string name="add_book_title">Agregar libro</string>
 

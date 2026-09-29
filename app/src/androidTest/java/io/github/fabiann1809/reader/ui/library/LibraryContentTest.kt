@@ -21,7 +21,7 @@ class LibraryContentTest {
 
     private fun setContent(uiState: LibraryUiState) {
         composeRule.setContent {
-            ReaderTheme { LibraryContent(uiState = uiState, onAddBook = {}, onOpenSettings = {}) }
+            ReaderTheme { LibraryContent(uiState = uiState, onBookClick = {}, onAddBook = {}, onOpenSettings = {}) }
         }
     }
 

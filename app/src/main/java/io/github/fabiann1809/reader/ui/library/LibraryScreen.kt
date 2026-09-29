@@ -37,21 +37,31 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
+import io.github.fabiann1809.reader.ui.components.bookProgressText
+import io.github.fabiann1809.reader.ui.components.labelRes
+import io.github.fabiann1809.reader.ui.components.progressFraction
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 @Composable
 fun LibraryScreen(
+    onBookClick: (Long) -> Unit,
     onAddBook: () -> Unit,
     onOpenSettings: () -> Unit,
     viewModel: LibraryViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    LibraryContent(uiState = uiState, onAddBook = onAddBook, onOpenSettings = onOpenSettings)
+    LibraryContent(
+        uiState = uiState,
+        onBookClick = onBookClick,
+        onAddBook = onAddBook,
+        onOpenSettings = onOpenSettings,
+    )
 }
 
 @Composable
 fun LibraryContent(
     uiState: LibraryUiState,
+    onBookClick: (Long) -> Unit,
     onAddBook: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
@@ -86,7 +96,7 @@ fun LibraryContent(
         when {
             uiState.isLoading -> LoadingState(contentModifier)
             uiState.books.isEmpty() -> EmptyLibrary(contentModifier)
-            else -> BookList(books = uiState.books, modifier = contentModifier)
+            else -> BookList(books = uiState.books, onBookClick = onBookClick, modifier = contentModifier)
         }
     }
 }
@@ -121,21 +131,21 @@ private fun EmptyLibrary(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun BookList(books: List<Book>, modifier: Modifier = Modifier) {
+private fun BookList(books: List<Book>, onBookClick: (Long) -> Unit, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(books, key = { it.id }) { book ->
-            BookItem(book = book)
+            BookItem(book = book, onClick = { onBookClick(book.id) })
         }
     }
 }
 
 @Composable
-private fun BookItem(book: Book, modifier: Modifier = Modifier) {
-    Card(modifier = modifier.fillMaxWidth()) {
+private fun BookItem(book: Book, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Card(onClick = onClick, modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = book.title, style = MaterialTheme.typography.titleMedium)
             Text(
@@ -185,6 +195,7 @@ private fun LibraryWithBooksPreview() {
                 ),
                 isLoading = false,
             ),
+            onBookClick = {},
             onAddBook = {},
             onOpenSettings = {},
         )
@@ -195,6 +206,11 @@ private fun LibraryWithBooksPreview() {
 @Composable
 private fun EmptyLibraryPreview() {
     ReaderTheme {
-        LibraryContent(uiState = LibraryUiState(isLoading = false), onAddBook = {}, onOpenSettings = {})
+        LibraryContent(
+            uiState = LibraryUiState(isLoading = false),
+            onBookClick = {},
+            onAddBook = {},
+            onOpenSettings = {},
+        )
     }
 }

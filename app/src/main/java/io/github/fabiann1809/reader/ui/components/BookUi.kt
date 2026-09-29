@@ -1,4 +1,4 @@
-package io.github.fabiann1809.reader.ui.library
+package io.github.fabiann1809.reader.ui.components
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
