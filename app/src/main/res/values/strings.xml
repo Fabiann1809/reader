@@ -51,5 +51,20 @@
 
     <!-- Settings -->
     <string name="settings_title">Configuración</string>
-    <string name="settings_placeholder">Aquí podrás configurar tu clave de IA.</string>
+    <string name="settings_ai_section">Inteligencia artificial (Google Gemini)</string>
+    <string name="settings_key_status_set">Clave de API configurada ✓</string>
+    <string name="settings_key_status_missing">No hay clave de API configurada. Sin ella no se pueden generar explicaciones.</string>
+    <string name="settings_key_field">Clave de API</string>
+    <string name="settings_show_key">Mostrar clave</string>
+    <string name="settings_hide_key">Ocultar clave</string>
+    <string name="settings_save_key">Guardar clave</string>
+    <string name="settings_clear_key">Borrar clave</string>
+    <string name="settings_key_saved">Clave guardada</string>
+    <string name="settings_key_cleared">Clave eliminada</string>
+    <string name="settings_guide_title">Cómo obtener tu clave gratuita</string>
+    <string name="settings_guide_step1">1. Abre</string>
+    <string name="settings_guide_step2">2. Inicia sesión con tu cuenta de Google.</string>
+    <string name="settings_guide_step3">3. Pulsa «Crear clave de API» y cópiala.</string>
+    <string name="settings_guide_step4">4. Pégala arriba y pulsa «Guardar clave».</string>
+    <string name="settings_guide_privacy">Tu clave se guarda cifrada en este teléfono y solo se envía a Google al pedir una explicación. Puedes borrarla cuando quieras.</string>
 </resources>

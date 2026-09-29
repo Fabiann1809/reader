@@ -13,6 +13,7 @@ import io.github.fabiann1809.reader.ui.library.LibraryViewModel
 import io.github.fabiann1809.reader.ui.navigation.BookDetailRoute
 import io.github.fabiann1809.reader.ui.navigation.NoteEditorRoute
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
+import io.github.fabiann1809.reader.ui.settings.SettingsViewModel
 
 /**
  * Creates every ViewModel with its dependencies taken from the AppContainer.
@@ -40,6 +41,9 @@ object AppViewModelProvider {
                 noteId = route.noteId,
                 noteRepository = readerApplication().container.noteRepository,
             )
+        }
+        initializer {
+            SettingsViewModel(readerApplication().container.apiKeyStore)
         }
     }
 }

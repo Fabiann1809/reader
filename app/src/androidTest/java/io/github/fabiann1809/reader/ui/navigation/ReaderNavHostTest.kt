@@ -37,7 +37,7 @@ class ReaderNavHostTest {
     @Test
     fun navigatesToSettingsAndBack() {
         composeRule.onNodeWithContentDescription(string(R.string.settings_title)).performClick()
-        composeRule.onNodeWithText(string(R.string.settings_placeholder)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.settings_guide_title)).assertIsDisplayed()
 
         composeRule.onNodeWithContentDescription(string(R.string.navigate_up)).performClick()
         composeRule.onNodeWithText(string(R.string.library_title)).assertIsDisplayed()
