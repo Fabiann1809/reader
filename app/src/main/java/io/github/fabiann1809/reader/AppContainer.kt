@@ -10,6 +10,8 @@ import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
 import io.github.fabiann1809.reader.data.note.DefaultNoteRepository
 import io.github.fabiann1809.reader.data.note.NoteRepository
+import io.github.fabiann1809.reader.ocr.MlKitTextRecognizer
+import io.github.fabiann1809.reader.ocr.TextRecognizer
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
@@ -27,6 +29,8 @@ class AppContainer(context: Context) {
     val noteRepository: NoteRepository by lazy { DefaultNoteRepository(database.noteDao()) }
 
     val apiKeyStore: ApiKeyStore by lazy { KeystoreApiKeyStore(appContext) }
+
+    val textRecognizer: TextRecognizer by lazy { MlKitTextRecognizer(appContext) }
 
     // No logging interceptor on purpose: requests carry the user's API key.
     private val httpClient: OkHttpClient by lazy {
