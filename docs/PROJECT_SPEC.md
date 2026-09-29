@@ -148,7 +148,7 @@ Cada tarea debe poder completarse en una sesión corta.
 - [x] **T1.5 Pruebas de los DAOs.** Pruebas instrumentadas básicas. *Hecho cuando:* pasan.
 
 ### Fase 2 — Biblioteca
-- [ ] **T2.1 Lista de libros.** Pantalla con los libros guardados y estado vacío. *Hecho cuando:* muestra libros de la base de datos.
+- [x] **T2.1 Lista de libros.** Pantalla con los libros guardados y estado vacío. *Hecho cuando:* muestra libros de la base de datos.
 - [ ] **T2.2 Agregar libro.** Formulario con título, autor y total de páginas opcional. *Hecho cuando:* el libro aparece en la lista.
 - [ ] **T2.3 Detalle del libro.** Muestra datos, progreso y estado. *Hecho cuando:* se abre desde la lista.
 - [ ] **T2.4 Actualizar progreso.** Cambiar página actual y estado. *Hecho cuando:* los cambios persisten al reiniciar la app.

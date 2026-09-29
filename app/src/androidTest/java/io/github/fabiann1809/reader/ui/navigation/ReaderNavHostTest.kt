@@ -30,8 +30,8 @@ class ReaderNavHostTest {
     }
 
     @Test
-    fun startsOnHome() {
-        composeRule.onNodeWithText(string(R.string.welcome_message)).assertIsDisplayed()
+    fun startsOnLibrary() {
+        composeRule.onNodeWithText(string(R.string.library_title)).assertIsDisplayed()
     }
 
     @Test
@@ -40,6 +40,6 @@ class ReaderNavHostTest {
         composeRule.onNodeWithText(string(R.string.settings_placeholder)).assertIsDisplayed()
 
         composeRule.onNodeWithContentDescription(string(R.string.navigate_up)).performClick()
-        composeRule.onNodeWithText(string(R.string.welcome_message)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.library_title)).assertIsDisplayed()
     }
 }

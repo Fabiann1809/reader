@@ -1,7 +1,18 @@
 <resources>
     <string name="app_name">Reader</string>
-    <string name="welcome_message">Bienvenido a Reader</string>
     <string name="navigate_up">Volver</string>
+
+    <!-- Library -->
+    <string name="library_title">Biblioteca</string>
+    <string name="library_empty_title">Tu biblioteca está vacía</string>
+    <string name="library_empty_message">Agrega tu primer libro para empezar a llevar el seguimiento de tu lectura.</string>
+
+    <!-- Book -->
+    <string name="book_status_to_read">Por leer</string>
+    <string name="book_status_reading">Leyendo</string>
+    <string name="book_status_finished">Terminado</string>
+    <string name="book_progress">Página %1$d</string>
+    <string name="book_progress_with_total">Página %1$d de %2$d</string>
 
     <!-- Settings -->
     <string name="settings_title">Configuración</string>
