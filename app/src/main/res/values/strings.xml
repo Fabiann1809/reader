@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">Reader</string>
     <string name="welcome_message">Bienvenido a Reader</string>
+    <string name="navigate_up">Volver</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Configuración</string>
+    <string name="settings_placeholder">Aquí podrás configurar tu clave de IA.</string>
 </resources>
