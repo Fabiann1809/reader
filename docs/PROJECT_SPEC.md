@@ -155,7 +155,7 @@ Cada tarea debe poder completarse en una sesión corta.
 - [x] **T2.5 Eliminar libro.** Con confirmación. *Hecho cuando:* también se borran sus notas.
 
 ### Fase 3 — Notas
-- [ ] **T3.1 Lista de notas por libro.** En el detalle del libro. *Hecho cuando:* muestra las notas ordenadas por fecha.
+- [x] **T3.1 Lista de notas por libro.** En el detalle del libro. *Hecho cuando:* muestra las notas ordenadas por fecha.
 - [ ] **T3.2 Crear nota manual.** Con página opcional. *Hecho cuando:* se guarda y se ve en la lista.
 - [ ] **T3.3 Editar y borrar nota.** *Hecho cuando:* los cambios persisten.
 

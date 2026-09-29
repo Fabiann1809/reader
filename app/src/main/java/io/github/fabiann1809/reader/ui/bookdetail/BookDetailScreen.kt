@@ -3,13 +3,15 @@ package io.github.fabiann1809.reader.ui.bookdetail
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -35,6 +37,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
+import io.github.fabiann1809.reader.data.note.Note
+import io.github.fabiann1809.reader.data.note.NoteType
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.components.bookProgressText
@@ -72,6 +76,7 @@ fun BookDetailContent(
     modifier: Modifier = Modifier,
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
+    var showProgressDialog by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier,
@@ -102,15 +107,29 @@ fun BookDetailContent(
             BookDetailUiState.NotFound -> Box(contentModifier.padding(32.dp), contentAlignment = Alignment.Center) {
                 Text(stringResource(R.string.book_not_found))
             }
-            is BookDetailUiState.Success -> BookInfo(
+            is BookDetailUiState.Success -> BookDetailBody(
                 book = uiState.book,
-                onUpdateProgress = onUpdateProgress,
+                notes = uiState.notes,
+                onUpdateProgressClick = { showProgressDialog = true },
                 modifier = contentModifier,
             )
         }
     }
 
-    if (showDeleteDialog && uiState is BookDetailUiState.Success) {
+    if (uiState !is BookDetailUiState.Success) return
+
+    if (showProgressDialog) {
+        UpdateProgressDialog(
+            book = uiState.book,
+            onConfirm = { page, status ->
+                onUpdateProgress(page, status)
+                showProgressDialog = false
+            },
+            onDismiss = { showProgressDialog = false },
+        )
+    }
+
+    if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text(stringResource(R.string.delete_book_title)) },
@@ -135,19 +154,43 @@ fun BookDetailContent(
 }
 
 @Composable
-private fun BookInfo(
+private fun BookDetailBody(
     book: Book,
-    onUpdateProgress: (currentPage: Int, status: BookStatus) -> Unit,
+    notes: List<Note>,
+    onUpdateProgressClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var showProgressDialog by rememberSaveable { mutableStateOf(false) }
-
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        item(key = "book") {
+            BookInfo(book = book, onUpdateProgressClick = onUpdateProgressClick)
+        }
+        item(key = "notes_header") {
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+            Text(text = stringResource(R.string.notes_title), style = MaterialTheme.typography.titleLarge)
+        }
+        if (notes.isEmpty()) {
+            item(key = "notes_empty") {
+                Text(
+                    text = stringResource(R.string.notes_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        } else {
+            items(notes, key = { it.id }) { note ->
+                NoteItem(note = note)
+            }
+        }
+    }
+}
+
+@Composable
+private fun BookInfo(book: Book, onUpdateProgressClick: () -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(text = book.title, style = MaterialTheme.typography.headlineMedium)
         Text(
             text = book.author,
@@ -168,20 +211,9 @@ private fun BookInfo(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        OutlinedButton(onClick = { showProgressDialog = true }, modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(onClick = onUpdateProgressClick, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.update_progress_title))
         }
-    }
-
-    if (showProgressDialog) {
-        UpdateProgressDialog(
-            book = book,
-            onConfirm = { page, status ->
-                onUpdateProgress(page, status)
-                showProgressDialog = false
-            },
-            onDismiss = { showProgressDialog = false },
-        )
     }
 }
 
@@ -191,13 +223,22 @@ private fun BookDetailPreview() {
     ReaderTheme {
         BookDetailContent(
             uiState = BookDetailUiState.Success(
-                Book(
+                book = Book(
                     id = 1,
                     title = "Cosmos",
                     author = "Carl Sagan",
                     currentPage = 120,
                     totalPages = 400,
                     status = BookStatus.READING,
+                ),
+                notes = listOf(
+                    Note(id = 1, bookId = 1, page = 12, content = "Somos polvo de estrellas."),
+                    Note(
+                        id = 2,
+                        bookId = 1,
+                        content = "Idea central: el universo es enorme y antiguo.",
+                        type = NoteType.EXPLANATION,
+                    ),
                 ),
             ),
             onNavigateUp = {},

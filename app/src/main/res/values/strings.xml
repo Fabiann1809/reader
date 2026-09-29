@@ -34,6 +34,12 @@
     <string name="delete_book_title">Eliminar libro</string>
     <string name="delete_book_message">Se eliminará «%1$s» junto con todas sus notas. Esta acción no se puede deshacer.</string>
 
+    <!-- Notes -->
+    <string name="notes_title">Notas</string>
+    <string name="notes_empty">Aún no hay notas para este libro.</string>
+    <string name="note_page">Pág. %1$d</string>
+    <string name="note_type_explanation">Explicación IA</string>
+
     <!-- Add book -->
     <string name="add_book_title">Agregar libro</string>
 

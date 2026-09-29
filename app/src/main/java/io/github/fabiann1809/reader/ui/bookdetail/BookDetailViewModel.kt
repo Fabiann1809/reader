@@ -5,18 +5,20 @@ import androidx.lifecycle.viewModelScope
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.BookStatus
+import io.github.fabiann1809.reader.data.note.Note
+import io.github.fabiann1809.reader.data.note.NoteRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 sealed interface BookDetailUiState {
     data object Loading : BookDetailUiState
 
-    data class Success(val book: Book) : BookDetailUiState
+    data class Success(val book: Book, val notes: List<Note>) : BookDetailUiState
 
     // The book no longer exists (e.g. it was deleted).
     data object NotFound : BookDetailUiState
@@ -25,10 +27,14 @@ sealed interface BookDetailUiState {
 class BookDetailViewModel(
     private val bookId: Long,
     private val bookRepository: BookRepository,
+    noteRepository: NoteRepository,
 ) : ViewModel() {
 
-    val uiState: StateFlow<BookDetailUiState> = bookRepository.observeBook(bookId)
-        .map { book -> if (book == null) BookDetailUiState.NotFound else BookDetailUiState.Success(book) }
+    // Notes are already sorted newest first by the query.
+    val uiState: StateFlow<BookDetailUiState> =
+        combine(bookRepository.observeBook(bookId), noteRepository.observeNotes(bookId)) { book, notes ->
+            if (book == null) BookDetailUiState.NotFound else BookDetailUiState.Success(book, notes)
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),

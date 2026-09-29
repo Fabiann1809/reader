@@ -15,7 +15,8 @@ class AddBookViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val repository = FakeBookRepository()
-    private val viewModel = AddBookViewModel(repository)
+    // Lazy so it is built after MainDispatcherRule swaps Dispatchers.Main (viewModelScope needs it).
+    private val viewModel by lazy { AddBookViewModel(repository) }
 
     @Test
     fun cannotSaveUntilTitleAndAuthorAreFilled() {

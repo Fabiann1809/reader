@@ -28,6 +28,7 @@ object AppViewModelProvider {
             BookDetailViewModel(
                 bookId = createSavedStateHandle().toRoute<BookDetailRoute>().bookId,
                 bookRepository = readerApplication().container.bookRepository,
+                noteRepository = readerApplication().container.noteRepository,
             )
         }
     }
