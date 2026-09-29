@@ -143,7 +143,7 @@ Cada tarea debe poder completarse en una sesión corta.
 ### Fase 1 — Datos locales
 - [x] **T1.1 Entidad Book.** Según la sección 5. *Hecho cuando:* compila con Room.
 - [x] **T1.2 Entidad Note.** Con clave foránea a Book y borrado en cascada. *Hecho cuando:* compila.
-- [ ] **T1.3 DAOs.** Operaciones para crear, leer, actualizar y borrar libros y notas; notas por libro como `Flow`. *Hecho cuando:* compila.
+- [x] **T1.3 DAOs.** Operaciones para crear, leer, actualizar y borrar libros y notas; notas por libro como `Flow`. *Hecho cuando:* compila.
 - [ ] **T1.4 Base de datos y repositorios.** `AppDatabase` y repositorios `BookRepository` y `NoteRepository`. *Hecho cuando:* se pueden insertar y leer datos desde una prueba.
 - [ ] **T1.5 Pruebas de los DAOs.** Pruebas instrumentadas básicas. *Hecho cuando:* pasan.
 
