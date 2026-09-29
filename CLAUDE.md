@@ -23,7 +23,12 @@ Product spec and task list: `docs/PROJECT_SPEC.md` (written in Spanish). Always 
 ## Code
 7. Everything in **English** (identifiers, comments, docs, commits) **except user-facing text**, which is **Spanish** and always lives in `app/src/main/res/values/strings.xml` — never hardcode UI strings in Compose.
 8. Architecture (MVVM):
-   - Packages under `io.github.fabiann1809.reader`: `data/`, `ai/`, `ocr/`, `ui/`, `util/`.
+   - Packages under `io.github.fabiann1809.reader`:
+     - `data/` — Room entities, DAOs, `AppDatabase`, repositories.
+     - `ai/` — `AiProvider` interface, provider implementations, prompts.
+     - `ocr/` — ML Kit text recognition wrapper.
+     - `ui/` — Compose screens and their ViewModels (one sub-package per feature), navigation, `theme/`.
+     - `util/` — small helpers shared across layers (no business logic).
    - Composables never touch repositories; ViewModels expose `StateFlow<UiState>`.
    - Repositories are the only entry point to Room, OCR and AI. Every model call goes through `AiProvider`.
    - Manual dependency injection via an `AppContainer` owned by `ReaderApplication` (no Hilt).
