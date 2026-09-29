@@ -136,7 +136,7 @@ Cada tarea debe poder completarse en una sesión corta.
 
 ### Fase 0 — Preparación
 - [x] **T0.1 Crear el proyecto.** Proyecto "Empty Activity" con Compose, Kotlin, minSdk 26. *Hecho cuando:* la app vacía corre en emulador o teléfono.
-- [ ] **T0.2 Dependencias.** Configurar catálogo de versiones y agregar Compose, Navigation, Room, CameraX, ML Kit, OkHttp/Retrofit, kotlinx.serialization, DataStore y Coroutines. *Hecho cuando:* sincroniza y compila.
+- [x] **T0.2 Dependencias.** Configurar catálogo de versiones y agregar Compose, Navigation, Room, CameraX, ML Kit, OkHttp/Retrofit, kotlinx.serialization, DataStore y Coroutines. *Hecho cuando:* sincroniza y compila.
 - [ ] **T0.3 Estructura de paquetes.** Crear los paquetes de la sección 4. *Hecho cuando:* existen y el proyecto compila.
 - [ ] **T0.4 Tema y navegación base.** Tema Material 3 y `NavHost` con una pantalla de inicio vacía. *Hecho cuando:* se puede navegar entre dos pantallas de prueba.
 
