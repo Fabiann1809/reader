@@ -30,7 +30,9 @@ class MlKitTextRecognizerTest {
     fun extractsTextFromTestPage() = runTest {
         val text = recognizer.recognize(assetUri("test_page.jpg").toString()).getOrThrow()
 
-        assertTrue(text, text.contains("entropía"))
+        assertTrue(text, text.startsWith("Capítulo 3: El orden del universo\n\n"))
+        // ML Kit returns part of this printed line as a separate block; the formatter must restore reading order.
+        assertTrue(text, text.contains("La entropía es una medida del desorden de un sistema."))
         assertTrue(text, text.contains("segundo principio de la termodinámica"))
         // Lines of the same paragraph are joined, so the sentence isn't split by line breaks.
         assertTrue(text, text.contains("un vaso que se rompe no vuelve a unirse"))

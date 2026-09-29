@@ -29,9 +29,11 @@ class MlKitTextRecognizer(context: Context) : TextRecognizer {
         return suspendCancellableCoroutine { continuation ->
             recognizer.process(image)
                 .addOnSuccessListener { visionText ->
-                    val text = formatRecognizedText(
-                        visionText.textBlocks.map { block -> block.lines.map { it.text } },
-                    )
+                    val lines = visionText.textBlocks.flatMap { block -> block.lines }.mapNotNull { line ->
+                        val box = line.boundingBox ?: return@mapNotNull null
+                        OcrLine(text = line.text, left = box.left, top = box.top, right = box.right, bottom = box.bottom)
+                    }
+                    val text = formatRecognizedText(lines)
                     continuation.resume(
                         if (text.isBlank()) Result.failure(NoTextFoundException()) else Result.success(text),
                     )
