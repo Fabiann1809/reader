@@ -18,10 +18,10 @@ class MlKitTextRecognizer(context: Context) : TextRecognizer {
     private val appContext = context.applicationContext
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
-    override suspend fun recognize(imageUri: Uri): Result<String> {
+    override suspend fun recognize(imageUri: String): Result<String> {
         val image = try {
             // Reads the EXIF orientation, so rotated photos are recognized correctly.
-            InputImage.fromFilePath(appContext, imageUri)
+            InputImage.fromFilePath(appContext, Uri.parse(imageUri))
         } catch (e: IOException) {
             return Result.failure(e)
         }

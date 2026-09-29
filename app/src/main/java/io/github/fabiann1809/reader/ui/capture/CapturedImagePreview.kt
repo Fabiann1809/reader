@@ -6,8 +6,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -35,6 +37,7 @@ private const val PREVIEW_MAX_DIMENSION = 1600
 fun CapturedImagePreview(
     imageUri: Uri,
     onRetake: () -> Unit,
+    onUse: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -65,8 +68,18 @@ fun CapturedImagePreview(
                 )
             }
         }
-        OutlinedButton(onClick = onRetake, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.capture_retake))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = onRetake, modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.capture_retake))
+            }
+            Button(
+                onClick = onUse,
+                // Only a readable image can go on to text recognition.
+                enabled = bitmap?.isSuccess == true,
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(stringResource(R.string.capture_use_photo))
+            }
         }
     }
 }

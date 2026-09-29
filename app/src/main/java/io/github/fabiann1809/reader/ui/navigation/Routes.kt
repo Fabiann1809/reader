@@ -20,5 +20,9 @@ data class NoteEditorRoute(val bookId: Long, val noteId: Long = NEW_NOTE_ID)
 @Serializable
 data class CaptureRoute(val bookId: Long)
 
+// imageUri is the page image's URI as a string (content:// or file://).
+@Serializable
+data class ExtractedTextRoute(val bookId: Long, val imageUri: String)
+
 @Serializable
 data object SettingsRoute

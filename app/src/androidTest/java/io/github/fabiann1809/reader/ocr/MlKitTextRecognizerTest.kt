@@ -28,7 +28,7 @@ class MlKitTextRecognizerTest {
 
     @Test
     fun extractsTextFromTestPage() = runTest {
-        val text = recognizer.recognize(assetUri("test_page.jpg")).getOrThrow()
+        val text = recognizer.recognize(assetUri("test_page.jpg").toString()).getOrThrow()
 
         assertTrue(text, text.contains("entropía"))
         assertTrue(text, text.contains("segundo principio de la termodinámica"))
@@ -43,7 +43,7 @@ class MlKitTextRecognizerTest {
             .apply { eraseColor(android.graphics.Color.WHITE) }
             .compress(Bitmap.CompressFormat.PNG, 100, file.outputStream())
 
-        val error = recognizer.recognize(Uri.fromFile(file)).exceptionOrNull()
+        val error = recognizer.recognize(Uri.fromFile(file).toString()).exceptionOrNull()
 
         assertTrue("was $error", error is NoTextFoundException)
     }

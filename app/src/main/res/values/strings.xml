@@ -51,6 +51,7 @@
     <string name="capture_take_photo">Tomar foto</string>
     <string name="capture_pick_gallery">Elegir de la galería</string>
     <string name="capture_retake">Volver a tomar</string>
+    <string name="capture_use_photo">Usar esta foto</string>
     <string name="capture_photo_description">Foto de la página</string>
     <string name="capture_error">No se pudo tomar la foto. Inténtalo de nuevo.</string>
     <string name="capture_image_unreadable">No se pudo abrir la imagen. Elige otra o toma una foto.</string>
@@ -59,6 +60,16 @@
     <string name="camera_permission_denied_message">Denegaste el acceso a la cámara. Para fotografiar páginas, actívalo en los ajustes de la app.</string>
     <string name="camera_permission_allow">Permitir cámara</string>
     <string name="camera_permission_open_settings">Abrir ajustes</string>
+
+    <!-- Extracted text -->
+    <string name="extracted_text_title">Texto extraído</string>
+    <string name="extracted_text_recognizing">Leyendo el texto de la imagen…</string>
+    <string name="extracted_text_hint">Revisa y corrige el texto antes de enviarlo. Puedes borrar lo que no necesites.</string>
+    <string name="extracted_text_counter">%1$d / %2$d caracteres</string>
+    <string name="extracted_text_too_long">%1$d / %2$d caracteres. Acorta el texto para poder continuar.</string>
+    <string name="extracted_text_no_text">No se encontró texto en la imagen. Intenta con una foto más nítida y bien iluminada.</string>
+    <string name="extracted_text_unreadable">No se pudo leer la imagen. Intenta con otra foto.</string>
+    <string name="extracted_text_retake">Tomar otra foto</string>
 
     <!-- AI errors -->
     <string name="ai_error_missing_key">Primero configura tu clave de API en Configuración.</string>

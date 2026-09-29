@@ -41,7 +41,7 @@ import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import kotlinx.coroutines.launch
 
 @Composable
-fun CaptureScreen(onNavigateUp: () -> Unit) {
+fun CaptureScreen(onNavigateUp: () -> Unit, onImageReady: (Uri) -> Unit) {
     val permission = rememberCameraPermissionState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -68,7 +68,12 @@ fun CaptureScreen(onNavigateUp: () -> Unit) {
             .padding(innerPadding)
         val uri = capturedUri
         if (uri != null) {
-            CapturedImagePreview(imageUri = uri, onRetake = { capturedUri = null }, modifier = contentModifier)
+            CapturedImagePreview(
+                imageUri = uri,
+                onRetake = { capturedUri = null },
+                onUse = { onImageReady(uri) },
+                modifier = contentModifier,
+            )
         } else if (permission.status == CameraPermissionStatus.GRANTED) {
             CameraCapture(
                 onImageCaptured = { capturedUri = it },
