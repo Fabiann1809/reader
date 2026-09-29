@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder open-book icon; the final icon is part of T7.3. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,38 C48,34 40,33 32,34 L32,72 C40,71 48,72 54,76 Z" />
+    <path
+        android:fillColor="#E6E8FF"
+        android:pathData="M54,38 C60,34 68,33 76,34 L76,72 C68,71 60,72 54,76 Z" />
+</vector>
