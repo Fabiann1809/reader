@@ -160,7 +160,7 @@ Cada tarea debe poder completarse en una sesión corta.
 - [x] **T3.3 Editar y borrar nota.** *Hecho cuando:* los cambios persisten.
 
 ### Fase 4 — Configuración de IA
-- [ ] **T4.1 Interfaz `AiProvider`.** Con `explain(text)`. *Hecho cuando:* existe y hay una implementación falsa para pruebas.
+- [x] **T4.1 Interfaz `AiProvider`.** Con `explain(text)`. *Hecho cuando:* existe y hay una implementación falsa para pruebas.
 - [ ] **T4.2 Guardado seguro de la clave.** Con Android Keystore. *Hecho cuando:* la clave se guarda y se lee, y no aparece en logs.
 - [ ] **T4.3 Pantalla de configuración de IA.** Campo para la clave, botón "Probar clave", botón "Borrar clave" y una guía corta de cómo obtenerla. *Hecho cuando:* se puede guardar y borrar la clave.
 - [ ] **T4.4 Primer proveedor real.** Implementar un proveedor con capa gratuita (elegir uno; ver "Pendientes"). *Hecho cuando:* "Probar clave" devuelve una respuesta real.
