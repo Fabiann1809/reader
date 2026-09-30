@@ -19,7 +19,8 @@ import java.net.SocketTimeoutException
  *
  * The API key is read from [apiKeyStore] on every call and sent only in the
  * `x-goog-api-key` header. Nothing here logs requests, headers or the key.
- * Every failure is reported as an [AiError].
+ * Every failure is reported as an [AiError]. When [model] is overloaded (5xx), the request is
+ * retried once with [fallbackModel] so the user still gets an answer.
  */
 class GeminiProvider(
     private val apiKeyStore: ApiKeyStore,
@@ -27,6 +28,7 @@ class GeminiProvider(
     private val httpClient: OkHttpClient,
     private val baseUrl: String = DEFAULT_BASE_URL,
     private val model: String = DEFAULT_MODEL,
+    private val fallbackModel: String? = DEFAULT_FALLBACK_MODEL,
 ) : AiProvider {
 
     private val json = Json {
@@ -43,22 +45,27 @@ class GeminiProvider(
             generationConfig = GenerationConfig(temperature = TEMPERATURE),
         )
         return withContext(Dispatchers.IO) {
-            try {
-                Result.success(send(apiKey, request))
-            } catch (e: AiError) {
-                Result.failure(e)
-            } catch (e: SocketTimeoutException) {
-                Result.failure(AiError.Timeout(e))
-            } catch (e: IOException) {
-                // DNS failures, refused connections, dropped connections...: treat as connectivity problems.
-                Result.failure(AiError.NoInternet(e))
-            } catch (e: SerializationException) {
-                Result.failure(AiError.Unknown("Unexpected Gemini response", e))
-            }
+            val result = call(model, apiKey, request)
+            val unavailable = result.exceptionOrNull() is AiError.ServiceUnavailable
+            if (unavailable && fallbackModel != null) call(fallbackModel, apiKey, request) else result
         }
     }
 
-    private fun send(apiKey: String, body: GenerateContentRequest): String {
+    private fun call(model: String, apiKey: String, request: GenerateContentRequest): Result<String> =
+        try {
+            Result.success(send(model, apiKey, request))
+        } catch (e: AiError) {
+            Result.failure(e)
+        } catch (e: SocketTimeoutException) {
+            Result.failure(AiError.Timeout(e))
+        } catch (e: IOException) {
+            // DNS failures, refused connections, dropped connections...: treat as connectivity problems.
+            Result.failure(AiError.NoInternet(e))
+        } catch (e: SerializationException) {
+            Result.failure(AiError.Unknown("Unexpected Gemini response", e))
+        }
+
+    private fun send(model: String, apiKey: String, body: GenerateContentRequest): String {
         val httpRequest = Request.Builder()
             .url("$baseUrl/v1beta/models/$model:generateContent")
             .header("x-goog-api-key", apiKey)
@@ -94,6 +101,9 @@ class GeminiProvider(
         // Alias that Google keeps pointing at the current Flash model, so a sideloaded APK
         // keeps working when older model versions are retired.
         const val DEFAULT_MODEL = "gemini-flash-latest"
+
+        // Lighter model that stays available when Flash is saturated ("high demand" 503s).
+        const val DEFAULT_FALLBACK_MODEL = "gemini-flash-lite-latest"
 
         private const val TEMPERATURE = 0.4
         private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()

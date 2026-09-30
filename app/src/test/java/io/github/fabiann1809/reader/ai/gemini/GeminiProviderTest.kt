@@ -29,6 +29,7 @@ class GeminiProviderTest {
             httpClient = OkHttpClient.Builder().readTimeout(1, TimeUnit.SECONDS).build(),
             baseUrl = server.url("/").toString().trimEnd('/'),
             model = "test-model",
+            fallbackModel = "fallback-model",
         )
     }
 
@@ -141,9 +142,31 @@ class GeminiProviderTest {
 
     @Test
     fun serverErrorMapsToServiceUnavailable() = runTest {
+        // Both the main and the fallback model are down.
+        enqueue(503, """{"error":{"code":503,"status":"UNAVAILABLE"}}""")
         enqueue(503, """{"error":{"code":503,"status":"UNAVAILABLE"}}""")
 
         assertFailsWith<AiError.ServiceUnavailable>()
+    }
+
+    @Test
+    fun overloadedModelFallsBackToFallbackModel() = runTest {
+        enqueue(503, """{"error":{"code":503,"status":"UNAVAILABLE"}}""")
+        enqueue(200, """{"candidates":[{"content":{"parts":[{"text":"from fallback"}]}}]}""")
+
+        val result = provider.explain("text")
+
+        assertEquals("from fallback", result.getOrNull())
+        assertEquals("/v1beta/models/test-model:generateContent", server.takeRequest().url.encodedPath)
+        assertEquals("/v1beta/models/fallback-model:generateContent", server.takeRequest().url.encodedPath)
+    }
+
+    @Test
+    fun clientErrorsDoNotTriggerFallback() = runTest {
+        enqueue(400, """{"error":{"code":400,"status":"INVALID_ARGUMENT","details":[{"reason":"API_KEY_INVALID"}]}}""")
+
+        assertFailsWith<AiError.InvalidApiKey>()
+        assertEquals(1, server.requestCount)
     }
 
     @Test
