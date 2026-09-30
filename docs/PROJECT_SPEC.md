@@ -182,7 +182,15 @@ Cada tarea debe poder completarse en una sesión corta.
 
 ### Fase 7 — Cierre del MVP
 - [x] **T7.1 Pantalla de privacidad.** Explica que los fragmentos de texto se envían al proveedor de IA elegido por el usuario. *Hecho cuando:* es accesible desde configuración.
-- [ ] **T7.2 Pulido de UX.** Estados de carga, vacíos y errores en todas las pantallas. *Hecho cuando:* no hay pantallas sin manejo de estado.
+- [ ] **T7.2 Pulido de UX.** Aplicar el diseño visual del usuario (paquete "Reader: Interfaz móvil con IA": `04-system-design.md` y láminas) a las pantallas del MVP, con estados de carga, vacíos y errores en todas. Las vistas post-MVP del diseño (lector, fichas, quiz, progreso, voz, barra inferior) se harán con sus funciones. Se divide en:
+  - [ ] **T7.2a Tema.** Colores claro/oscuro, tipografía (Plus Jakarta Sans, Fraunces) y formas según los tokens del diseño. *Hecho cuando:* toda la app usa los tokens en modo claro y oscuro.
+  - [ ] **T7.2b Iconos.** Reemplazar los iconos por Phosphor (trazo redondeado) como vectores. *Hecho cuando:* no quedan iconos de otra familia.
+  - [ ] **T7.2c Biblioteca con estantes.** Pared de madera, estantes, portadas generadas con progreso, botón flotante y estados vacío/cargando. *Hecho cuando:* los libros se ven de pie en estantes.
+  - [ ] **T7.2d Detalle, libro y notas.** Detalle con portada y progreso, agregar libro, lista y editor de notas con el nuevo estilo. *Hecho cuando:* las pantallas siguen el diseño.
+  - [ ] **T7.2e Captura y texto reconocido.** Cámara con marco guía y botón de disparo, pantalla de texto reconocido y error de OCR. *Hecho cuando:* siguen el diseño.
+  - [ ] **T7.2f Respuesta estructurada de la IA.** La IA devuelve los bloques del explicador (idea central, explicación sencilla, analogía, términos clave) en formato estructurado. *Hecho cuando:* se prueba con textos reales y se evalúa su comportamiento.
+  - [ ] **T7.2g Explicador por bloques.** Bloques del diseño, etiqueta "Generado con IA", texto original colapsable, estados de carga y sin conexión. *Hecho cuando:* la explicación se ve por bloques.
+  - [ ] **T7.2h Ajustes, privacidad y revisión de estados.** *Hecho cuando:* no hay pantallas sin manejo de estado.
 - [ ] **T7.3 Ícono y nombre de la app.** *Hecho cuando:* se ven en el lanzador.
 - [ ] **T7.4 Build de release.** Firmar y generar el APK. *Hecho cuando:* el APK se instala y funciona en un teléfono real.
 - [ ] **T7.5 README.** Cómo compilar, cómo obtener una clave de API y cómo instalar el APK. *Hecho cuando:* otra persona puede seguirlo.
