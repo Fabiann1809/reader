@@ -19,6 +19,7 @@ class ExplainerPromptTest {
         assertTrue(prompt.contains("No inventes información"))
         assertTrue(prompt.contains("ambiguo, está incompleto"))
         assertTrue(prompt.contains("sin formato Markdown"))
+        assertTrue(prompt.contains("con todas las tildes"))
     }
 
     @Test

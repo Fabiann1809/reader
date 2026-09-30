@@ -21,6 +21,7 @@ object ExplainerPrompt {
 
         Reglas:
         - No inventes información que no esté en el texto.
+        - Usa ortografía correcta, con todas las tildes y signos del idioma.
         - Escribe en texto plano, sin formato Markdown (sin asteriscos ni almohadillas).
     """.trimIndent()
 }
