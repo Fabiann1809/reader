@@ -74,7 +74,7 @@ fun CameraCapture(
                 .size(56.dp),
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_photo_library),
+                painter = painterResource(R.drawable.ic_images),
                 contentDescription = stringResource(R.string.capture_pick_gallery),
             )
         }
@@ -108,7 +108,7 @@ fun CameraCapture(
                 CircularProgressIndicator(modifier = Modifier.size(32.dp))
             } else {
                 Icon(
-                    painter = painterResource(R.drawable.ic_photo_camera),
+                    painter = painterResource(R.drawable.ic_camera),
                     contentDescription = stringResource(R.string.capture_take_photo),
                     modifier = Modifier.size(32.dp),
                 )

@@ -99,7 +99,7 @@ fun BookDetailContent(
                     if (uiState is BookDetailUiState.Success) {
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(
-                                painter = painterResource(R.drawable.ic_delete),
+                                painter = painterResource(R.drawable.ic_trash),
                                 contentDescription = stringResource(R.string.delete_book_title),
                             )
                         }
@@ -115,13 +115,13 @@ fun BookDetailContent(
                 ) {
                     SmallFloatingActionButton(onClick = onCapturePage) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_photo_camera),
+                            painter = painterResource(R.drawable.ic_camera),
                             contentDescription = stringResource(R.string.capture_title),
                         )
                     }
                     ExtendedFloatingActionButton(
                         onClick = onAddNote,
-                        icon = { Icon(painter = painterResource(R.drawable.ic_add), contentDescription = null) },
+                        icon = { Icon(painter = painterResource(R.drawable.ic_plus), contentDescription = null) },
                         text = { Text(stringResource(R.string.note_new_title)) },
                     )
                 }

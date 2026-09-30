@@ -25,7 +25,7 @@ fun ReaderTopAppBar(
             if (onNavigateUp != null) {
                 IconButton(onClick = onNavigateUp) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_arrow_back),
+                        painter = painterResource(R.drawable.ic_caret_left),
                         contentDescription = stringResource(R.string.navigate_up),
                     )
                 }

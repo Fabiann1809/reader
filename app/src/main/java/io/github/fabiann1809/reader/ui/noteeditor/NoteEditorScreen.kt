@@ -84,7 +84,7 @@ fun NoteEditorContent(
                     if (uiState.isEditing && !uiState.isLoading) {
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(
-                                painter = painterResource(R.drawable.ic_delete),
+                                painter = painterResource(R.drawable.ic_trash),
                                 contentDescription = stringResource(R.string.delete_note_title),
                             )
                         }

@@ -74,7 +74,7 @@ fun LibraryContent(
                 actions = {
                     IconButton(onClick = onOpenSettings) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_settings),
+                            painter = painterResource(R.drawable.ic_gear_six),
                             contentDescription = stringResource(R.string.settings_title),
                         )
                     }
@@ -84,7 +84,7 @@ fun LibraryContent(
         floatingActionButton = {
             FloatingActionButton(onClick = onAddBook) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_add),
+                    painter = painterResource(R.drawable.ic_plus),
                     contentDescription = stringResource(R.string.add_book_title),
                 )
             }

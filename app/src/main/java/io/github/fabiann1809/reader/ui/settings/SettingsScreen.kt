@@ -160,7 +160,7 @@ private fun ApiKeyField(value: String, onValueChange: (String) -> Unit) {
         trailingIcon = {
             IconButton(onClick = { isVisible = !isVisible }) {
                 Icon(
-                    painter = painterResource(if (isVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility),
+                    painter = painterResource(if (isVisible) R.drawable.ic_eye_slash else R.drawable.ic_eye),
                     contentDescription = stringResource(
                         if (isVisible) R.string.settings_hide_key else R.string.settings_show_key,
                     ),

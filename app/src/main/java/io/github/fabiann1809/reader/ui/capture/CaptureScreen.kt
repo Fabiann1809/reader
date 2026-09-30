@@ -117,7 +117,7 @@ fun CameraPermissionRequest(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
-            painter = painterResource(R.drawable.ic_photo_camera),
+            painter = painterResource(R.drawable.ic_camera),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(64.dp),
