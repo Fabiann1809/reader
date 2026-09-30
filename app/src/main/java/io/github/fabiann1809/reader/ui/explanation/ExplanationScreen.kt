@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,13 +37,19 @@ fun ExplanationScreen(
     viewModel: ExplanationViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ExplanationContent(uiState = uiState, onRetry = viewModel::retry, onNavigateUp = onNavigateUp)
+    ExplanationContent(
+        uiState = uiState,
+        onRetry = viewModel::retry,
+        onSaveAsNote = viewModel::saveAsNote,
+        onNavigateUp = onNavigateUp,
+    )
 }
 
 @Composable
 fun ExplanationContent(
     uiState: ExplanationUiState,
     onRetry: () -> Unit,
+    onSaveAsNote: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -76,8 +83,11 @@ fun ExplanationContent(
             when (val state = uiState.explanation) {
                 ExplanationState.Loading -> Loading()
                 // Selectable so the user can copy parts of the explanation.
-                is ExplanationState.Success -> SelectionContainer {
-                    Text(text = state.explanation, style = MaterialTheme.typography.bodyLarge)
+                is ExplanationState.Success -> {
+                    SelectionContainer {
+                        Text(text = state.explanation, style = MaterialTheme.typography.bodyLarge)
+                    }
+                    SaveButton(uiState, onSaveAsNote)
                 }
                 is ExplanationState.Failed -> Failed(state.error, onRetry)
             }
@@ -88,6 +98,17 @@ fun ExplanationContent(
 @Composable
 private fun SectionTitle(text: String) {
     Text(text = text, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+}
+
+@Composable
+private fun SaveButton(uiState: ExplanationUiState, onSaveAsNote: () -> Unit) {
+    Button(onClick = onSaveAsNote, enabled = uiState.canSave, modifier = Modifier.fillMaxWidth()) {
+        Text(
+            stringResource(
+                if (uiState.saveState == SaveState.SAVED) R.string.explanation_saved_note else R.string.explanation_save_note,
+            ),
+        )
+    }
 }
 
 @Composable
@@ -124,6 +145,7 @@ private fun ExplanationPreview() {
                 explanation = ExplanationState.Success("1. Idea central: el desorden siempre tiende a aumentar."),
             ),
             onRetry = {},
+            onSaveAsNote = {},
             onNavigateUp = {},
         )
     }

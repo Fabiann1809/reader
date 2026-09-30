@@ -53,9 +53,12 @@ object AppViewModelProvider {
             )
         }
         initializer {
+            val route = createSavedStateHandle().toRoute<ExplanationRoute>()
             ExplanationViewModel(
-                sourceText = createSavedStateHandle().toRoute<ExplanationRoute>().sourceText,
+                bookId = route.bookId,
+                sourceText = route.sourceText,
                 explainText = readerApplication().container.explainText,
+                noteRepository = readerApplication().container.noteRepository,
             )
         }
         initializer {

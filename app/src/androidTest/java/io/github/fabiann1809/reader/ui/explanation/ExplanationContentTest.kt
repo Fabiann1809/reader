@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader.ui.explanation
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -22,12 +23,18 @@ class ExplanationContentTest {
 
     private val sourceText = "La entropía es una medida del desorden de un sistema."
 
-    private fun setContent(explanation: ExplanationState, onRetry: () -> Unit = {}) {
+    private fun setContent(
+        explanation: ExplanationState,
+        saveState: SaveState = SaveState.NOT_SAVED,
+        onRetry: () -> Unit = {},
+        onSaveAsNote: () -> Unit = {},
+    ) {
         composeRule.setContent {
             ReaderTheme {
                 ExplanationContent(
-                    uiState = ExplanationUiState(sourceText, explanation),
+                    uiState = ExplanationUiState(sourceText, explanation, saveState),
                     onRetry = onRetry,
+                    onSaveAsNote = onSaveAsNote,
                     onNavigateUp = {},
                 )
             }
@@ -50,6 +57,22 @@ class ExplanationContentTest {
 
         composeRule.onNodeWithText(sourceText).assertIsDisplayed()
         composeRule.onNodeWithText("Idea central: el desorden aumenta.").assertIsDisplayed()
+    }
+
+    @Test
+    fun saveButtonSavesTheExplanation() {
+        var saved = false
+        setContent(ExplanationState.Success("Idea central"), onSaveAsNote = { saved = true })
+
+        composeRule.onNodeWithText(string(R.string.explanation_save_note)).performClick()
+        assertTrue(saved)
+    }
+
+    @Test
+    fun saveButtonIsDisabledOnceSaved() {
+        setContent(ExplanationState.Success("Idea central"), saveState = SaveState.SAVED)
+
+        composeRule.onNodeWithText(string(R.string.explanation_saved_note)).assertIsNotEnabled()
     }
 
     @Test

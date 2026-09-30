@@ -177,7 +177,7 @@ Cada tarea debe poder completarse en una sesión corta.
 - [x] **T6.1 Prompt del explicador.** Guardado en `ai/` (ver Anexo A). *Hecho cuando:* está definido y probado con 3 textos.
 - [x] **T6.2 Caso de uso `ExplainText`.** Conecta el proveedor con el prompt. *Hecho cuando:* devuelve una explicación para un texto de prueba.
 - [x] **T6.3 Pantalla de explicación.** Muestra el texto original y la explicación, con estado de carga. *Hecho cuando:* se ve la respuesta de la IA.
-- [ ] **T6.4 Guardar como nota.** Botón que crea una `Note` de tipo EXPLICACION con el texto fuente. *Hecho cuando:* la nota aparece en el libro.
+- [x] **T6.4 Guardar como nota.** Botón que crea una `Note` de tipo EXPLICACION con el texto fuente. *Hecho cuando:* la nota aparece en el libro.
 - [ ] **T6.5 Flujo completo.** Desde el detalle del libro: cámara → OCR → editar → explicar → guardar. *Hecho cuando:* todo el flujo funciona de extremo a extremo.
 
 ### Fase 7 — Cierre del MVP
