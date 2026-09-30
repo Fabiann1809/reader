@@ -17,6 +17,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,9 +35,13 @@ import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 @Composable
 fun ExplanationScreen(
     onNavigateUp: () -> Unit,
+    onNoteSaved: () -> Unit,
     viewModel: ExplanationViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(uiState.saveState) {
+        if (uiState.saveState == SaveState.SAVED) onNoteSaved()
+    }
     ExplanationContent(
         uiState = uiState,
         onRetry = viewModel::retry,

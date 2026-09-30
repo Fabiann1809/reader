@@ -64,7 +64,11 @@ fun ReaderNavHost(
             )
         }
         composable<ExplanationRoute> {
-            ExplanationScreen(onNavigateUp = { navController.navigateUp() })
+            ExplanationScreen(
+                onNavigateUp = { navController.navigateUp() },
+                // Back to the book, dropping the capture screens so "back" doesn't walk through them again.
+                onNoteSaved = { navController.popBackStack<BookDetailRoute>(inclusive = false) },
+            )
         }
         composable<SettingsRoute> {
             SettingsScreen(onNavigateUp = { navController.navigateUp() })

@@ -71,7 +71,11 @@ fun CaptureScreen(onNavigateUp: () -> Unit, onImageReady: (Uri) -> Unit) {
             CapturedImagePreview(
                 imageUri = uri,
                 onRetake = { capturedUri = null },
-                onUse = { onImageReady(uri) },
+                onUse = {
+                    // Coming back here (e.g. "take another photo") should show the live camera, not this photo.
+                    capturedUri = null
+                    onImageReady(uri)
+                },
                 modifier = contentModifier,
             )
         } else if (permission.status == CameraPermissionStatus.GRANTED) {
