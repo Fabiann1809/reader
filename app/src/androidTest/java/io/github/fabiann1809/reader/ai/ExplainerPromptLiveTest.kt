@@ -14,7 +14,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Sends real texts to the configured AI provider using the API key saved in the app.
+ * Sends real texts through [ExplainText] to the configured AI provider using the API key saved in the app.
  * Opt-in (uses quota and needs internet), run with:
  * ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.liveAi=true
  *   -Pandroid.testInstrumentationRunnerArguments.class=io.github.fabiann1809.reader.ai.ExplainerPromptLiveTest
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class ExplainerPromptLiveTest {
 
-    private val provider = ApplicationProvider.getApplicationContext<ReaderApplication>().container.aiProvider
+    private val explainText = ApplicationProvider.getApplicationContext<ReaderApplication>().container.explainText
 
     @Before
     fun onlyWhenRequested() {
@@ -30,7 +30,7 @@ class ExplainerPromptLiveTest {
     }
 
     private fun explainAndCheck(name: String, text: String) = runBlocking {
-        val explanation = provider.explain(text).getOrThrow()
+        val explanation = explainText(text).getOrThrow()
         // Logged so a person can judge the quality; only the model's answer is logged, never the key.
         Log.i(TAG, "=== $name ===\n$explanation")
 

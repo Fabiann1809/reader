@@ -2,15 +2,13 @@ package io.github.fabiann1809.reader.ui.extractedtext
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.fabiann1809.reader.ai.MAX_TEXT_LENGTH
 import io.github.fabiann1809.reader.ocr.NoTextFoundException
 import io.github.fabiann1809.reader.ocr.TextRecognizer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
-/** Roughly one book page: keeps each AI request small (and cheap for the user's quota). */
-const val MAX_TEXT_LENGTH = 4_000
 
 sealed interface ExtractedTextUiState {
     data object Recognizing : ExtractedTextUiState

@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader
 
 import android.content.Context
 import io.github.fabiann1809.reader.ai.AiProvider
+import io.github.fabiann1809.reader.ai.ExplainText
 import io.github.fabiann1809.reader.ai.ExplainerPrompt
 import io.github.fabiann1809.reader.ai.gemini.GeminiProvider
 import io.github.fabiann1809.reader.data.AppDatabase
@@ -49,4 +50,6 @@ class AppContainer(context: Context) {
             httpClient = httpClient,
         )
     }
+
+    val explainText: ExplainText by lazy { ExplainText(aiProvider) }
 }

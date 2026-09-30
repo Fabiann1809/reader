@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ui.extractedtext
 
+import io.github.fabiann1809.reader.ai.MAX_TEXT_LENGTH
 import io.github.fabiann1809.reader.ocr.NoTextFoundException
 import io.github.fabiann1809.reader.testing.FakeTextRecognizer
 import io.github.fabiann1809.reader.testing.MainDispatcherRule

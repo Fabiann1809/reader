@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.ai.MAX_TEXT_LENGTH
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
