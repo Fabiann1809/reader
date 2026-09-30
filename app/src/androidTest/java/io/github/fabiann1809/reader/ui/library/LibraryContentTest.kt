@@ -3,12 +3,15 @@ package io.github.fabiann1809.reader.ui.library
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,7 +37,7 @@ class LibraryContentTest {
     }
 
     @Test
-    fun showsBooksWithStatusAndProgress() {
+    fun showsBooksOnShelvesWithProgress() {
         val book = Book(
             id = 1,
             title = "Cosmos",
@@ -46,11 +49,37 @@ class LibraryContentTest {
 
         setContent(LibraryUiState(books = listOf(book), isLoading = false))
 
-        composeRule.onNodeWithText("Cosmos").assertIsDisplayed()
-        composeRule.onNodeWithText("Carl Sagan").assertIsDisplayed()
-        composeRule.onNodeWithText(composeRule.activity.getString(R.string.book_status_reading))
-            .assertIsDisplayed()
-        composeRule.onNodeWithText(composeRule.activity.getString(R.string.book_progress_with_total, 120, 400))
-            .assertIsDisplayed()
+        // Covers expose title, author and progress to screen readers in one description.
+        composeRule.onNodeWithContentDescription(
+            composeRule.activity.getString(R.string.book_cover_description_progress, "Cosmos", "Carl Sagan", 30),
+        ).assertIsDisplayed()
+    }
+
+    @Test
+    fun clickingACoverOpensTheBook() {
+        var openedId: Long? = null
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(books = listOf(Book(id = 7, title = "Dune", author = "Frank Herbert")), isLoading = false),
+                    onBookClick = { openedId = it },
+                    onAddBook = {},
+                    onOpenSettings = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription(
+            composeRule.activity.getString(R.string.book_cover_description, "Dune", "Frank Herbert"),
+        ).performClick()
+
+        assertEquals(7L, openedId)
+    }
+
+    @Test
+    fun addBookButtonIsShownWithBooks() {
+        setContent(LibraryUiState(books = listOf(Book(id = 1, title = "Dune", author = "Frank Herbert")), isLoading = false))
+
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.library_add_book)).assertIsDisplayed()
     }
 }

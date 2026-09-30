@@ -8,8 +8,11 @@
 
     <!-- Library -->
     <string name="library_title">Biblioteca</string>
-    <string name="library_empty_title">Tu biblioteca está vacía</string>
-    <string name="library_empty_message">Agrega tu primer libro para empezar a llevar el seguimiento de tu lectura.</string>
+    <string name="library_empty_title">Tus estantes están vacíos</string>
+    <string name="library_empty_message">Añade tu primer libro y empieza a leer.</string>
+    <string name="library_add_book">Añadir libro</string>
+    <string name="book_cover_description">%1$s, de %2$s</string>
+    <string name="book_cover_description_progress">%1$s, de %2$s, %3$d %% leído</string>
 
     <!-- Book -->
     <string name="book_status_to_read">Por leer</string>
@@ -84,7 +87,7 @@
     <string name="ai_error_unknown">Ocurrió un error inesperado con la IA. Vuelve a intentarlo.</string>
 
     <!-- Add book -->
-    <string name="add_book_title">Agregar libro</string>
+    <string name="add_book_title">Añadir libro</string>
 
     <!-- Settings -->
     <string name="settings_title">Configuración</string>
