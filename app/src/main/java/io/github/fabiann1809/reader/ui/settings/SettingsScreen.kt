@@ -19,6 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -60,6 +61,7 @@ private const val API_KEY_URL = "https://aistudio.google.com/apikey"
 @Composable
 fun SettingsScreen(
     onNavigateUp: () -> Unit,
+    onOpenPrivacy: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -70,6 +72,7 @@ fun SettingsScreen(
         onClearKey = viewModel::clearKey,
         onTestKey = viewModel::testKey,
         onMessageShown = viewModel::onMessageShown,
+        onOpenPrivacy = onOpenPrivacy,
         onNavigateUp = onNavigateUp,
     )
 }
@@ -82,6 +85,7 @@ fun SettingsContent(
     onClearKey: () -> Unit,
     onTestKey: () -> Unit,
     onMessageShown: () -> Unit,
+    onOpenPrivacy: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -136,6 +140,9 @@ fun SettingsContent(
             }
             KeyTestResult(uiState.keyTest)
             ApiKeyGuide()
+            TextButton(onClick = onOpenPrivacy, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.settings_privacy))
+            }
         }
     }
 }
@@ -238,6 +245,7 @@ private fun SettingsPreview() {
             onClearKey = {},
             onTestKey = {},
             onMessageShown = {},
+            onOpenPrivacy = {},
             onNavigateUp = {},
         )
     }

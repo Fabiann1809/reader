@@ -116,4 +116,18 @@
     <string name="explanation_retry">Reintentar</string>
     <string name="explanation_save_note">Guardar como nota</string>
     <string name="explanation_saved_note">Guardada en las notas del libro</string>
+
+    <!-- Privacy -->
+    <string name="settings_privacy">Privacidad</string>
+    <string name="privacy_title">Privacidad</string>
+    <string name="privacy_intro">Reader no tiene servidores propios: tus datos se quedan en tu teléfono. Lo único que sale de él son los fragmentos que pides explicar.</string>
+    <string name="privacy_sent_title">Qué se envía a la IA</string>
+    <string name="privacy_sent_body">Solo el texto que revisas y envías con el botón «Explicar»: un fragmento de hasta %1$d caracteres (más o menos una página). Nunca se envía el libro completo, tus otras notas ni las fotos.</string>
+    <string name="privacy_provider_title">A quién se envía</string>
+    <string name="privacy_provider_body">Al proveedor de IA que elegiste al configurar tu clave, hoy Google Gemini. El envío se hace directamente desde tu teléfono y se rige por las condiciones de Google. Según ellas, en el nivel gratuito Google puede usar los textos enviados para mejorar sus servicios, así que no envíes información personal o confidencial.</string>
+    <string name="privacy_provider_terms">Ver las condiciones de la API de Gemini</string>
+    <string name="privacy_local_title">Qué se queda en tu teléfono</string>
+    <string name="privacy_local_body">Tus libros, tu progreso y tus notas se guardan solo en este teléfono. El texto de las fotos se reconoce en el propio teléfono, y cada foto se guarda de forma temporal y se borra al tomar la siguiente.</string>
+    <string name="privacy_key_title">Tu clave de API</string>
+    <string name="privacy_key_body">Se guarda cifrada en este teléfono, solo se envía a Google al pedir una explicación y nunca aparece en registros. Puedes borrarla cuando quieras desde Configuración.</string>
 </resources>

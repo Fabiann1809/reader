@@ -14,6 +14,7 @@ import io.github.fabiann1809.reader.ui.explanation.ExplanationScreen
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextScreen
 import io.github.fabiann1809.reader.ui.library.LibraryScreen
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorScreen
+import io.github.fabiann1809.reader.ui.privacy.PrivacyScreen
 import io.github.fabiann1809.reader.ui.settings.SettingsScreen
 
 @Composable
@@ -71,7 +72,13 @@ fun ReaderNavHost(
             )
         }
         composable<SettingsRoute> {
-            SettingsScreen(onNavigateUp = { navController.navigateUp() })
+            SettingsScreen(
+                onNavigateUp = { navController.navigateUp() },
+                onOpenPrivacy = { navController.navigate(PrivacyRoute) },
+            )
+        }
+        composable<PrivacyRoute> {
+            PrivacyScreen(onNavigateUp = { navController.navigateUp() })
         }
     }
 }

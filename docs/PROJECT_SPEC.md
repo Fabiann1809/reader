@@ -181,7 +181,7 @@ Cada tarea debe poder completarse en una sesión corta.
 - [x] **T6.5 Flujo completo.** Desde el detalle del libro: cámara → OCR → editar → explicar → guardar. *Hecho cuando:* todo el flujo funciona de extremo a extremo.
 
 ### Fase 7 — Cierre del MVP
-- [ ] **T7.1 Pantalla de privacidad.** Explica que los fragmentos de texto se envían al proveedor de IA elegido por el usuario. *Hecho cuando:* es accesible desde configuración.
+- [x] **T7.1 Pantalla de privacidad.** Explica que los fragmentos de texto se envían al proveedor de IA elegido por el usuario. *Hecho cuando:* es accesible desde configuración.
 - [ ] **T7.2 Pulido de UX.** Estados de carga, vacíos y errores en todas las pantallas. *Hecho cuando:* no hay pantallas sin manejo de estado.
 - [ ] **T7.3 Ícono y nombre de la app.** *Hecho cuando:* se ven en el lanzador.
 - [ ] **T7.4 Build de release.** Firmar y generar el APK. *Hecho cuando:* el APK se instala y funciona en un teléfono real.

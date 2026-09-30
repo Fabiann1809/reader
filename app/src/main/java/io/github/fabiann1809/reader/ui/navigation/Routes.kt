@@ -30,3 +30,6 @@ data class ExplanationRoute(val bookId: Long, val sourceText: String)
 
 @Serializable
 data object SettingsRoute
+
+@Serializable
+data object PrivacyRoute
