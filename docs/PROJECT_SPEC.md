@@ -183,7 +183,7 @@ Cada tarea debe poder completarse en una sesión corta.
 ### Fase 7 — Cierre del MVP
 - [x] **T7.1 Pantalla de privacidad.** Explica que los fragmentos de texto se envían al proveedor de IA elegido por el usuario. *Hecho cuando:* es accesible desde configuración.
 - [ ] **T7.2 Pulido de UX.** Aplicar el diseño visual del usuario (paquete "Reader: Interfaz móvil con IA": `04-system-design.md` y láminas) a las pantallas del MVP, con estados de carga, vacíos y errores en todas. Las vistas post-MVP del diseño (lector, fichas, quiz, progreso, voz, barra inferior) se harán con sus funciones. Se divide en:
-  - [ ] **T7.2a Tema.** Colores claro/oscuro, tipografía (Plus Jakarta Sans, Fraunces) y formas según los tokens del diseño. *Hecho cuando:* toda la app usa los tokens en modo claro y oscuro.
+  - [x] **T7.2a Tema.** Colores claro/oscuro, tipografía (Plus Jakarta Sans, Fraunces) y formas según los tokens del diseño. *Hecho cuando:* toda la app usa los tokens en modo claro y oscuro.
   - [ ] **T7.2b Iconos.** Reemplazar los iconos por Phosphor (trazo redondeado) como vectores. *Hecho cuando:* no quedan iconos de otra familia.
   - [ ] **T7.2c Biblioteca con estantes.** Pared de madera, estantes, portadas generadas con progreso, botón flotante y estados vacío/cargando. *Hecho cuando:* los libros se ven de pie en estantes.
   - [ ] **T7.2d Detalle, libro y notas.** Detalle con portada y progreso, agregar libro, lista y editor de notas con el nuevo estilo. *Hecho cuando:* las pantallas siguen el diseño.

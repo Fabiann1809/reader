@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches the Compose surface color (paper-100) to avoid a flash on startup. -->
+    <color name="window_background">#FFFBF6EE</color>
+</resources>
