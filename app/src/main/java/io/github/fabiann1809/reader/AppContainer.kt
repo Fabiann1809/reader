@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader
 
 import android.content.Context
 import io.github.fabiann1809.reader.ai.AiProvider
+import io.github.fabiann1809.reader.ai.ExplainerPrompt
 import io.github.fabiann1809.reader.ai.gemini.GeminiProvider
 import io.github.fabiann1809.reader.data.AppDatabase
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
@@ -44,8 +45,7 @@ class AppContainer(context: Context) {
     val aiProvider: AiProvider by lazy {
         GeminiProvider(
             apiKeyStore = apiKeyStore,
-            // Temporary instruction; replaced by the Feynman explainer prompt in T6.1.
-            systemInstruction = "Explica el siguiente texto de forma breve y sencilla, en el mismo idioma.",
+            systemInstruction = ExplainerPrompt.SYSTEM_INSTRUCTION,
             httpClient = httpClient,
         )
     }
