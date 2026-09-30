@@ -10,6 +10,7 @@ import androidx.navigation.toRoute
 import io.github.fabiann1809.reader.ui.addbook.AddBookScreen
 import io.github.fabiann1809.reader.ui.bookdetail.BookDetailScreen
 import io.github.fabiann1809.reader.ui.capture.CaptureScreen
+import io.github.fabiann1809.reader.ui.explanation.ExplanationScreen
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextScreen
 import io.github.fabiann1809.reader.ui.library.LibraryScreen
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorScreen
@@ -55,8 +56,15 @@ fun ReaderNavHost(
                 onImageReady = { uri -> navController.navigate(ExtractedTextRoute(bookId, uri.toString())) },
             )
         }
-        composable<ExtractedTextRoute> {
-            ExtractedTextScreen(onNavigateUp = { navController.navigateUp() })
+        composable<ExtractedTextRoute> { entry ->
+            val bookId = entry.toRoute<ExtractedTextRoute>().bookId
+            ExtractedTextScreen(
+                onNavigateUp = { navController.navigateUp() },
+                onExplain = { text -> navController.navigate(ExplanationRoute(bookId, text)) },
+            )
+        }
+        composable<ExplanationRoute> {
+            ExplanationScreen(onNavigateUp = { navController.navigateUp() })
         }
         composable<SettingsRoute> {
             SettingsScreen(onNavigateUp = { navController.navigateUp() })

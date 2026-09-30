@@ -9,9 +9,11 @@ import androidx.navigation.toRoute
 import io.github.fabiann1809.reader.ReaderApplication
 import io.github.fabiann1809.reader.ui.addbook.AddBookViewModel
 import io.github.fabiann1809.reader.ui.bookdetail.BookDetailViewModel
+import io.github.fabiann1809.reader.ui.explanation.ExplanationViewModel
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextViewModel
 import io.github.fabiann1809.reader.ui.library.LibraryViewModel
 import io.github.fabiann1809.reader.ui.navigation.BookDetailRoute
+import io.github.fabiann1809.reader.ui.navigation.ExplanationRoute
 import io.github.fabiann1809.reader.ui.navigation.ExtractedTextRoute
 import io.github.fabiann1809.reader.ui.navigation.NoteEditorRoute
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
@@ -48,6 +50,12 @@ object AppViewModelProvider {
             ExtractedTextViewModel(
                 imageUri = createSavedStateHandle().toRoute<ExtractedTextRoute>().imageUri,
                 textRecognizer = readerApplication().container.textRecognizer,
+            )
+        }
+        initializer {
+            ExplanationViewModel(
+                sourceText = createSavedStateHandle().toRoute<ExplanationRoute>().sourceText,
+                explainText = readerApplication().container.explainText,
             )
         }
         initializer {

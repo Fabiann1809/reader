@@ -24,5 +24,9 @@ data class CaptureRoute(val bookId: Long)
 @Serializable
 data class ExtractedTextRoute(val bookId: Long, val imageUri: String)
 
+// sourceText is the fragment the user reviewed; it is at most MAX_TEXT_LENGTH characters.
+@Serializable
+data class ExplanationRoute(val bookId: Long, val sourceText: String)
+
 @Serializable
 data object SettingsRoute

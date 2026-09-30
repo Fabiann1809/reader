@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -33,12 +34,14 @@ import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 @Composable
 fun ExtractedTextScreen(
     onNavigateUp: () -> Unit,
+    onExplain: (String) -> Unit,
     viewModel: ExtractedTextViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     ExtractedTextContent(
         uiState = uiState,
         onTextChange = viewModel::onTextChange,
+        onExplain = onExplain,
         onNavigateUp = onNavigateUp,
     )
 }
@@ -47,6 +50,7 @@ fun ExtractedTextScreen(
 fun ExtractedTextContent(
     uiState: ExtractedTextUiState,
     onTextChange: (String) -> Unit,
+    onExplain: (String) -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -69,7 +73,7 @@ fun ExtractedTextContent(
                 Text(stringResource(R.string.extracted_text_recognizing))
             }
             is ExtractedTextUiState.Failed -> OcrFailed(uiState.reason, onRetake = onNavigateUp, modifier = contentModifier)
-            is ExtractedTextUiState.Editing -> TextEditor(uiState, onTextChange, modifier = contentModifier)
+            is ExtractedTextUiState.Editing -> TextEditor(uiState, onTextChange, onExplain, modifier = contentModifier)
         }
     }
 }
@@ -78,6 +82,7 @@ fun ExtractedTextContent(
 private fun TextEditor(
     state: ExtractedTextUiState.Editing,
     onTextChange: (String) -> Unit,
+    onExplain: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -109,6 +114,13 @@ private fun TextEditor(
                 .fillMaxWidth()
                 .weight(1f),
         )
+        Button(
+            onClick = { onExplain(state.text) },
+            enabled = state.canContinue,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.extracted_text_explain))
+        }
     }
 }
 
@@ -142,6 +154,7 @@ private fun ExtractedTextPreview() {
         ExtractedTextContent(
             uiState = ExtractedTextUiState.Editing("La entropía es una medida del desorden de un sistema."),
             onTextChange = {},
+            onExplain = {},
             onNavigateUp = {},
         )
     }

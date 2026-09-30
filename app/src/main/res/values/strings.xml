@@ -70,6 +70,7 @@
     <string name="extracted_text_no_text">No se encontró texto en la imagen. Intenta con una foto más nítida y bien iluminada.</string>
     <string name="extracted_text_unreadable">No se pudo leer la imagen. Intenta con otra foto.</string>
     <string name="extracted_text_retake">Tomar otra foto</string>
+    <string name="extracted_text_explain">Explicar</string>
 
     <!-- AI errors -->
     <string name="ai_error_missing_key">Primero configura tu clave de API en Configuración.</string>
@@ -106,4 +107,11 @@
     <string name="settings_guide_step3">3. Pulsa «Crear clave de API» y cópiala.</string>
     <string name="settings_guide_step4">4. Pégala arriba y pulsa «Guardar clave».</string>
     <string name="settings_guide_privacy">Tu clave se guarda cifrada en este teléfono y solo se envía a Google al pedir una explicación. Puedes borrarla cuando quieras.</string>
+
+    <!-- Explanation -->
+    <string name="explanation_title">Explicación</string>
+    <string name="explanation_source_label">Texto original</string>
+    <string name="explanation_result_label">Explicación</string>
+    <string name="explanation_loading">La IA está preparando la explicación…</string>
+    <string name="explanation_retry">Reintentar</string>
 </resources>
