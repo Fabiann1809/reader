@@ -59,6 +59,10 @@
     <string name="capture_retake">Volver a tomar</string>
     <string name="capture_use_photo">Usar esta foto</string>
     <string name="capture_photo_description">Foto de la página</string>
+    <string name="capture_close">Cerrar cámara</string>
+    <string name="capture_frame_hint">Alinea la página dentro del marco</string>
+    <string name="capture_flash_auto">Flash auto</string>
+    <string name="capture_flash_off">Flash apagado</string>
     <string name="capture_error">No se pudo tomar la foto. Inténtalo de nuevo.</string>
     <string name="capture_image_unreadable">No se pudo abrir la imagen. Elige otra o toma una foto.</string>
     <string name="camera_permission_title">Permite el acceso a la cámara</string>
@@ -68,7 +72,8 @@
     <string name="camera_permission_open_settings">Abrir ajustes</string>
 
     <!-- Extracted text -->
-    <string name="extracted_text_title">Texto extraído</string>
+    <string name="extracted_text_title">Revisar texto</string>
+    <string name="extracted_text_label">Texto reconocido</string>
     <string name="extracted_text_recognizing">Leyendo el texto de la imagen…</string>
     <string name="extracted_text_hint">Revisa y corrige el texto antes de enviarlo. Puedes borrar lo que no necesites.</string>
     <string name="extracted_text_counter">%1$d / %2$d caracteres</string>
