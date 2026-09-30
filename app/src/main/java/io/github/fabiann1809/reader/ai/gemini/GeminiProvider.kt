@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader.ai.gemini
 
 import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.AiProvider
+import io.github.fabiann1809.reader.ai.Explanation
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,6 +20,7 @@ import java.net.SocketTimeoutException
  *
  * The API key is read from [apiKeyStore] on every call and sent only in the
  * `x-goog-api-key` header. Nothing here logs requests, headers or the key.
+ * The answer is requested as JSON with [ExplanationSchema] and decoded into an [Explanation].
  * Every failure is reported as an [AiError]. When [model] is overloaded (5xx), the request is
  * retried once with [fallbackModel] so the user still gets an answer.
  */
@@ -36,13 +38,17 @@ class GeminiProvider(
         explicitNulls = false
     }
 
-    override suspend fun explain(text: String): Result<String> {
+    override suspend fun explain(text: String): Result<Explanation> {
         val apiKey = apiKeyStore.getApiKey() ?: return Result.failure(AiError.MissingApiKey())
 
         val request = GenerateContentRequest(
             systemInstruction = Content(parts = listOf(Part(text = systemInstruction))),
             contents = listOf(Content(role = "user", parts = listOf(Part(text = text)))),
-            generationConfig = GenerationConfig(temperature = TEMPERATURE),
+            generationConfig = GenerationConfig(
+                temperature = TEMPERATURE,
+                responseMimeType = "application/json",
+                responseSchema = ExplanationSchema,
+            ),
         )
         return withContext(Dispatchers.IO) {
             val result = call(model, apiKey, request)
@@ -51,7 +57,7 @@ class GeminiProvider(
         }
     }
 
-    private fun call(model: String, apiKey: String, request: GenerateContentRequest): Result<String> =
+    private fun call(model: String, apiKey: String, request: GenerateContentRequest): Result<Explanation> =
         try {
             Result.success(send(model, apiKey, request))
         } catch (e: AiError) {
@@ -62,10 +68,11 @@ class GeminiProvider(
             // DNS failures, refused connections, dropped connections...: treat as connectivity problems.
             Result.failure(AiError.NoInternet(e))
         } catch (e: SerializationException) {
+            // Also covers an answer that doesn't follow the explanation schema.
             Result.failure(AiError.Unknown("Unexpected Gemini response", e))
         }
 
-    private fun send(model: String, apiKey: String, body: GenerateContentRequest): String {
+    private fun send(model: String, apiKey: String, body: GenerateContentRequest): Explanation {
         val httpRequest = Request.Builder()
             .url("$baseUrl/v1beta/models/$model:generateContent")
             .header("x-goog-api-key", apiKey)
@@ -75,7 +82,8 @@ class GeminiProvider(
         httpClient.newCall(httpRequest).execute().use { response ->
             val responseBody = response.body.string()
             if (!response.isSuccessful) throw GeminiErrorParser.parse(response.code, responseBody)
-            return extractText(json.decodeFromString<GenerateContentResponse>(responseBody))
+            val answer = extractText(json.decodeFromString<GenerateContentResponse>(responseBody))
+            return json.decodeFromString<Explanation>(answer).normalized()
         }
     }
 
@@ -94,6 +102,14 @@ class GeminiProvider(
         }
         return text
     }
+
+    // Models sometimes return "" instead of null for an empty caveat.
+    private fun Explanation.normalized(): Explanation = copy(
+        mainIdea = mainIdea.trim(),
+        simpleExplanation = simpleExplanation.trim(),
+        analogy = analogy.trim(),
+        caveat = caveat?.trim()?.takeIf { it.isNotEmpty() },
+    )
 
     companion object {
         const val DEFAULT_BASE_URL = "https://generativelanguage.googleapis.com"

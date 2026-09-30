@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.ai.gemini
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 
 // Minimal subset of the Gemini REST API (models.generateContent). Unknown fields are ignored.
 
@@ -27,6 +28,9 @@ data class Part(
 @Serializable
 data class GenerationConfig(
     val temperature: Double? = null,
+    // "application/json" plus a schema makes the model answer with JSON of exactly that shape.
+    val responseMimeType: String? = null,
+    val responseSchema: JsonObject? = null,
 )
 
 @Serializable

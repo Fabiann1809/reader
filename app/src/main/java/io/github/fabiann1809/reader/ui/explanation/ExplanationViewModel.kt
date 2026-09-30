@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.ui.explanation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fabiann1809.reader.ai.ExplainText
+import io.github.fabiann1809.reader.ai.Explanation
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteRepository
 import io.github.fabiann1809.reader.data.note.NoteType
@@ -15,7 +16,7 @@ import kotlinx.coroutines.launch
 sealed interface ExplanationState {
     data object Loading : ExplanationState
 
-    data class Success(val explanation: String) : ExplanationState
+    data class Success(val explanation: Explanation) : ExplanationState
 
     data class Failed(val error: Throwable) : ExplanationState
 }
@@ -35,6 +36,7 @@ class ExplanationViewModel(
     private val sourceText: String,
     private val explainText: ExplainText,
     private val noteRepository: NoteRepository,
+    private val labels: ExplanationLabels,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExplanationUiState(sourceText))
@@ -54,7 +56,12 @@ class ExplanationViewModel(
         _uiState.update { it.copy(saveState = SaveState.SAVING) }
         viewModelScope.launch {
             noteRepository.addNote(
-                Note(bookId = bookId, sourceText = sourceText, content = explanation, type = NoteType.EXPLANATION),
+                Note(
+                    bookId = bookId,
+                    sourceText = sourceText,
+                    content = explanation.toPlainText(labels),
+                    type = NoteType.EXPLANATION,
+                ),
             )
             _uiState.update { it.copy(saveState = SaveState.SAVED) }
         }

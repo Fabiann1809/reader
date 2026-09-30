@@ -4,6 +4,7 @@ import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.testing.FakeAiProvider
 import io.github.fabiann1809.reader.testing.FakeApiKeyStore
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
+import io.github.fabiann1809.reader.testing.testExplanation
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -88,7 +89,7 @@ class SettingsViewModelTest {
     @Test
     fun successfulTestShowsSampleResponse() = runTest {
         keyStore.saveApiKey("AIza-existing")
-        aiProvider.result = Result.success("Las plantas fabrican su alimento con luz.")
+        aiProvider.result = Result.success(testExplanation("Las plantas fabrican su alimento con luz."))
         collectUiState()
 
         viewModel.testKey()

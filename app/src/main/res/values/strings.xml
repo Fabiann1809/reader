@@ -125,6 +125,11 @@
     <string name="explanation_result_label">Explicación</string>
     <string name="explanation_loading">La IA está preparando la explicación…</string>
     <string name="explanation_retry">Reintentar</string>
+    <string name="explanation_block_main_idea">En una frase</string>
+    <string name="explanation_block_simple">Explicado simple</string>
+    <string name="explanation_block_analogy">Analogía cotidiana</string>
+    <string name="explanation_block_key_terms">Palabras clave</string>
+    <string name="explanation_block_caveat">Ten en cuenta</string>
     <string name="explanation_save_note">Guardar como nota</string>
     <string name="explanation_saved_note">Guardada en las notas del libro</string>
 

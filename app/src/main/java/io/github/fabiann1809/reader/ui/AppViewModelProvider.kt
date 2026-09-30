@@ -9,6 +9,7 @@ import androidx.navigation.toRoute
 import io.github.fabiann1809.reader.ReaderApplication
 import io.github.fabiann1809.reader.ui.addbook.AddBookViewModel
 import io.github.fabiann1809.reader.ui.bookdetail.BookDetailViewModel
+import io.github.fabiann1809.reader.ui.explanation.ExplanationLabels
 import io.github.fabiann1809.reader.ui.explanation.ExplanationViewModel
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextViewModel
 import io.github.fabiann1809.reader.ui.library.LibraryViewModel
@@ -59,6 +60,7 @@ object AppViewModelProvider {
                 sourceText = route.sourceText,
                 explainText = readerApplication().container.explainText,
                 noteRepository = readerApplication().container.noteRepository,
+                labels = ExplanationLabels.from(readerApplication()),
             )
         }
         initializer {

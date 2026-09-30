@@ -188,7 +188,7 @@ Cada tarea debe poder completarse en una sesión corta.
   - [x] **T7.2c Biblioteca con estantes.** Pared de madera, estantes, portadas generadas con progreso, botón flotante y estados vacío/cargando. *Hecho cuando:* los libros se ven de pie en estantes.
   - [x] **T7.2d Detalle, libro y notas.** Detalle con portada y progreso, agregar libro, lista y editor de notas con el nuevo estilo. *Hecho cuando:* las pantallas siguen el diseño.
   - [x] **T7.2e Captura y texto reconocido.** Cámara con marco guía y botón de disparo, pantalla de texto reconocido y error de OCR. *Hecho cuando:* siguen el diseño.
-  - [ ] **T7.2f Respuesta estructurada de la IA.** La IA devuelve los bloques del explicador (idea central, explicación sencilla, analogía, términos clave) en formato estructurado. *Hecho cuando:* se prueba con textos reales y se evalúa su comportamiento.
+  - [x] **T7.2f Respuesta estructurada de la IA.** La IA devuelve los bloques del explicador (idea central, explicación sencilla, analogía, términos clave) en formato estructurado. *Hecho cuando:* se prueba con textos reales y se evalúa su comportamiento.
   - [ ] **T7.2g Explicador por bloques.** Bloques del diseño, etiqueta "Generado con IA", texto original colapsable, estados de carga y sin conexión. *Hecho cuando:* la explicación se ve por bloques.
   - [ ] **T7.2h Ajustes, privacidad y revisión de estados.** *Hecho cuando:* no hay pantallas sin manejo de estado.
 - [ ] **T7.3 Ícono y nombre de la app.** *Hecho cuando:* se ven en el lanzador.

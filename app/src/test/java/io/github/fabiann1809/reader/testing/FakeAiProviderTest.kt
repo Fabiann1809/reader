@@ -9,11 +9,11 @@ class FakeAiProviderTest {
 
     @Test
     fun returnsConfiguredResultAndRecordsRequests() = runTest {
-        val provider = FakeAiProvider(result = Result.success("Simple explanation"))
+        val provider = FakeAiProvider(result = Result.success(testExplanation("Simple explanation")))
 
         val result = provider.explain("Complex paragraph")
 
-        assertEquals("Simple explanation", result.getOrNull())
+        assertEquals("Simple explanation", result.getOrNull()?.mainIdea)
         assertEquals(listOf("Complex paragraph"), provider.requests)
     }
 

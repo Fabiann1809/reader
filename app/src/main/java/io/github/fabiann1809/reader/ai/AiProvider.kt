@@ -10,7 +10,7 @@ interface AiProvider {
 
     /**
      * Explains [text] using the Feynman method.
-     * Returns the explanation, or a failure describing why the call did not succeed.
+     * Returns the explanation split into blocks, or a failure (an [AiError]) describing why the call did not succeed.
      */
-    suspend fun explain(text: String): Result<String>
+    suspend fun explain(text: String): Result<Explanation>
 }

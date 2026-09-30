@@ -32,12 +32,17 @@ class ExplainerPromptLiveTest {
     private fun explainAndCheck(name: String, text: String) = runBlocking {
         val explanation = explainText(text).getOrThrow()
         // Logged so a person can judge the quality; only the model's answer is logged, never the key.
-        Log.i(TAG, "=== $name ===\n$explanation")
+        Log.i(TAG, "=== $name === $explanation")
 
-        assertTrue(explanation, explanation.contains(ExplainerPrompt.SECTION_MAIN_IDEA, ignoreCase = true))
-        assertTrue(explanation, explanation.contains("Analogía", ignoreCase = true))
-        assertTrue(explanation, explanation.contains(ExplainerPrompt.SECTION_KEY_TERMS, ignoreCase = true))
-        assertFalse("Markdown found:\n$explanation", explanation.contains("**"))
+        with(explanation) {
+            listOf(mainIdea, simpleExplanation, analogy).forEach { block ->
+                assertTrue("Empty block in $explanation", block.isNotBlank())
+                assertFalse("Markdown found: $block", block.contains("**") || block.contains("#"))
+            }
+            assertTrue("mainIdea too long: $mainIdea", mainIdea.split(" ").size <= MAIN_IDEA_MAX_WORDS)
+            assertTrue("Expected 2-5 key terms: $keyTerms", keyTerms.size in 2..5)
+            assertTrue(keyTerms.all { it.term.isNotBlank() && it.definition.isNotBlank() })
+        }
     }
 
     @Test
@@ -64,7 +69,20 @@ class ExplainerPromptLiveTest {
             "que no existirían ideas innatas anteriores a toda percepción.",
     )
 
+    @Test
+    fun flagsAnIncompleteFragment() = runBlocking {
+        val explanation = explainText(
+            "Por eso, tal como vimos en el capítulo anterior, la segunda condición implica que",
+        ).getOrThrow()
+        Log.i(TAG, "=== incomplete === $explanation")
+
+        assertTrue("Expected a caveat for a cut fragment: $explanation", !explanation.caveat.isNullOrBlank())
+    }
+
     private companion object {
         const val TAG = "ExplainerLive"
+
+        // The prompt asks for at most 25 words; a little slack avoids flaky failures.
+        const val MAIN_IDEA_MAX_WORDS = 30
     }
 }

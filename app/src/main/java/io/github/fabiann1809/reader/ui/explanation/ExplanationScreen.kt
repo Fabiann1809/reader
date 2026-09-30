@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.ai.Explanation
+import io.github.fabiann1809.reader.ai.KeyTerm
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.components.aiErrorMessageRes
@@ -90,7 +92,7 @@ fun ExplanationContent(
                 // Selectable so the user can copy parts of the explanation.
                 is ExplanationState.Success -> {
                     SelectionContainer {
-                        Text(text = state.explanation, style = MaterialTheme.typography.bodyLarge)
+                        Text(text = state.explanation.toPlainText(explanationLabels()), style = MaterialTheme.typography.bodyLarge)
                     }
                     SaveButton(uiState, onSaveAsNote)
                 }
@@ -147,7 +149,14 @@ private fun ExplanationPreview() {
         ExplanationContent(
             uiState = ExplanationUiState(
                 sourceText = "La entropía es una medida del desorden de un sistema.",
-                explanation = ExplanationState.Success("1. Idea central: el desorden siempre tiende a aumentar."),
+                explanation = ExplanationState.Success(
+                    Explanation(
+                        mainIdea = "El desorden siempre tiende a aumentar.",
+                        simpleExplanation = "Las cosas se desordenan solas y no vuelven a ordenarse sin esfuerzo.",
+                        analogy = "Como un castillo de arena que las olas deshacen.",
+                        keyTerms = listOf(KeyTerm("Entropía", "Medida del desorden de un sistema.")),
+                    ),
+                ),
             ),
             onRetry = {},
             onSaveAsNote = {},

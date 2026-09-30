@@ -79,7 +79,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             val result = aiProvider.explain(TEST_TEXT)
             val keyTest = result.fold(
-                onSuccess = { KeyTestState.Success(it.take(MAX_SAMPLE_LENGTH)) },
+                onSuccess = { KeyTestState.Success(it.mainIdea.take(MAX_SAMPLE_LENGTH)) },
                 onFailure = { KeyTestState.Failure(it) },
             )
             formState.update { it.copy(keyTest = keyTest) }

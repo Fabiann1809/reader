@@ -1,14 +1,21 @@
 package io.github.fabiann1809.reader.ai.gemini
 
 import io.github.fabiann1809.reader.ai.AiError
+import io.github.fabiann1809.reader.ai.KeyTerm
 import io.github.fabiann1809.reader.testing.FakeApiKeyStore
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.addJsonObject
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
+import kotlinx.serialization.json.putJsonObject
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -42,6 +49,20 @@ class GeminiProviderTest {
         server.enqueue(MockResponse.Builder().code(code).body(body).build())
     }
 
+    /** A successful response whose answer is [texts] (the model may split it into several parts). */
+    private fun enqueueAnswer(vararg texts: String) {
+        val response = buildJsonObject {
+            putJsonArray("candidates") {
+                addJsonObject {
+                    putJsonObject("content") {
+                        putJsonArray("parts") { texts.forEach { text -> addJsonObject { put("text", text) } } }
+                    }
+                }
+            }
+        }
+        enqueue(200, response.toString())
+    }
+
     private suspend inline fun <reified T : AiError> assertFailsWith() {
         val error = provider.explain("text").exceptionOrNull()
         assertNotNull(error)
@@ -50,7 +71,7 @@ class GeminiProviderTest {
 
     @Test
     fun sendsKeyInHeaderAndPromptInBody() = runTest {
-        enqueue(200, """{"candidates":[{"content":{"parts":[{"text":"ok"}]}}]}""")
+        enqueueAnswer(EXPLANATION_JSON)
 
         provider.explain("A hard paragraph")
 
@@ -62,24 +83,52 @@ class GeminiProviderTest {
         val body = request.body!!.utf8()
         assertTrue(body.contains("A hard paragraph"))
         assertTrue(body.contains("Explain simply."))
+        // The answer is requested as JSON following the explanation schema.
+        assertTrue(body.contains("\"responseMimeType\":\"application/json\""))
+        assertTrue(body.contains("\"responseSchema\""))
     }
 
     @Test
-    fun returnsTextJoiningPartsAndSkippingThoughts() = runTest {
-        enqueue(
-            200,
-            """
-            {"candidates":[{"content":{"parts":[
-              {"text":"internal reasoning","thought":true},
-              {"text":"Idea central: "},
-              {"text":"la luz es energía."}
-            ]}}]}
-            """.trimIndent(),
-        )
+    fun decodesTheExplanationJoiningPartsAndSkippingThoughts() = runTest {
+        val response = buildJsonObject {
+            putJsonArray("candidates") {
+                addJsonObject {
+                    putJsonObject("content") {
+                        putJsonArray("parts") {
+                            addJsonObject {
+                                put("text", "internal reasoning")
+                                put("thought", true)
+                            }
+                            addJsonObject { put("text", EXPLANATION_JSON.take(40)) }
+                            addJsonObject { put("text", EXPLANATION_JSON.drop(40)) }
+                        }
+                    }
+                }
+            }
+        }
+        enqueue(200, response.toString())
 
-        val result = provider.explain("text")
+        val explanation = provider.explain("text").getOrThrow()
 
-        assertEquals("Idea central: la luz es energía.", result.getOrNull())
+        assertEquals("La luz es energía.", explanation.mainIdea)
+        assertEquals("La luz lleva energía.", explanation.simpleExplanation)
+        assertEquals("Como el calor del sol.", explanation.analogy)
+        assertEquals(listOf(KeyTerm("Fotón", "Partícula de luz.")), explanation.keyTerms)
+        assertNull(explanation.caveat)
+    }
+
+    @Test
+    fun blankCaveatBecomesNull() = runTest {
+        enqueueAnswer(EXPLANATION_JSON.replace("\"caveat\":null", "\"caveat\":\"  \""))
+
+        assertNull(provider.explain("text").getOrThrow().caveat)
+    }
+
+    @Test
+    fun answerOutsideTheSchemaMapsToUnknown() = runTest {
+        enqueueAnswer("Idea central: la luz es energía.")
+
+        assertFailsWith<AiError.Unknown>()
     }
 
     @Test
@@ -152,11 +201,11 @@ class GeminiProviderTest {
     @Test
     fun overloadedModelFallsBackToFallbackModel() = runTest {
         enqueue(503, """{"error":{"code":503,"status":"UNAVAILABLE"}}""")
-        enqueue(200, """{"candidates":[{"content":{"parts":[{"text":"from fallback"}]}}]}""")
+        enqueueAnswer(EXPLANATION_JSON)
 
         val result = provider.explain("text")
 
-        assertEquals("from fallback", result.getOrNull())
+        assertEquals("La luz es energía.", result.getOrNull()?.mainIdea)
         assertEquals("/v1beta/models/test-model:generateContent", server.takeRequest().url.encodedPath)
         assertEquals("/v1beta/models/fallback-model:generateContent", server.takeRequest().url.encodedPath)
     }
@@ -200,5 +249,13 @@ class GeminiProviderTest {
         enqueue(200, "not json")
 
         assertFailsWith<AiError.Unknown>()
+    }
+
+    private companion object {
+        val EXPLANATION_JSON = """
+            {"mainIdea":"La luz es energía.","simpleExplanation":"La luz lleva energía.",
+            "analogy":"Como el calor del sol.","keyTerms":[{"term":"Fotón","definition":"Partícula de luz."}],
+            "caveat":null}
+        """.trimIndent().replace("\n", "")
     }
 }

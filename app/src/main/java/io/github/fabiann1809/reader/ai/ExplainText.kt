@@ -12,7 +12,7 @@ const val MAX_TEXT_LENGTH = 4_000
  */
 class ExplainText(private val aiProvider: AiProvider) {
 
-    suspend operator fun invoke(text: String): Result<String> {
+    suspend operator fun invoke(text: String): Result<Explanation> {
         val fragment = text.trim()
         return when {
             fragment.isEmpty() -> Result.failure(IllegalArgumentException("Text is blank"))

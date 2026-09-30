@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.ai
 
 import io.github.fabiann1809.reader.testing.FakeAiProvider
+import io.github.fabiann1809.reader.testing.testExplanation
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
@@ -9,14 +10,14 @@ import org.junit.Test
 
 class ExplainTextTest {
 
-    private val provider = FakeAiProvider(result = Result.success("Idea central: la luz es energía."))
+    private val provider = FakeAiProvider(result = Result.success(testExplanation()))
     private val explainText = ExplainText(provider)
 
     @Test
     fun returnsTheProviderExplanation() = runTest {
         val result = explainText("La luz es una forma de energía.")
 
-        assertEquals("Idea central: la luz es energía.", result.getOrNull())
+        assertEquals(testExplanation(), result.getOrNull())
     }
 
     @Test
