@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,6 +47,7 @@ import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.BookCover
 import io.github.fabiann1809.reader.ui.components.LightStatusBarIcons
+import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.theme.Primary40
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
@@ -205,11 +205,12 @@ private fun EmptyLibrary(contentPadding: PaddingValues, onAddBook: () -> Unit) {
                     textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(16.dp))
-                Button(onClick = onAddBook, modifier = Modifier.fillMaxWidth().height(48.dp)) {
-                    Icon(painterResource(R.drawable.ic_plus_circle), contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.library_add_book))
-                }
+                PrimaryButton(
+                    text = stringResource(R.string.library_add_book),
+                    onClick = onAddBook,
+                    icon = R.drawable.ic_plus_circle,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
     }

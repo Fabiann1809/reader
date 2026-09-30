@@ -11,7 +11,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,7 +37,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
+import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
+import io.github.fabiann1809.reader.ui.components.readerTextFieldColors
+import io.github.fabiann1809.reader.ui.components.readerTextFieldShape
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 @Composable
@@ -155,6 +157,8 @@ private fun NoteForm(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         OutlinedTextField(
+            shape = readerTextFieldShape,
+            colors = readerTextFieldColors(),
             value = uiState.content,
             onValueChange = onContentChange,
             label = { Text(stringResource(R.string.note_field_content)) },
@@ -163,6 +167,8 @@ private fun NoteForm(
             modifier = Modifier.fillMaxWidth(),
         )
         OutlinedTextField(
+            shape = readerTextFieldShape,
+            colors = readerTextFieldColors(),
             value = uiState.page,
             onValueChange = onPageChange,
             label = { Text(stringResource(R.string.note_field_page)) },
@@ -175,9 +181,12 @@ private fun NoteForm(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth(),
         )
-        Button(onClick = onSave, enabled = uiState.canSave, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.action_save))
-        }
+        PrimaryButton(
+            text = stringResource(R.string.action_save),
+            onClick = onSave,
+            enabled = uiState.canSave,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 

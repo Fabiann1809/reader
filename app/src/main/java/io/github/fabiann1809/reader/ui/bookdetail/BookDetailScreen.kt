@@ -4,36 +4,42 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
@@ -42,12 +48,16 @@ import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteType
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
+import io.github.fabiann1809.reader.ui.components.BookCover
+import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
+import io.github.fabiann1809.reader.ui.components.TonalButton
 import io.github.fabiann1809.reader.ui.components.bookProgressText
 import io.github.fabiann1809.reader.ui.components.labelRes
 import io.github.fabiann1809.reader.ui.components.progressFraction
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import io.github.fabiann1809.reader.util.formatDate
+import kotlin.math.roundToInt
 
 @Composable
 fun BookDetailScreen(
@@ -93,39 +103,14 @@ fun BookDetailContent(
         modifier = modifier,
         topBar = {
             ReaderTopAppBar(
-                title = stringResource(R.string.book_detail_title),
+                title = "",
                 onNavigateUp = onNavigateUp,
                 actions = {
                     if (uiState is BookDetailUiState.Success) {
-                        IconButton(onClick = { showDeleteDialog = true }) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_trash),
-                                contentDescription = stringResource(R.string.delete_book_title),
-                            )
-                        }
+                        MoreMenu(onDeleteClick = { showDeleteDialog = true })
                     }
                 },
             )
-        },
-        floatingActionButton = {
-            if (uiState is BookDetailUiState.Success) {
-                Column(
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    SmallFloatingActionButton(onClick = onCapturePage) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_camera),
-                            contentDescription = stringResource(R.string.capture_title),
-                        )
-                    }
-                    ExtendedFloatingActionButton(
-                        onClick = onAddNote,
-                        icon = { Icon(painter = painterResource(R.drawable.ic_plus), contentDescription = null) },
-                        text = { Text(stringResource(R.string.note_new_title)) },
-                    )
-                }
-            }
         },
     ) { innerPadding ->
         val contentModifier = Modifier
@@ -142,6 +127,8 @@ fun BookDetailContent(
                 book = uiState.book,
                 notes = uiState.notes,
                 onUpdateProgressClick = { showProgressDialog = true },
+                onCapturePage = onCapturePage,
+                onAddNote = onAddNote,
                 onNoteClick = onNoteClick,
                 modifier = contentModifier,
             )
@@ -186,32 +173,65 @@ fun BookDetailContent(
 }
 
 @Composable
+private fun MoreMenu(onDeleteClick: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                painter = painterResource(R.drawable.ic_dots_three_vertical),
+                contentDescription = stringResource(R.string.more_options),
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.delete_book_title), color = MaterialTheme.colorScheme.error) },
+                leadingIcon = {
+                    Icon(painterResource(R.drawable.ic_trash), contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                },
+                onClick = {
+                    expanded = false
+                    onDeleteClick()
+                },
+            )
+        }
+    }
+}
+
+@Composable
 private fun BookDetailBody(
     book: Book,
     notes: List<Note>,
     onUpdateProgressClick: () -> Unit,
+    onCapturePage: () -> Unit,
+    onAddNote: () -> Unit,
     onNoteClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = FAB_CLEARANCE),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item(key = "book") {
-            BookInfo(book = book, onUpdateProgressClick = onUpdateProgressClick)
+            BookHeader(book = book)
+        }
+        item(key = "actions") {
+            BookActions(
+                onCapturePage = onCapturePage,
+                onUpdateProgressClick = onUpdateProgressClick,
+                onAddNote = onAddNote,
+            )
         }
         item(key = "notes_header") {
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            Text(text = stringResource(R.string.notes_title), style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = stringResource(R.string.notes_title),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = 12.dp),
+            )
         }
         if (notes.isEmpty()) {
             item(key = "notes_empty") {
-                Text(
-                    text = stringResource(R.string.notes_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                EmptyNotes()
             }
         } else {
             items(notes, key = { it.id }) { note ->
@@ -221,36 +241,111 @@ private fun BookDetailBody(
     }
 }
 
+/** Cover, title and reading progress, centered as in the design (10.2). */
 @Composable
-private fun BookInfo(book: Book, onUpdateProgressClick: () -> Unit, modifier: Modifier = Modifier) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(text = book.title, style = MaterialTheme.typography.headlineMedium)
+private fun BookHeader(book: Book, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        BookCover(book = book, titleSize = 18.sp, modifier = Modifier.width(COVER_WIDTH))
+        Spacer(Modifier.height(4.dp))
+        Text(text = book.title, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
         Text(
-            text = book.author,
-            style = MaterialTheme.typography.titleMedium,
+            text = stringResource(R.string.book_meta, book.author, stringResource(book.status.labelRes())),
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
         )
-        Text(
-            text = stringResource(book.status.labelRes()),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Text(text = bookProgressText(book), style = MaterialTheme.typography.bodyLarge)
+        Spacer(Modifier.height(4.dp))
+        ReadingProgress(book)
+    }
+}
+
+@Composable
+private fun ReadingProgress(book: Book) {
+    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         book.progressFraction()?.let { fraction ->
-            LinearProgressIndicator(progress = { fraction }, modifier = Modifier.fillMaxWidth())
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                LinearProgressIndicator(
+                    progress = { fraction },
+                    color = ReaderTheme.colors.progress,
+                    trackColor = MaterialTheme.colorScheme.outline,
+                    drawStopIndicator = {},
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(4.dp),
+                )
+                Text(
+                    text = stringResource(R.string.book_progress_percent, (fraction * 100).roundToInt()),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
         }
         Text(
-            text = stringResource(R.string.book_added_on, formatDate(book.createdAt)),
+            text = listOfNotNull(
+                bookProgressText(book),
+                stringResource(R.string.book_added_on, formatDate(book.createdAt)),
+            ).joinToString(" · "),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        OutlinedButton(onClick = onUpdateProgressClick, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.update_progress_title))
+    }
+}
+
+/** One primary action (capturing a page is the core of the MVP), the rest are tonal. */
+@Composable
+private fun BookActions(onCapturePage: () -> Unit, onUpdateProgressClick: () -> Unit, onAddNote: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 8.dp)) {
+        PrimaryButton(
+            text = stringResource(R.string.capture_title),
+            onClick = onCapturePage,
+            icon = R.drawable.ic_camera,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            TonalButton(
+                text = stringResource(R.string.update_progress_short),
+                onClick = onUpdateProgressClick,
+                modifier = Modifier.weight(1f),
+            )
+            TonalButton(
+                text = stringResource(R.string.note_new_title),
+                onClick = onAddNote,
+                icon = R.drawable.ic_note_pencil,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }
 
-private val FAB_CLEARANCE = 148.dp
+@Composable
+private fun EmptyNotes() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_note_pencil),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(32.dp),
+        )
+        Text(
+            text = stringResource(R.string.notes_empty),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+private val COVER_WIDTH = 132.dp
 
 @Preview(showBackground = true)
 @Composable

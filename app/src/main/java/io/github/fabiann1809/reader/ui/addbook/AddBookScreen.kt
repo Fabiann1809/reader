@@ -10,7 +10,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,7 +27,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
+import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
+import io.github.fabiann1809.reader.ui.components.readerTextFieldColors
+import io.github.fabiann1809.reader.ui.components.readerTextFieldShape
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 @Composable
@@ -79,6 +81,8 @@ fun AddBookContent(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             OutlinedTextField(
+                shape = readerTextFieldShape,
+                colors = readerTextFieldColors(),
                 value = uiState.title,
                 onValueChange = onTitleChange,
                 label = { Text(stringResource(R.string.book_field_title)) },
@@ -90,6 +94,8 @@ fun AddBookContent(
                 modifier = Modifier.fillMaxWidth(),
             )
             OutlinedTextField(
+                shape = readerTextFieldShape,
+                colors = readerTextFieldColors(),
                 value = uiState.author,
                 onValueChange = onAuthorChange,
                 label = { Text(stringResource(R.string.book_field_author)) },
@@ -101,6 +107,8 @@ fun AddBookContent(
                 modifier = Modifier.fillMaxWidth(),
             )
             OutlinedTextField(
+                shape = readerTextFieldShape,
+                colors = readerTextFieldColors(),
                 value = uiState.totalPages,
                 onValueChange = onTotalPagesChange,
                 label = { Text(stringResource(R.string.book_field_total_pages)) },
@@ -114,13 +122,12 @@ fun AddBookContent(
                 keyboardActions = KeyboardActions(onDone = { onSave() }),
                 modifier = Modifier.fillMaxWidth(),
             )
-            Button(
+            PrimaryButton(
+                text = stringResource(R.string.action_save),
                 onClick = onSave,
                 enabled = uiState.canSave,
                 modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(R.string.action_save))
-            }
+            )
         }
     }
 }

@@ -26,10 +26,13 @@
     <string name="book_pages_invalid">Debe ser un número mayor que 0</string>
 
     <!-- Book detail -->
-    <string name="book_detail_title">Detalle del libro</string>
     <string name="book_not_found">Este libro ya no existe.</string>
     <string name="book_added_on">Agregado el %1$s</string>
     <string name="update_progress_title">Actualizar progreso</string>
+    <string name="update_progress_short">Progreso</string>
+    <string name="book_meta">%1$s · %2$s</string>
+    <string name="book_progress_percent">%1$d %%</string>
+    <string name="more_options">Más opciones</string>
     <string name="book_field_current_page">Página actual</string>
     <string name="book_field_status">Estado</string>
     <string name="book_page_invalid">Escribe un número de página válido</string>
@@ -39,7 +42,7 @@
 
     <!-- Notes -->
     <string name="notes_title">Notas</string>
-    <string name="notes_empty">Aún no hay notas para este libro.</string>
+    <string name="notes_empty">Aún no tienes notas. Fotografía una página o escribe una nota.</string>
     <string name="note_page">Pág. %1$d</string>
     <string name="note_type_explanation">Explicación IA</string>
     <string name="note_new_title">Nueva nota</string>

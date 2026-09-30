@@ -25,6 +25,8 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.ui.components.labelRes
+import io.github.fabiann1809.reader.ui.components.readerTextFieldColors
+import io.github.fabiann1809.reader.ui.components.readerTextFieldShape
 
 /**
  * Parses the page typed by the user. Returns null when it is not a number,
@@ -53,6 +55,8 @@ fun UpdateProgressDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(
+                    shape = readerTextFieldShape,
+                    colors = readerTextFieldColors(),
                     value = pageInput,
                     onValueChange = { input -> if (input.all(Char::isDigit) && input.length <= 5) pageInput = input },
                     label = { Text(stringResource(R.string.book_field_current_page)) },

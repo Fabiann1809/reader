@@ -3,13 +3,17 @@ package io.github.fabiann1809.reader.ui.bookdetail
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteType
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,17 +26,17 @@ class BookDetailContentTest {
 
     private val book = Book(id = 1, title = "Cosmos", author = "Carl Sagan")
 
-    private fun setContent(notes: List<Note>) {
+    private fun setContent(notes: List<Note>, onCapturePage: () -> Unit = {}, onDeleteBook: () -> Unit = {}) {
         composeRule.setContent {
             ReaderTheme {
                 BookDetailContent(
                     uiState = BookDetailUiState.Success(book, notes),
                     onNavigateUp = {},
                     onUpdateProgress = { _, _ -> },
-                    onDeleteBook = {},
+                    onDeleteBook = onDeleteBook,
                     onAddNote = {},
                     onNoteClick = {},
-                    onCapturePage = {},
+                    onCapturePage = onCapturePage,
                 )
             }
         }
@@ -59,5 +63,30 @@ class BookDetailContentTest {
         composeRule.onNodeWithText("Idea central").assertIsDisplayed()
         composeRule.onNodeWithText(composeRule.activity.getString(R.string.note_type_explanation))
             .assertIsDisplayed()
+    }
+
+    private fun string(id: Int) = composeRule.activity.getString(id)
+
+    @Test
+    fun captureIsThePrimaryAction() {
+        var captured = false
+        setContent(notes = emptyList(), onCapturePage = { captured = true })
+
+        composeRule.onNodeWithText(string(R.string.capture_title)).performClick()
+
+        assertTrue(captured)
+    }
+
+    @Test
+    fun deletingFromTheMenuAsksForConfirmation() {
+        var deleted = false
+        setContent(notes = emptyList(), onDeleteBook = { deleted = true })
+
+        composeRule.onNodeWithContentDescription(string(R.string.more_options)).performClick()
+        composeRule.onNodeWithText(string(R.string.delete_book_title)).performClick()
+        assertFalse(deleted)
+
+        composeRule.onNodeWithText(string(R.string.action_delete)).performClick()
+        assertTrue(deleted)
     }
 }

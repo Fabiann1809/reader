@@ -186,7 +186,7 @@ Cada tarea debe poder completarse en una sesión corta.
   - [x] **T7.2a Tema.** Colores claro/oscuro, tipografía (Plus Jakarta Sans, Fraunces) y formas según los tokens del diseño. *Hecho cuando:* toda la app usa los tokens en modo claro y oscuro.
   - [x] **T7.2b Iconos.** Reemplazar los iconos por Phosphor (trazo redondeado) como vectores. *Hecho cuando:* no quedan iconos de otra familia.
   - [x] **T7.2c Biblioteca con estantes.** Pared de madera, estantes, portadas generadas con progreso, botón flotante y estados vacío/cargando. *Hecho cuando:* los libros se ven de pie en estantes.
-  - [ ] **T7.2d Detalle, libro y notas.** Detalle con portada y progreso, agregar libro, lista y editor de notas con el nuevo estilo. *Hecho cuando:* las pantallas siguen el diseño.
+  - [x] **T7.2d Detalle, libro y notas.** Detalle con portada y progreso, agregar libro, lista y editor de notas con el nuevo estilo. *Hecho cuando:* las pantallas siguen el diseño.
   - [ ] **T7.2e Captura y texto reconocido.** Cámara con marco guía y botón de disparo, pantalla de texto reconocido y error de OCR. *Hecho cuando:* siguen el diseño.
   - [ ] **T7.2f Respuesta estructurada de la IA.** La IA devuelve los bloques del explicador (idea central, explicación sencilla, analogía, términos clave) en formato estructurado. *Hecho cuando:* se prueba con textos reales y se evalúa su comportamiento.
   - [ ] **T7.2g Explicador por bloques.** Bloques del diseño, etiqueta "Generado con IA", texto original colapsable, estados de carga y sin conexión. *Hecho cuando:* la explicación se ve por bloques.
