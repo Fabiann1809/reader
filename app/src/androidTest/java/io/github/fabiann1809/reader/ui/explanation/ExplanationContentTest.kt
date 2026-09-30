@@ -6,6 +6,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ai.AiError
@@ -52,19 +53,41 @@ class ExplanationContentTest {
     private fun string(id: Int) = composeRule.activity.getString(id)
 
     @Test
-    fun showsSourceTextAndLoadingMessage() {
+    fun showsLoadingWithTheSourceCollapsed() {
         setContent(ExplanationState.Loading)
 
-        composeRule.onNodeWithText(sourceText).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.explanation_loading)).assertIsDisplayed()
+        composeRule.onNodeWithText(sourceText).assertDoesNotExist()
+
+        composeRule.onNodeWithText(string(R.string.explanation_source_label)).performClick()
+        composeRule.onNodeWithText(sourceText).assertIsDisplayed()
     }
 
     @Test
-    fun showsTheExplanation() {
+    fun showsEachBlockAndTheAiLabel() {
         setContent(ExplanationState.Success(explanation))
 
-        composeRule.onNodeWithText(sourceText).assertIsDisplayed()
-        composeRule.onNodeWithText("El desorden siempre aumenta.", substring = true).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.explanation_ai_label)).assertIsDisplayed()
+        composeRule.onNodeWithText(explanation.mainIdea).assertIsDisplayed()
+        composeRule.onNodeWithText(explanation.simpleExplanation).assertIsDisplayed()
+        composeRule.onNodeWithText(explanation.analogy).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.explanation_block_main_idea)).assertIsDisplayed()
+    }
+
+    @Test
+    fun tappingAKeyTermShowsItsDefinition() {
+        setContent(ExplanationState.Success(explanation))
+
+        composeRule.onNodeWithText("Medida del desorden.").assertDoesNotExist()
+        composeRule.onNodeWithText("Entropía").performScrollTo().performClick()
+        composeRule.onNodeWithText("Medida del desorden.").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun showsTheCaveatWhenThereIsOne() {
+        setContent(ExplanationState.Success(explanation.copy(caveat = "El fragmento está cortado.")))
+
+        composeRule.onNodeWithText("El fragmento está cortado.").assertIsDisplayed()
     }
 
     @Test
@@ -72,7 +95,7 @@ class ExplanationContentTest {
         var saved = false
         setContent(ExplanationState.Success(explanation), onSaveAsNote = { saved = true })
 
-        composeRule.onNodeWithText(string(R.string.explanation_save_note)).performClick()
+        composeRule.onNodeWithText(string(R.string.explanation_save_note)).performScrollTo().performClick()
         assertTrue(saved)
     }
 
@@ -84,10 +107,11 @@ class ExplanationContentTest {
     }
 
     @Test
-    fun showsTheErrorMessageWithRetry() {
+    fun offlineErrorShowsItsTitleAndRetry() {
         var retried = false
         setContent(ExplanationState.Failed(AiError.NoInternet(RuntimeException())), onRetry = { retried = true })
 
+        composeRule.onNodeWithText(string(R.string.explanation_offline_title)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.ai_error_no_internet)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.explanation_retry)).performClick()
         assertTrue(retried)

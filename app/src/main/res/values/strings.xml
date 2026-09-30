@@ -122,8 +122,11 @@
     <!-- Explanation -->
     <string name="explanation_title">Explicación</string>
     <string name="explanation_source_label">Texto original</string>
-    <string name="explanation_result_label">Explicación</string>
-    <string name="explanation_loading">La IA está preparando la explicación…</string>
+    <string name="explanation_loading">Desmenuzando el párrafo…</string>
+    <string name="explanation_ai_label">Generado con IA</string>
+    <string name="explanation_offline_title">Necesitas conexión para explicar</string>
+    <string name="explanation_error_title">No se pudo explicar este texto</string>
+    <string name="explanation_key_terms_hint">Toca una palabra para ver su definición.</string>
     <string name="explanation_retry">Reintentar</string>
     <string name="explanation_block_main_idea">En una frase</string>
     <string name="explanation_block_simple">Explicado simple</string>
