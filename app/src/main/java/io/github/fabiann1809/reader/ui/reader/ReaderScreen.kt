@@ -16,6 +16,7 @@ import androidx.fragment.compose.AndroidFragment
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.ImmersiveMode
@@ -39,13 +40,22 @@ fun ReaderScreen(
             ReaderUiState.Loading -> CircularProgressIndicator()
             is ReaderUiState.Ready -> {
                 ImmersiveMode()
-                AndroidFragment<EpubReaderFragment>(
-                    arguments = bundleOf(EpubReaderFragment.ARG_BOOK_ID to state.bookId),
-                    modifier = Modifier.fillMaxSize(),
-                )
+                BookNavigator(state)
             }
             is ReaderUiState.CannotOpen -> CannotOpen(state.problem, onNavigateUp)
         }
+    }
+}
+
+/** Readium's navigator for the book's format. */
+@Composable
+private fun BookNavigator(state: ReaderUiState.Ready) {
+    val arguments = bundleOf(NavigatorHostFragment.ARG_BOOK_ID to state.bookId)
+    val modifier = Modifier.fillMaxSize()
+    when (state.format) {
+        BookFormat.PDF -> AndroidFragment<PdfReaderFragment>(arguments = arguments, modifier = modifier)
+        // The session only opens EPUB and PDF (see ReadiumReaderSession).
+        else -> AndroidFragment<EpubReaderFragment>(arguments = arguments, modifier = modifier)
     }
 }
 

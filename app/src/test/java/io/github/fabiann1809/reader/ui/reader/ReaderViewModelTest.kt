@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.ui.reader
 
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.data.reader.ReaderSession
@@ -23,8 +24,9 @@ class ReaderViewModelTest {
 
     private val books = FakeBookRepository(
         listOf(
-            Book(id = 1, title = "El principito", author = "Saint-Exupéry"),
-            Book(id = 2, title = "Dune", author = "Frank Herbert", status = BookStatus.FINISHED),
+            Book(id = 1, title = "El principito", author = "Saint-Exupéry", format = BookFormat.EPUB),
+            Book(id = 2, title = "Dune", author = "Frank Herbert", status = BookStatus.FINISHED, format = BookFormat.EPUB),
+            Book(id = 3, title = "Cosmos", author = "Carl Sagan", format = BookFormat.PDF),
         ),
     )
 
@@ -53,8 +55,16 @@ class ReaderViewModelTest {
 
         val viewModel = viewModel(bookId = 1, session = session)
 
-        assertEquals(ReaderUiState.Ready(bookId = 1), viewModel.uiState.value)
+        assertEquals(ReaderUiState.Ready(bookId = 1, format = BookFormat.EPUB), viewModel.uiState.value)
         assertEquals(listOf(1L), session.opened)
+    }
+
+    @Test
+    fun aPdfIsReadyWithItsFormat() {
+        val viewModel = viewModel(bookId = 3, session = FakeSession())
+
+        // ReaderScreen picks the PDF navigator from it.
+        assertEquals(ReaderUiState.Ready(bookId = 3, format = BookFormat.PDF), viewModel.uiState.value)
     }
 
     @Test

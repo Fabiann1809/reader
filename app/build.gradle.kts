@@ -82,6 +82,7 @@ dependencies {
     implementation(libs.readium.streamer)
     implementation(libs.readium.navigator)
     implementation(libs.readium.adapter.pdfium.document)
+    implementation(libs.readium.adapter.pdfium.navigator)
 
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)

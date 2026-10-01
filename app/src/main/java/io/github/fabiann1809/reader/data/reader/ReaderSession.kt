@@ -20,7 +20,7 @@ enum class OpenProblem {
     /** A paper book, or an imported one whose file is gone. */
     NO_FILE,
 
-    /** A format the reader does not show yet (T11.3 and later). */
+    /** A format the reader does not show yet (TXT and CBZ). */
     NOT_SUPPORTED_YET,
 
     /** The file exists but Readium could not read it (e.g. damaged). */
@@ -66,7 +66,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
     override suspend fun open(book: Book): OpenProblem? {
         if (book.id == openBookId && openPublication != null) return null
         val path = book.filePath ?: return OpenProblem.NO_FILE
-        if (book.format != BookFormat.EPUB) return OpenProblem.NOT_SUPPORTED_YET
+        if (book.format !in READABLE_FORMATS) return OpenProblem.NOT_SUPPORTED_YET
         val file = bookFiles.resolve(path)
         val publication = withContext(Dispatchers.IO) {
             if (!file.exists()) return@withContext null
@@ -105,5 +105,9 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         Locator.fromJSON(JSONObject(json))
     } catch (e: JSONException) {
         null
+    }
+
+    private companion object {
+        val READABLE_FORMATS = setOf(BookFormat.EPUB, BookFormat.PDF)
     }
 }

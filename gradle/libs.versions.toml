@@ -68,6 +68,7 @@ readium-shared = { group = "org.readium.kotlin-toolkit", name = "readium-shared"
 readium-streamer = { group = "org.readium.kotlin-toolkit", name = "readium-streamer", version.ref = "readium" }
 readium-navigator = { group = "org.readium.kotlin-toolkit", name = "readium-navigator", version.ref = "readium" }
 readium-adapter-pdfium-document = { group = "org.readium.kotlin-toolkit", name = "readium-adapter-pdfium-document", version.ref = "readium" }
+readium-adapter-pdfium-navigator = { group = "org.readium.kotlin-toolkit", name = "readium-adapter-pdfium-navigator", version.ref = "readium" }
 
 # Networking and serialization
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }

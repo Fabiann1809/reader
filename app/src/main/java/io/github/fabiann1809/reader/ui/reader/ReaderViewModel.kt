@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.ui.reader
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.reader.OpenProblem
@@ -16,8 +17,8 @@ import kotlinx.coroutines.launch
 sealed interface ReaderUiState {
     data object Loading : ReaderUiState
 
-    /** The book is open in the [ReaderSession]; the navigator takes it from there. */
-    data class Ready(val bookId: Long) : ReaderUiState
+    /** The book is open in the [ReaderSession]; the navigator for its [format] takes it from there. */
+    data class Ready(val bookId: Long, val format: BookFormat) : ReaderUiState
 
     data class CannotOpen(val problem: OpenProblem) : ReaderUiState
 }
@@ -36,15 +37,22 @@ class ReaderViewModel(
     init {
         viewModelScope.launch {
             val book = bookRepository.getBook(bookId)
-            val problem = if (book == null) OpenProblem.NO_FILE else session.open(book)
-            if (book != null && problem == null) markOpened()
-            _uiState.value = if (problem == null) ReaderUiState.Ready(bookId) else ReaderUiState.CannotOpen(problem)
+            _uiState.value = if (book == null) ReaderUiState.CannotOpen(OpenProblem.NO_FILE) else open(book)
         }
         viewModelScope.launch {
             session.locations.filter { it.bookId == bookId }.collect { location ->
                 updateBook { it.copy(readingLocation = location.json) }
             }
         }
+    }
+
+    private suspend fun open(book: Book): ReaderUiState {
+        val problem = session.open(book)
+        // The session only opens books with a readable format, so a null format here is a book without a file.
+        val format = book.format
+        if (problem != null || format == null) return ReaderUiState.CannotOpen(problem ?: OpenProblem.NO_FILE)
+        markOpened()
+        return ReaderUiState.Ready(bookId, format)
     }
 
     // "Continuar leyendo" and the "Último leído" order use lastOpenedAt; opening a book also means reading it.

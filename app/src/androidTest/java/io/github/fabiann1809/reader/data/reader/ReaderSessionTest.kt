@@ -58,8 +58,16 @@ class ReaderSessionTest {
     }
 
     @Test
+    fun aPdfOpensWithPdfium() = runTest {
+        assertNull(session.open(bookWith("cosmos.pdf", BookFormat.PDF)))
+
+        assertEquals("Cosmos", session.publication(1)?.metadata?.title)
+    }
+
+    @Test
     fun otherFormatsAreNotReadYet() = runTest {
-        assertEquals(OpenProblem.NOT_SUPPORTED_YET, session.open(bookWith("cosmos.pdf", BookFormat.PDF)))
+        assertEquals(OpenProblem.NOT_SUPPORTED_YET, session.open(bookWith("cuento_de_navidad.txt", BookFormat.TXT)))
+        assertEquals(OpenProblem.NOT_SUPPORTED_YET, session.open(bookWith("mafalda_tomo_1.cbz", BookFormat.CBZ)))
     }
 
     @Test
