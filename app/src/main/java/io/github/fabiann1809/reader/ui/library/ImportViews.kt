@@ -2,7 +2,9 @@ package io.github.fabiann1809.reader.ui.library
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,6 +32,41 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.importing.ImportStatus
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.theme.ShelfTopA
+
+/**
+ * Import feedback floating over the books (design 1f): progress bar and pill while importing,
+ * or the error card. New books appear on the shelves by themselves, so success shows nothing.
+ */
+@Composable
+fun BoxScope.ImportFeedback(
+    status: ImportStatus,
+    contentPadding: PaddingValues,
+    onRetry: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    when (status) {
+        ImportStatus.Idle -> Unit
+        is ImportStatus.Importing -> {
+            ImportProgressBar(status, Modifier.padding(top = contentPadding.calculateTopPadding()))
+            ImportProgressPill(
+                status,
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(contentPadding)
+                    .padding(16.dp),
+            )
+        }
+        is ImportStatus.Failed -> ImportErrorCard(
+            status = status,
+            onRetry = onRetry,
+            onDismiss = onDismiss,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(contentPadding)
+                .padding(16.dp),
+        )
+    }
+}
 
 /** Thin bar under the library bar, filled with the shelf wood as files finish (design 1f). */
 @Composable

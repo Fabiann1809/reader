@@ -2,54 +2,25 @@ package io.github.fabiann1809.reader.ui.library
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -62,15 +33,8 @@ import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
 import io.github.fabiann1809.reader.data.prefs.LibraryView
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
-import io.github.fabiann1809.reader.ui.bookdetail.AddToCollectionSheet
-import io.github.fabiann1809.reader.ui.components.BookCover
 import io.github.fabiann1809.reader.ui.components.LightStatusBarIcons
-import io.github.fabiann1809.reader.ui.components.PrimaryButton
-import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
-import io.github.fabiann1809.reader.ui.components.StatusMessage
-import io.github.fabiann1809.reader.ui.theme.Primary40
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
-import kotlin.math.ceil
 
 @Composable
 fun LibraryScreen(
@@ -80,11 +44,11 @@ fun LibraryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val importStatus by viewModel.importStatus.collectAsStateWithLifecycle()
+    val bookCollections by viewModel.bookCollections.collectAsStateWithLifecycle()
     // The system picker (SAF) shows local files plus providers like Google Drive and Dropbox.
     val pickBookFiles = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         viewModel.importBooks(uris.map { it.toString() })
     }
-    val bookCollections by viewModel.bookCollections.collectAsStateWithLifecycle()
     LightStatusBarIcons()
     LibraryContent(
         uiState = uiState,
@@ -122,6 +86,7 @@ fun LibraryScreen(
     )
 }
 
+/** Puts the library together: the bar, the books, the import feedback and every sheet or dialog. */
 @Composable
 fun LibraryContent(
     uiState: LibraryUiState,
@@ -143,17 +108,16 @@ fun LibraryContent(
     bookActions: LibraryBookActions = LibraryBookActions(),
     selectionActions: LibrarySelectionActions = LibrarySelectionActions(),
 ) {
-    // While importing, the progress pill takes the bottom of the screen.
-    val showFab = !uiState.isLoading && uiState.books.isNotEmpty() && !uiState.isSelecting &&
-        importStatus !is ImportStatus.Importing
     var dialog by rememberSaveable { mutableStateOf(LibraryDialog.NONE) }
+    var selectionDialog by rememberSaveable { mutableStateOf(SelectionDialog.NONE) }
     var isSearchOpen by rememberSaveable { mutableStateOf(false) }
     var showAddBookSheet by rememberSaveable { mutableStateOf(false) }
-    // Cover menu: the book whose menu is open, and the one waiting for delete confirmation.
+    // Cover menu: the book whose menu is open, the one waiting for delete confirmation,
+    // and the one getting a new collection.
     var menuBookId by rememberSaveable { mutableStateOf<Long?>(null) }
     var deleteBookId by rememberSaveable { mutableStateOf<Long?>(null) }
     var newCollectionForBook by rememberSaveable { mutableStateOf<Long?>(null) }
-    var selectionDialog by rememberSaveable { mutableStateOf(SelectionDialog.NONE) }
+
     val menuActions = BookMenuActions(
         // Until the reader exists (T11.2), opening a book shows its detail.
         onOpen = onBookClick,
@@ -163,194 +127,67 @@ fun LibraryContent(
         onDelete = { deleteBookId = it },
         onSelect = selectionActions.onToggle,
     )
-    val appearance = rememberBookAppearance(hasBooks = !uiState.isLoading && uiState.books.isNotEmpty())
-    val positions = remember(uiState.books) { uiState.books.withIndex().associate { (index, book) -> book.id to index } }
-    val bookFrame: BookFrame = { book, frameModifier, content ->
-        SelectionFrame(
-            isSelected = if (uiState.isSelecting) book.id in uiState.selectedIds else null,
-            modifier = frameModifier.bookAppearance(appearance, positions[book.id] ?: 0),
-        ) {
-            content()
-            BookMenu(book, expanded = menuBookId == book.id, onDismiss = { menuBookId = null }, actions = menuActions)
-        }
-    }
+    val bookFrame = rememberBookFrame(uiState, menuBookId, onMenuDismiss = { menuBookId = null }, menuActions)
     // While selecting, every tap checks or unchecks a book instead of opening it.
-    val onCoverClick: (Long) -> Unit = if (uiState.isSelecting) selectionActions.onToggle else onBookClick
-    val onBookLongClick: (Long) -> Unit = if (uiState.isSelecting) selectionActions.onToggle else { id -> menuBookId = id }
+    val gestures = if (uiState.isSelecting) {
+        BookGestures(onClick = selectionActions.onToggle, onLongClick = selectionActions.onToggle)
+    } else {
+        BookGestures(onClick = onBookClick, onLongClick = { menuBookId = it })
+    }
     val isShelves = uiState.layout.view == LibraryView.SHELVES
-    val columns = booksPerRow(uiState.layout.booksPerRow)
-    val title = uiState.currentCollection?.name
-        ?: stringResource((uiState.filter as? LibraryFilter.Smart)?.collection?.nameRes() ?: R.string.collection_all)
+    // While importing, the progress pill takes the bottom of the screen.
+    val showFab = !uiState.isLoading && uiState.books.isNotEmpty() && !uiState.isSelecting &&
+        importStatus !is ImportStatus.Importing
+
     Scaffold(
         // Only the shelves view has the wooden wall (design 6.5).
         modifier = if (isShelves) modifier.woodWall() else modifier,
         containerColor = if (isShelves) Color.Transparent else MaterialTheme.colorScheme.surface,
         topBar = {
-            if (uiState.isSelecting) {
-                SelectionTopBar(
-                    count = uiState.selectedIds.size,
-                    onClose = selectionActions.onClear,
-                    onAddToCollection = { selectionDialog = SelectionDialog.COLLECTION },
-                    onDelete = { selectionDialog = SelectionDialog.DELETE },
-                )
-            } else if (isSearchOpen) {
-                LibrarySearchBar(
-                    query = uiState.query,
-                    onQueryChange = onSearch,
-                    onClose = {
-                        isSearchOpen = false
-                        onSearch("")
-                    },
-                )
-            } else {
-                // The library bar stays forest green in both themes: it is the app's identity.
-                ReaderTopAppBar(
-                    title = title,
-                    onTitleClick = { dialog = LibraryDialog.PICKER },
-                    onTitleClickLabel = stringResource(R.string.collection_change),
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Primary40,
-                        titleContentColor = Color.White,
-                        actionIconContentColor = Color.White,
-                    ),
-                    actions = {
-                        if (!uiState.libraryIsEmpty) {
-                            IconButton(onClick = { isSearchOpen = true }) {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_magnifying_glass),
-                                    contentDescription = stringResource(R.string.library_search),
-                                )
-                            }
-                            IconButton(onClick = { dialog = LibraryDialog.ARRANGE }) {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_funnel_simple),
-                                    contentDescription = stringResource(R.string.library_arrange),
-                                )
-                            }
-                        }
-                        // Only collections created by the user can be renamed or deleted.
-                        if (uiState.currentCollection != null) {
-                            CollectionMenu(
-                                onRename = { dialog = LibraryDialog.RENAME },
-                                onDelete = { dialog = LibraryDialog.DELETE },
-                            )
-                        }
-                    },
-                )
-            }
+            LibraryTopBar(
+                uiState = uiState,
+                isSearchOpen = isSearchOpen,
+                onSearchOpenChange = { isSearchOpen = it },
+                onSearch = onSearch,
+                onOpenDialog = { dialog = it },
+                onOpenSelectionDialog = { selectionDialog = it },
+                onClearSelection = selectionActions.onClear,
+            )
         },
         floatingActionButton = {
-            if (showFab) {
-                // Content overload on purpose: the text/icon overload hides the label from screen readers.
-                ExtendedFloatingActionButton(
-                    onClick = { showAddBookSheet = true },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ) {
-                    Icon(painterResource(R.drawable.ic_plus_circle), contentDescription = null)
-                    Spacer(Modifier.width(12.dp))
-                    Text(stringResource(R.string.library_add_book))
-                }
-            }
+            if (showFab) AddBookButton(onClick = { showAddBookSheet = true })
         },
     ) { innerPadding ->
         val empty = emptyState(uiState, { showAddBookSheet = true }, onSearch, onArrangementChange, onSelectFilter)
         Box(Modifier.fillMaxSize()) {
-            when {
-                uiState.isLoading && isShelves -> Bookcase(innerPadding, columns, itemCount = PLACEHOLDER_COUNT) { _, width ->
-                    PlaceholderCover(width)
-                }
-                uiState.isLoading -> Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-                empty != null && isShelves -> EmptyShelf(innerPadding, empty)
-                empty != null -> Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                    StatusMessage(
-                        icon = empty.icon,
-                        title = empty.title,
-                        message = empty.message,
-                        action = { PrimaryButton(text = empty.action, onClick = empty.onAction, icon = empty.actionIcon) },
-                    )
-                }
-                else -> when (uiState.layout.view) {
-                    LibraryView.SHELVES -> Bookcase(
-                        innerPadding,
-                        columns,
-                        itemCount = uiState.books.size,
-                        bottomSpace = FAB_SPACE,
-                    ) { index, width ->
-                        val book = uiState.books[index]
-                        bookFrame(book, Modifier) {
-                            BookCover(
-                                book = book,
-                                onClick = { onCoverClick(book.id) },
-                                onLongClick = { onBookLongClick(book.id) },
-                                showBadges = true,
-                                modifier = Modifier.width(width),
-                            )
-                        }
-                    }
-                    LibraryView.GRID -> BookGrid(
-                        uiState.books,
-                        columns,
-                        innerPadding,
-                        FAB_SPACE,
-                        onCoverClick,
-                        onBookLongClick,
-                        bookFrame,
-                    )
-                    LibraryView.LIST -> BookList(uiState.books, innerPadding, FAB_SPACE, onCoverClick, onBookLongClick, bookFrame)
-                }
-            }
-            // Import feedback floats over the books (design 1f); new books appear on the shelves by themselves.
-            when (importStatus) {
-                ImportStatus.Idle -> Unit
-                is ImportStatus.Importing -> {
-                    ImportProgressBar(importStatus, Modifier.padding(top = innerPadding.calculateTopPadding()))
-                    ImportProgressPill(
-                        importStatus,
-                        Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(innerPadding)
-                            .padding(16.dp),
-                    )
-                }
-                is ImportStatus.Failed -> ImportErrorCard(
-                    status = importStatus,
-                    onRetry = onRetryImports,
-                    onDismiss = onDismissImportErrors,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(innerPadding)
-                        .padding(16.dp),
-                )
-            }
+            LibraryBooks(uiState, innerPadding, empty, gestures, bookFrame)
+            ImportFeedback(importStatus, innerPadding, onRetry = onRetryImports, onDismiss = onDismissImportErrors)
         }
     }
 
-    bookCollections?.let { (book, collectionIds) ->
-        AddToCollectionSheet(
-            isFavorite = book.isFavorite,
-            collections = uiState.collections,
-            collectionIds = collectionIds,
-            onFavoriteChange = { bookActions.onFavoriteChange(book.id, it) },
-            onCollectionChange = { collectionId, isIncluded -> bookActions.onCollectionChange(book.id, collectionId, isIncluded) },
-            onNewCollection = { newCollectionForBook = book.id },
-            onDismiss = bookActions.onHideCollections,
-        )
-    }
-    newCollectionForBook?.let { bookId ->
-        CollectionNameDialog(
-            title = R.string.collection_new,
-            confirm = R.string.collection_create,
-            initialName = "",
-            onConfirm = { name ->
-                bookActions.onCreateCollection(bookId, name)
-                newCollectionForBook = null
-            },
-            onDismiss = { newCollectionForBook = null },
-        )
-    }
+    CollectionDialogs(
+        dialog = dialog,
+        onDialogChange = { dialog = it },
+        uiState = uiState,
+        actions = CollectionDialogActions(
+            onSelectFilter = onSelectFilter,
+            onArrangementChange = onArrangementChange,
+            onLayoutChange = onLayoutChange,
+            onCreateCollection = onCreateCollection,
+            onRenameCollection = onRenameCollection,
+            onDeleteCollection = onDeleteCollection,
+        ),
+    )
+    SelectionDialogs(selectionDialog, onDialogChange = { selectionDialog = it }, uiState, selectionActions)
+    BookDialogs(
+        uiState = uiState,
+        bookCollections = bookCollections,
+        newCollectionForBook = newCollectionForBook,
+        onNewCollectionForBookChange = { newCollectionForBook = it },
+        deleteBookId = deleteBookId,
+        onDeleteBookIdChange = { deleteBookId = it },
+        actions = bookActions,
+    )
     if (showAddBookSheet) {
         AddBookSheet(
             onFromFile = {
@@ -364,129 +201,20 @@ fun LibraryContent(
             onDismiss = { showAddBookSheet = false },
         )
     }
-
-    when (selectionDialog) {
-        SelectionDialog.NONE -> Unit
-        SelectionDialog.COLLECTION -> AddSelectionToCollectionSheet(
-            collections = uiState.collections,
-            onFavorites = {
-                selectionActions.onAddToFavorites()
-                selectionDialog = SelectionDialog.NONE
-            },
-            onCollection = { collectionId ->
-                selectionActions.onAddToCollection(collectionId)
-                selectionDialog = SelectionDialog.NONE
-            },
-            onNewCollection = { selectionDialog = SelectionDialog.NEW_COLLECTION },
-            onDismiss = { selectionDialog = SelectionDialog.NONE },
-        )
-        SelectionDialog.NEW_COLLECTION -> CollectionNameDialog(
-            title = R.string.collection_new,
-            confirm = R.string.collection_create,
-            initialName = "",
-            onConfirm = { name ->
-                selectionActions.onCreateCollection(name)
-                selectionDialog = SelectionDialog.NONE
-            },
-            onDismiss = { selectionDialog = SelectionDialog.NONE },
-        )
-        SelectionDialog.DELETE -> DeleteBooksDialog(
-            count = uiState.selectedIds.size,
-            onConfirm = {
-                selectionActions.onDelete()
-                selectionDialog = SelectionDialog.NONE
-            },
-            onDismiss = { selectionDialog = SelectionDialog.NONE },
-        )
-    }
-
-    deleteBookId?.let { bookId ->
-        DeleteBookDialog(
-            title = uiState.books.find { it.id == bookId }?.title.orEmpty(),
-            onConfirm = {
-                bookActions.onDelete(bookId)
-                deleteBookId = null
-            },
-            onDismiss = { deleteBookId = null },
-        )
-    }
-
-    when (dialog) {
-        LibraryDialog.NONE -> Unit
-        LibraryDialog.ARRANGE -> ArrangeSheet(
-            arrangement = uiState.arrangement,
-            layout = uiState.layout,
-            onChange = onArrangementChange,
-            onLayoutChange = onLayoutChange,
-            onDismiss = { dialog = LibraryDialog.NONE },
-        )
-        LibraryDialog.PICKER -> CollectionPickerSheet(
-            selected = uiState.filter,
-            collections = uiState.collections,
-            onSelect = { filter ->
-                onSelectFilter(filter)
-                dialog = LibraryDialog.NONE
-            },
-            onNewCollection = { dialog = LibraryDialog.CREATE },
-            onDismiss = { dialog = LibraryDialog.NONE },
-        )
-        LibraryDialog.CREATE -> CollectionNameDialog(
-            title = R.string.collection_new,
-            confirm = R.string.collection_create,
-            initialName = "",
-            onConfirm = { name ->
-                onCreateCollection(name)
-                dialog = LibraryDialog.NONE
-            },
-            onDismiss = { dialog = LibraryDialog.NONE },
-        )
-        LibraryDialog.RENAME -> CollectionNameDialog(
-            title = R.string.collection_rename,
-            confirm = R.string.collection_rename_confirm,
-            initialName = uiState.currentCollection?.name.orEmpty(),
-            onConfirm = { name ->
-                onRenameCollection(name)
-                dialog = LibraryDialog.NONE
-            },
-            onDismiss = { dialog = LibraryDialog.NONE },
-        )
-        LibraryDialog.DELETE -> DeleteCollectionDialog(
-            name = uiState.currentCollection?.name.orEmpty(),
-            onConfirm = {
-                onDeleteCollection()
-                dialog = LibraryDialog.NONE
-            },
-            onDismiss = { dialog = LibraryDialog.NONE },
-        )
-    }
 }
 
-/** Per-book actions from the cover menu and its "Colección" sheet. */
-class LibraryBookActions(
-    val onShowCollections: (bookId: Long) -> Unit = {},
-    val onHideCollections: () -> Unit = {},
-    val onFavoriteChange: (bookId: Long, isFavorite: Boolean) -> Unit = { _, _ -> },
-    val onCollectionChange: (bookId: Long, collectionId: Long, isIncluded: Boolean) -> Unit = { _, _, _ -> },
-    val onCreateCollection: (bookId: Long, name: String) -> Unit = { _, _ -> },
-    val onMarkAsRead: (bookId: Long) -> Unit = {},
-    val onDelete: (bookId: Long) -> Unit = {},
-)
-
 @Composable
-private fun DeleteBookDialog(title: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.delete_book_title)) },
-        text = { Text(stringResource(R.string.delete_book_message, title)) },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
-        },
-    )
+private fun AddBookButton(onClick: () -> Unit) {
+    // Content overload on purpose: the text/icon overload hides the label from screen readers.
+    ExtendedFloatingActionButton(
+        onClick = onClick,
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+    ) {
+        Icon(painterResource(R.drawable.ic_plus_circle), contentDescription = null)
+        Spacer(Modifier.width(12.dp))
+        Text(stringResource(R.string.library_add_book))
+    }
 }
 
 // Some providers report EPUB and CBZ files as generic binary data, so that type is accepted too;
@@ -499,221 +227,6 @@ private val BOOK_MIME_TYPES = arrayOf(
     "text/plain",
     "application/octet-stream",
 )
-
-/** Sheet or dialog opened from the selection bar. */
-private enum class SelectionDialog { NONE, COLLECTION, NEW_COLLECTION, DELETE }
-
-/** Which sheet or dialog is open (only one at a time). */
-private enum class LibraryDialog { NONE, PICKER, CREATE, RENAME, DELETE, ARRANGE }
-
-@Composable
-private fun CollectionMenu(onRename: () -> Unit, onDelete: () -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        IconButton(onClick = { expanded = true }) {
-            Icon(
-                painter = painterResource(R.drawable.ic_dots_three_vertical),
-                contentDescription = stringResource(R.string.more_options),
-            )
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.collection_rename)) },
-                onClick = {
-                    expanded = false
-                    onRename()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.collection_delete), color = MaterialTheme.colorScheme.error) },
-                onClick = {
-                    expanded = false
-                    onDelete()
-                },
-            )
-        }
-    }
-}
-
-/**
- * Shelves filled with [itemCount] items, [columns] per shelf. Extra empty shelves are added
- * so the wall is always covered with shelves down to the bottom of the screen.
- */
-@Composable
-private fun Bookcase(
-    contentPadding: PaddingValues,
-    columns: Int,
-    itemCount: Int,
-    bottomSpace: Dp = 0.dp,
-    slot: @Composable (index: Int, width: Dp) -> Unit,
-) {
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        val bookWidth = shelfBookWidth(maxWidth, columns)
-        val rowHeight = shelfRowHeight(bookWidth)
-        val shelvesWithBooks = ceil(itemCount / columns.toFloat()).toInt()
-        val shelvesToFillScreen = ceil(maxHeight / rowHeight).toInt()
-        LazyColumn(
-            contentPadding = PaddingValues(
-                top = contentPadding.calculateTopPadding(),
-                bottom = contentPadding.calculateBottomPadding() + bottomSpace,
-            ),
-        ) {
-            items(count = maxOf(shelvesWithBooks, shelvesToFillScreen)) { shelf ->
-                val first = shelf * columns
-                Shelf(columns = columns, bookWidth = bookWidth, itemCount = (itemCount - first).coerceAtLeast(0)) { i, width ->
-                    slot(first + i, width)
-                }
-            }
-        }
-    }
-}
-
-/** The user's books per row, capped at 2 when the system font is scaled up a lot so titles stay readable. */
-@Composable
-private fun booksPerRow(chosen: Int): Int = if (LocalDensity.current.fontScale > LARGE_FONT_SCALE) minOf(chosen, 2) else chosen
-
-/** Texts and action of an empty library, collection, search or filter result. */
-private class EmptyState(
-    val title: String,
-    val message: String,
-    val action: String,
-    @DrawableRes val actionIcon: Int,
-    val onAction: () -> Unit,
-    @DrawableRes val icon: Int = R.drawable.ic_books,
-)
-
-/** Null when there are books to show. */
-@Composable
-private fun emptyState(
-    uiState: LibraryUiState,
-    onAddBook: () -> Unit,
-    onSearch: (String) -> Unit,
-    onArrangementChange: (LibraryArrangement) -> Unit,
-    onSelectFilter: (LibraryFilter) -> Unit,
-): EmptyState? = when {
-    uiState.libraryIsEmpty -> EmptyState(
-        title = stringResource(R.string.library_empty_title),
-        message = stringResource(R.string.library_empty_message),
-        action = stringResource(R.string.library_add_book),
-        actionIcon = R.drawable.ic_plus_circle,
-        onAction = onAddBook,
-    )
-    uiState.books.isNotEmpty() -> null
-    // The search is cleared first; if the filters still hide everything, this shows again for them.
-    uiState.query.isNotBlank() -> EmptyState(
-        title = stringResource(R.string.library_search_empty_title),
-        message = stringResource(R.string.library_search_empty_message, uiState.query.trim()),
-        action = stringResource(R.string.library_search_clear),
-        actionIcon = R.drawable.ic_x,
-        onAction = { onSearch("") },
-        icon = R.drawable.ic_magnifying_glass,
-    )
-    uiState.arrangement.hasFilters -> EmptyState(
-        title = stringResource(R.string.library_search_empty_title),
-        message = stringResource(R.string.library_filters_empty_message),
-        action = stringResource(R.string.arrange_clear_filters),
-        actionIcon = R.drawable.ic_x,
-        onAction = { onArrangementChange(uiState.arrangement.withoutFilters()) },
-        icon = R.drawable.ic_funnel_simple,
-    )
-    else -> EmptyState(
-        title = stringResource(R.string.collection_empty_title),
-        message = stringResource(
-            if (uiState.currentCollection != null) R.string.collection_empty_message else R.string.collection_smart_empty_message,
-        ),
-        action = stringResource(R.string.collection_show_all),
-        actionIcon = R.drawable.ic_books,
-        onAction = { onSelectFilter(LibraryFilter.Default) },
-    )
-}
-
-@Composable
-private fun PlaceholderCover(width: Dp) {
-    Box(
-        Modifier
-            .width(width)
-            .aspectRatio(2f / 3f)
-            .background(Color.White.copy(alpha = 0.22f), RoundedCornerShape(4.dp)),
-    )
-}
-
-/** Shelf with a dashed "ghost" book (design 6.6), a message and one action. */
-@Composable
-private fun EmptyShelf(contentPadding: PaddingValues, empty: EmptyState) {
-    BoxWithConstraints(
-        Modifier
-            .fillMaxSize()
-            .padding(contentPadding),
-    ) {
-        val bookWidth = shelfBookWidth(maxWidth, columns = 3)
-        Column {
-            Shelf(columns = 3, bookWidth = bookWidth, itemCount = 1) { _, width -> GhostBook(width) }
-            Spacer(Modifier.height(24.dp))
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = empty.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.White,
-                    textAlign = TextAlign.Center,
-                )
-                Text(
-                    text = empty.message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.8f),
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.height(16.dp))
-                PrimaryButton(
-                    text = empty.action,
-                    onClick = empty.onAction,
-                    icon = empty.actionIcon,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        }
-    }
-}
-
-/** Dashed outline of a book: the empty-state placeholder from the design. */
-@Composable
-private fun GhostBook(width: Dp) {
-    val outline = Color.White.copy(alpha = 0.45f)
-    Box(
-        modifier = Modifier
-            .width(width)
-            .aspectRatio(2f / 3f)
-            .drawBehind {
-                drawRoundRect(
-                    color = outline,
-                    cornerRadius = CornerRadius(4.dp.toPx()),
-                    style = Stroke(
-                        width = 1.5.dp.toPx(),
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(6.dp.toPx(), 4.dp.toPx())),
-                    ),
-                )
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_book),
-            contentDescription = null,
-            tint = outline,
-            modifier = Modifier.size(32.dp),
-        )
-    }
-}
-
-private const val PLACEHOLDER_COUNT = 6
-private const val LARGE_FONT_SCALE = 1.3f
-
-// Keeps the last shelf visible above the floating button.
-private val FAB_SPACE = 88.dp
 
 @Preview(showBackground = true)
 @Composable

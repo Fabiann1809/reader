@@ -34,6 +34,7 @@ object AppViewModelProvider {
                 collectionRepository = readerApplication().container.collectionRepository,
                 preferences = readerApplication().container.appPreferences,
                 importQueue = readerApplication().container.importQueue,
+                organizer = readerApplication().container.bookOrganizer,
             )
         }
         initializer {
@@ -45,6 +46,7 @@ object AppViewModelProvider {
                 bookRepository = readerApplication().container.bookRepository,
                 noteRepository = readerApplication().container.noteRepository,
                 collectionRepository = readerApplication().container.collectionRepository,
+                organizer = readerApplication().container.bookOrganizer,
             )
         }
         initializer {

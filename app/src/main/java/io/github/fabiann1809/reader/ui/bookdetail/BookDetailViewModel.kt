@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.ui.bookdetail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.collection.Collection
@@ -37,7 +38,8 @@ class BookDetailViewModel(
     private val bookId: Long,
     private val bookRepository: BookRepository,
     noteRepository: NoteRepository,
-    private val collectionRepository: CollectionRepository,
+    collectionRepository: CollectionRepository,
+    private val organizer: BookOrganizer,
 ) : ViewModel() {
 
     // Notes are already sorted newest first by the query.
@@ -73,38 +75,23 @@ class BookDetailViewModel(
         }
     }
 
-    /** "Mis favoritos" is a default collection backed by the book's favorite flag. */
     fun setFavorite(isFavorite: Boolean) {
-        viewModelScope.launch {
-            val book = bookRepository.getBook(bookId) ?: return@launch
-            bookRepository.updateBook(book.copy(isFavorite = isFavorite))
-        }
+        viewModelScope.launch { organizer.setFavorite(listOf(bookId), isFavorite) }
     }
 
     fun setInCollection(collectionId: Long, isIncluded: Boolean) {
-        viewModelScope.launch {
-            if (isIncluded) {
-                collectionRepository.addBook(bookId, collectionId)
-            } else {
-                collectionRepository.removeBook(bookId, collectionId)
-            }
-        }
+        viewModelScope.launch { organizer.setInCollection(bookId, collectionId, isIncluded) }
     }
 
     /** Creates a collection that already holds this book. */
     fun createCollectionWithBook(name: String) {
-        if (name.isBlank()) return
-        viewModelScope.launch {
-            val collectionId = collectionRepository.createCollection(name)
-            collectionRepository.addBook(bookId, collectionId)
-        }
+        viewModelScope.launch { organizer.createCollectionWith(listOf(bookId), name) }
     }
 
-    /** Deletes the book; its notes are removed by the database cascade. */
+    /** Deletes the book with its notes and files. */
     fun deleteBook() {
         viewModelScope.launch {
-            val book = bookRepository.getBook(bookId) ?: return@launch
-            bookRepository.deleteBook(book)
+            organizer.delete(listOf(bookId))
             _isDeleted.value = true
         }
     }

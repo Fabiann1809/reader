@@ -1,10 +1,11 @@
 package io.github.fabiann1809.reader.ui.bookdetail
 
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookStatus
-import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
+import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.FakeCollectionRepository
 import io.github.fabiann1809.reader.testing.FakeNoteRepository
@@ -38,6 +39,7 @@ class BookDetailViewModelTest {
             bookRepository = bookRepository,
             noteRepository = noteRepository,
             collectionRepository = collectionRepository,
+            organizer = BookOrganizer(bookRepository, collectionRepository),
         )
     }
 

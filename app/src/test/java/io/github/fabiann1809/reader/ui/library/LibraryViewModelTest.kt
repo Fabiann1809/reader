@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.ui.library
 
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookSort
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
@@ -54,7 +55,13 @@ class LibraryViewModelTest {
     private fun TestScope.viewModel(bookRepository: FakeBookRepository = books): LibraryViewModel {
         // Imports run eagerly, as the app's main-thread scope would between two frames.
         val importScope = CoroutineScope(backgroundScope.coroutineContext + UnconfinedTestDispatcher(testScheduler))
-        val viewModel = LibraryViewModel(bookRepository, collections, preferences, ImportQueue(importer, importScope))
+        val viewModel = LibraryViewModel(
+            bookRepository,
+            collections,
+            preferences,
+            ImportQueue(importer, importScope),
+            BookOrganizer(bookRepository, collections),
+        )
         // stateIn(WhileSubscribed) only runs the queries while someone collects.
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         return viewModel
@@ -64,7 +71,8 @@ class LibraryViewModelTest {
 
     @Test
     fun initialStateIsLoading() {
-        assertTrue(LibraryViewModel(books, collections, preferences, ImportQueue(importer, TestScope())).uiState.value.isLoading)
+        assertTrue(LibraryViewModel(books, collections, preferences, ImportQueue(importer, TestScope()), BookOrganizer(books, collections))
+                .uiState.value.isLoading)
     }
 
     @Test

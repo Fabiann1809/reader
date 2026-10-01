@@ -2,14 +2,12 @@ package io.github.fabiann1809.reader.ui.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.book.arrangedBy
 import io.github.fabiann1809.reader.data.book.importing.ImportQueue
 import io.github.fabiann1809.reader.data.book.importing.ImportStatus
-import io.github.fabiann1809.reader.data.book.markedAsRead
-import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.prefs.AppPreferences
@@ -27,37 +25,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class LibraryUiState(
-    val books: List<Book> = emptyList(),
-    val isLoading: Boolean = true,
-    val filter: LibraryFilter = LibraryFilter.Default,
-    /** The selected user collection, when [filter] is a custom one. */
-    val currentCollection: Collection? = null,
-    /** User collections, for the collection picker. */
-    val collections: List<Collection> = emptyList(),
-    /** True when the user has no books at all (not just none in this collection). */
-    val libraryIsEmpty: Boolean = false,
-    /** Search text; [books] only holds the matches when it is not blank. */
-    val query: String = "",
-    /** Shelf order and filters already applied to [books]. */
-    val arrangement: LibraryArrangement = LibraryArrangement(),
-    val layout: LibraryLayout = LibraryLayout(),
-    /** Books checked in selection mode; empty when not selecting. Only ids of shown books. */
-    val selectedIds: Set<Long> = emptySet(),
-) {
-    val isSelecting: Boolean
-        get() = selectedIds.isNotEmpty()
-}
-
-/** The book whose "Colección" sheet is open, with the user collections that already hold it. */
-data class BookCollections(val book: Book, val collectionIds: Set<Long>)
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class LibraryViewModel(
     private val bookRepository: BookRepository,
     private val collectionRepository: CollectionRepository,
     private val preferences: AppPreferences,
     private val importQueue: ImportQueue,
+    private val organizer: BookOrganizer,
 ) : ViewModel() {
 
     // A custom collection that no longer exists (deleted elsewhere) falls back to "Todos".
@@ -146,44 +120,22 @@ class LibraryViewModel(
         collectionsBookId.value = null
     }
 
-    /** "Mis favoritos" is backed by the book's favorite flag, not by a stored collection. */
-    fun setFavorite(bookId: Long, isFavorite: Boolean) = updateBook(bookId) { it.copy(isFavorite = isFavorite) }
+    // One book, from its cover menu.
 
-    fun setInCollection(bookId: Long, collectionId: Long, isIncluded: Boolean) {
-        viewModelScope.launch {
-            if (isIncluded) {
-                collectionRepository.addBook(bookId, collectionId)
-            } else {
-                collectionRepository.removeBook(bookId, collectionId)
-            }
-        }
-    }
+    fun setFavorite(bookId: Long, isFavorite: Boolean) = organize { setFavorite(listOf(bookId), isFavorite) }
+
+    fun setInCollection(bookId: Long, collectionId: Long, isIncluded: Boolean) =
+        organize { setInCollection(bookId, collectionId, isIncluded) }
 
     /** Creates a collection that already holds the book, without leaving the current shelf. */
-    fun createCollectionWithBook(bookId: Long, name: String) {
-        if (name.isBlank()) return
-        viewModelScope.launch {
-            val collectionId = collectionRepository.createCollection(name)
-            collectionRepository.addBook(bookId, collectionId)
-        }
-    }
+    fun createCollectionWithBook(bookId: Long, name: String) = organize { createCollectionWith(listOf(bookId), name) }
 
-    fun markAsRead(bookId: Long) = updateBook(bookId) { it.markedAsRead() }
+    fun markAsRead(bookId: Long) = organize { markAsRead(bookId) }
 
-    /** Its notes and collection links go with it (database cascade). */
-    fun deleteBook(bookId: Long) {
-        viewModelScope.launch {
-            val book = bookRepository.getBook(bookId) ?: return@launch
-            bookRepository.deleteBook(book)
-        }
-    }
+    fun deleteBook(bookId: Long) = organize { delete(listOf(bookId)) }
 
-    // Reads the stored book rather than the UI state so a stale shelf can't overwrite newer data.
-    private fun updateBook(bookId: Long, change: (Book) -> Book) {
-        viewModelScope.launch {
-            val book = bookRepository.getBook(bookId) ?: return@launch
-            bookRepository.updateBook(change(book))
-        }
+    private fun organize(action: suspend BookOrganizer.() -> Unit) {
+        viewModelScope.launch { organizer.action() }
     }
 
     /** Checks or unchecks a book; unchecking the last one ends selection mode. */
@@ -195,33 +147,22 @@ class LibraryViewModel(
         selection.value = emptySet()
     }
 
-    fun addSelectedToFavorites() = forEachSelected { bookId ->
-        bookRepository.getBook(bookId)?.let { bookRepository.updateBook(it.copy(isFavorite = true)) }
-    }
+    fun addSelectedToFavorites() = organizeSelected { setFavorite(it, isFavorite = true) }
 
-    fun addSelectedToCollection(collectionId: Long) = forEachSelected { bookId ->
-        collectionRepository.addBook(bookId, collectionId)
-    }
+    fun addSelectedToCollection(collectionId: Long) = organizeSelected { addToCollection(it, collectionId) }
 
     fun createCollectionWithSelected(name: String) {
         if (name.isBlank()) return
-        val bookIds = uiState.value.selectedIds
-        clearSelection()
-        viewModelScope.launch {
-            val collectionId = collectionRepository.createCollection(name)
-            bookIds.forEach { collectionRepository.addBook(it, collectionId) }
-        }
+        organizeSelected { createCollectionWith(it, name) }
     }
 
-    fun deleteSelected() = forEachSelected { bookId ->
-        bookRepository.getBook(bookId)?.let { bookRepository.deleteBook(it) }
-    }
+    fun deleteSelected() = organizeSelected { delete(it) }
 
-    /** Applies [action] to every selected book, then leaves selection mode. */
-    private fun forEachSelected(action: suspend (Long) -> Unit) {
+    /** Applies [action] to the selected books, then leaves selection mode. */
+    private fun organizeSelected(action: suspend BookOrganizer.(Set<Long>) -> Unit) {
         val bookIds = uiState.value.selectedIds
         clearSelection()
-        viewModelScope.launch { bookIds.forEach { action(it) } }
+        viewModelScope.launch { organizer.action(bookIds) }
     }
 
     fun setLayout(layout: LibraryLayout) {
