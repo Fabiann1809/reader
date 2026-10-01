@@ -10,6 +10,12 @@
     <string name="library_empty_title">Tus estantes están vacíos</string>
     <string name="library_empty_message">Añade tu primer libro y empieza a leer.</string>
     <string name="library_add_book">Añadir libro</string>
+    <string name="add_book_from_file">Desde un archivo</string>
+    <string name="add_book_from_file_hint">EPUB o PDF del teléfono, Google Drive o Dropbox</string>
+    <string name="add_book_physical">Libro físico</string>
+    <string name="add_book_physical_hint">Un libro en papel que registras a mano</string>
+    <string name="import_unsupported">Ese archivo no es un EPUB o PDF que Reader pueda abrir.</string>
+    <string name="import_failed">No se pudo copiar el archivo. Inténtalo de nuevo.</string>
     <string name="library_search">Buscar</string>
     <string name="library_search_hint">Buscar por título o autor</string>
     <string name="library_search_close">Cerrar búsqueda</string>
@@ -45,6 +51,7 @@
     <string name="book_menu_collection">Colección</string>
     <string name="book_menu_mark_read">Marcar como leído</string>
     <string name="book_badge_new">Nuevo</string>
+    <string name="book_untitled">Libro sin título</string>
     <string name="book_menu_select">Seleccionar</string>
     <string name="selection_close">Cancelar selección</string>
     <plurals name="selection_count">

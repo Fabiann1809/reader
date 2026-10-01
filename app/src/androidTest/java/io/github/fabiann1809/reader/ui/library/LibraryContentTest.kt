@@ -3,12 +3,12 @@ package io.github.fabiann1809.reader.ui.library
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
@@ -37,7 +37,7 @@ class LibraryContentTest {
 
     private fun setContent(uiState: LibraryUiState) {
         composeRule.setContent {
-            ReaderTheme { LibraryContent(uiState = uiState, onBookClick = {}, onAddBook = {}) }
+            ReaderTheme { LibraryContent(uiState = uiState, onBookClick = {}, onAddPhysicalBook = {}) }
         }
     }
 
@@ -77,7 +77,7 @@ class LibraryContentTest {
                 LibraryContent(
                     uiState = LibraryUiState(books = listOf(Book(id = 7, title = "Dune", author = "Frank Herbert")), isLoading = false),
                     onBookClick = { openedId = it },
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                 )
             }
         }
@@ -121,7 +121,7 @@ class LibraryContentTest {
                         currentCollection = Collection(id = 1, name = "Trabajo"),
                     ),
                     onBookClick = {},
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                     onSelectFilter = { selected = it },
                 )
             }
@@ -146,7 +146,7 @@ class LibraryContentTest {
                         currentCollection = Collection(id = 1, name = "Trabajo"),
                     ),
                     onBookClick = {},
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                     onRenameCollection = { renamedTo = it },
                     onDeleteCollection = { deleted = true },
                 )
@@ -172,7 +172,7 @@ class LibraryContentTest {
                 LibraryContent(
                     uiState = LibraryUiState(books = listOf(Book(id = 1, title = "Dune", author = "F. Herbert")), isLoading = false),
                     onBookClick = {},
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                     onSearch = { queries += it },
                 )
             }
@@ -193,7 +193,7 @@ class LibraryContentTest {
                 LibraryContent(
                     uiState = LibraryUiState(isLoading = false, query = "zzz"),
                     onBookClick = {},
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                     onSearch = { if (it.isEmpty()) cleared = true },
                 )
             }
@@ -212,7 +212,7 @@ class LibraryContentTest {
                 LibraryContent(
                     uiState = LibraryUiState(books = listOf(Book(id = 1, title = "Dune", author = "F. Herbert")), isLoading = false),
                     onBookClick = {},
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                     onArrangementChange = { changes += it },
                 )
             }
@@ -240,7 +240,7 @@ class LibraryContentTest {
                 LibraryContent(
                     uiState = LibraryUiState(isLoading = false, arrangement = filtered),
                     onBookClick = {},
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                     onArrangementChange = { cleared = it },
                 )
             }
@@ -263,7 +263,7 @@ class LibraryContentTest {
                         layout = LibraryLayout(view = LibraryView.LIST),
                     ),
                     onBookClick = { opened = it },
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                 )
             }
         }
@@ -285,7 +285,7 @@ class LibraryContentTest {
                         layout = LibraryLayout(view = LibraryView.GRID, booksPerRow = 2),
                     ),
                     onBookClick = { opened = it },
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                 )
             }
         }
@@ -306,7 +306,7 @@ class LibraryContentTest {
                 LibraryContent(
                     uiState = LibraryUiState(books = listOf(Book(id = 1, title = "Dune", author = "F. Herbert")), isLoading = false),
                     onBookClick = {},
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                     onLayoutChange = { layouts += it },
                 )
             }
@@ -325,7 +325,7 @@ class LibraryContentTest {
                 LibraryContent(
                     uiState = LibraryUiState(books = listOf(book), isLoading = false),
                     onBookClick = onBookClick,
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                     bookActions = actions,
                 )
             }
@@ -397,7 +397,7 @@ class LibraryContentTest {
                 LibraryContent(
                     uiState = LibraryUiState(books = listOf(dune, cosmos), isLoading = false, selectedIds = setOf(1, 2)),
                     onBookClick = { opened = true },
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                     selectionActions = LibrarySelectionActions(onToggle = { toggled += it }, onDelete = { deleted = true }),
                 )
             }
@@ -428,7 +428,7 @@ class LibraryContentTest {
                 LibraryContent(
                     uiState = LibraryUiState(books = listOf(book), isLoading = false),
                     onBookClick = {},
-                    onAddBook = {},
+                    onAddPhysicalBook = {},
                     selectionActions = LibrarySelectionActions(onToggle = { selected = it }),
                 )
             }
@@ -439,4 +439,49 @@ class LibraryContentTest {
 
         assertEquals(5L, selected)
     }
+
+    @Test
+    fun addBookOffersAFileOrAPhysicalBook() {
+        var importedFile = false
+        var addedPhysical = false
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(isLoading = false, libraryIsEmpty = true),
+                    onBookClick = {},
+                    onAddPhysicalBook = { addedPhysical = true },
+                    onImportFile = { importedFile = true },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(string(R.string.library_add_book)).performClick()
+        composeRule.onNodeWithText(string(R.string.add_book_from_file)).performClick()
+        assertTrue(importedFile)
+
+        composeRule.onNodeWithText(string(R.string.library_add_book)).performClick()
+        composeRule.onNodeWithText(string(R.string.add_book_physical)).performClick()
+        assertTrue(addedPhysical)
+    }
+
+    @Test
+    fun importErrorIsShownOnceAndDismissed() {
+        var dismissed = false
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(isLoading = false, libraryIsEmpty = true),
+                    onBookClick = {},
+                    onAddPhysicalBook = {},
+                    importStatus = ImportStatus.Error(isUnsupportedFile = true),
+                    onDismissImportError = { dismissed = true },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(string(R.string.import_unsupported)).assertIsDisplayed()
+        composeRule.waitUntil(SNACKBAR_TIMEOUT_MILLIS) { dismissed }
+    }
 }
+
+private const val SNACKBAR_TIMEOUT_MILLIS = 10_000L

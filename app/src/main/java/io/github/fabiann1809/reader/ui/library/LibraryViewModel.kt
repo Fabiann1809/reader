@@ -6,6 +6,8 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.book.arrangedBy
+import io.github.fabiann1809.reader.data.book.importing.BookImporter
+import io.github.fabiann1809.reader.data.book.importing.ImportResult
 import io.github.fabiann1809.reader.data.book.markedAsRead
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
@@ -16,6 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -47,6 +50,16 @@ data class LibraryUiState(
         get() = selectedIds.isNotEmpty()
 }
 
+/** Progress of a file import started from "Añadir libro". */
+sealed interface ImportStatus {
+    data object Idle : ImportStatus
+
+    data object Importing : ImportStatus
+
+    /** Shown once, then cleared with [LibraryViewModel.dismissImportError]. */
+    data class Error(val isUnsupportedFile: Boolean) : ImportStatus
+}
+
 /** The book whose "Colección" sheet is open, with the user collections that already hold it. */
 data class BookCollections(val book: Book, val collectionIds: Set<Long>)
 
@@ -55,6 +68,7 @@ class LibraryViewModel(
     private val bookRepository: BookRepository,
     private val collectionRepository: CollectionRepository,
     private val preferences: AppPreferences,
+    private val bookImporter: BookImporter,
 ) : ViewModel() {
 
     // A custom collection that no longer exists (deleted elsewhere) falls back to "Todos".
@@ -111,6 +125,25 @@ class LibraryViewModel(
 
     fun setArrangement(arrangement: LibraryArrangement) {
         viewModelScope.launch { preferences.setLibraryArrangement(arrangement) }
+    }
+
+    private val _importStatus = MutableStateFlow<ImportStatus>(ImportStatus.Idle)
+    val importStatus: StateFlow<ImportStatus> = _importStatus.asStateFlow()
+
+    /** [uri] is the document picked in the system file picker. The new book appears on the shelf by itself. */
+    fun importBook(uri: String) {
+        _importStatus.value = ImportStatus.Importing
+        viewModelScope.launch {
+            _importStatus.value = when (bookImporter.import(uri)) {
+                is ImportResult.Imported -> ImportStatus.Idle
+                ImportResult.Unsupported -> ImportStatus.Error(isUnsupportedFile = true)
+                ImportResult.Failed -> ImportStatus.Error(isUnsupportedFile = false)
+            }
+        }
+    }
+
+    fun dismissImportError() {
+        _importStatus.value = ImportStatus.Idle
     }
 
     private val collectionsBookId = MutableStateFlow<Long?>(null)

@@ -1,5 +1,7 @@
 package io.github.fabiann1809.reader.ui.library
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,12 +26,16 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
@@ -72,10 +79,15 @@ import kotlin.math.ceil
 @Composable
 fun LibraryScreen(
     onBookClick: (Long) -> Unit,
-    onAddBook: () -> Unit,
+    onAddPhysicalBook: () -> Unit,
     viewModel: LibraryViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val importStatus by viewModel.importStatus.collectAsStateWithLifecycle()
+    // The system picker (SAF) shows local files plus providers like Google Drive and Dropbox.
+    val pickBookFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) viewModel.importBook(uri.toString())
+    }
     val bookCollections by viewModel.bookCollections.collectAsStateWithLifecycle()
     LightStatusBarIcons()
     LibraryContent(
@@ -99,7 +111,10 @@ fun LibraryScreen(
             onDelete = viewModel::deleteSelected,
         ),
         onBookClick = onBookClick,
-        onAddBook = onAddBook,
+        onAddPhysicalBook = onAddPhysicalBook,
+        onImportFile = { pickBookFile.launch(BOOK_MIME_TYPES) },
+        importStatus = importStatus,
+        onDismissImportError = viewModel::dismissImportError,
         onSelectFilter = viewModel::selectFilter,
         onSearch = viewModel::search,
         onArrangementChange = viewModel::setArrangement,
@@ -114,8 +129,11 @@ fun LibraryScreen(
 fun LibraryContent(
     uiState: LibraryUiState,
     onBookClick: (Long) -> Unit,
-    onAddBook: () -> Unit,
+    onAddPhysicalBook: () -> Unit,
     modifier: Modifier = Modifier,
+    onImportFile: () -> Unit = {},
+    importStatus: ImportStatus = ImportStatus.Idle,
+    onDismissImportError: () -> Unit = {},
     onSelectFilter: (LibraryFilter) -> Unit = {},
     onSearch: (String) -> Unit = {},
     onArrangementChange: (LibraryArrangement) -> Unit = {},
@@ -130,6 +148,17 @@ fun LibraryContent(
     val showFab = !uiState.isLoading && uiState.books.isNotEmpty() && !uiState.isSelecting
     var dialog by rememberSaveable { mutableStateOf(LibraryDialog.NONE) }
     var isSearchOpen by rememberSaveable { mutableStateOf(false) }
+    var showAddBookSheet by rememberSaveable { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val importErrorMessage = (importStatus as? ImportStatus.Error)?.let {
+        stringResource(if (it.isUnsupportedFile) R.string.import_unsupported else R.string.import_failed)
+    }
+    LaunchedEffect(importErrorMessage) {
+        if (importErrorMessage != null) {
+            snackbarHostState.showSnackbar(importErrorMessage)
+            onDismissImportError()
+        }
+    }
     // Cover menu: the book whose menu is open, and the one waiting for delete confirmation.
     var menuBookId by rememberSaveable { mutableStateOf<Long?>(null) }
     var deleteBookId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -224,7 +253,7 @@ fun LibraryContent(
             if (showFab) {
                 // Content overload on purpose: the text/icon overload hides the label from screen readers.
                 ExtendedFloatingActionButton(
-                    onClick = onAddBook,
+                    onClick = { showAddBookSheet = true },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                 ) {
@@ -234,8 +263,18 @@ fun LibraryContent(
                 }
             }
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        val empty = emptyState(uiState, onAddBook, onSearch, onArrangementChange, onSelectFilter)
+        val empty = emptyState(uiState, { showAddBookSheet = true }, onSearch, onArrangementChange, onSelectFilter)
+        if (importStatus == ImportStatus.Importing) {
+            // Under the bar, over the shelves: the new book appears by itself when done.
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = innerPadding.calculateTopPadding())
+                    .zIndex(1f),
+            )
+        }
         when {
             uiState.isLoading && isShelves -> Bookcase(innerPadding, columns, itemCount = PLACEHOLDER_COUNT) { _, width ->
                 PlaceholderCover(width)
@@ -307,6 +346,20 @@ fun LibraryContent(
             onDismiss = { newCollectionForBook = null },
         )
     }
+    if (showAddBookSheet) {
+        AddBookSheet(
+            onFromFile = {
+                showAddBookSheet = false
+                onImportFile()
+            },
+            onPhysicalBook = {
+                showAddBookSheet = false
+                onAddPhysicalBook()
+            },
+            onDismiss = { showAddBookSheet = false },
+        )
+    }
+
     when (selectionDialog) {
         SelectionDialog.NONE -> Unit
         SelectionDialog.COLLECTION -> AddSelectionToCollectionSheet(
@@ -430,6 +483,10 @@ private fun DeleteBookDialog(title: String, onConfirm: () -> Unit, onDismiss: ()
         },
     )
 }
+
+// Some providers report EPUB files as generic binary data, so that type is accepted too;
+// anything that is not really an EPUB or PDF is rejected after reading it.
+private val BOOK_MIME_TYPES = arrayOf("application/epub+zip", "application/pdf", "application/octet-stream")
 
 /** Sheet or dialog opened from the selection bar. */
 private enum class SelectionDialog { NONE, COLLECTION, NEW_COLLECTION, DELETE }
@@ -666,7 +723,7 @@ private fun LibraryWithBooksPreview() {
                 isLoading = false,
             ),
             onBookClick = {},
-            onAddBook = {},
+            onAddPhysicalBook = {},
         )
     }
 }
@@ -678,7 +735,7 @@ private fun EmptyLibraryPreview() {
         LibraryContent(
             uiState = LibraryUiState(isLoading = false),
             onBookClick = {},
-            onAddBook = {},
+            onAddPhysicalBook = {},
         )
     }
 }

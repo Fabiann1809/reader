@@ -21,7 +21,7 @@ data class Book(
     val kind: BookKind = BookKind.PHYSICAL,
     // Null for physical books.
     val format: BookFormat? = null,
-    // Copy of the book file in the app's internal storage; null for physical books.
+    // Copy of the book file in internal storage, relative to filesDir (see BookFiles); null for physical books.
     val filePath: String? = null,
     // Cover image in internal storage; null shows a generated cover.
     val coverPath: String? = null,

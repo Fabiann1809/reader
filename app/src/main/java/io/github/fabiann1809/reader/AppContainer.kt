@@ -8,8 +8,12 @@ import io.github.fabiann1809.reader.ai.gemini.GeminiProvider
 import io.github.fabiann1809.reader.data.AppDatabase
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
 import io.github.fabiann1809.reader.data.apikey.KeystoreApiKeyStore
+import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
+import io.github.fabiann1809.reader.data.book.importing.BookImporter
+import io.github.fabiann1809.reader.data.book.importing.DefaultBookImporter
+import io.github.fabiann1809.reader.data.book.importing.ReadiumBookFileReader
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
 import io.github.fabiann1809.reader.data.collection.DefaultCollectionRepository
 import io.github.fabiann1809.reader.data.note.DefaultNoteRepository
@@ -30,7 +34,19 @@ class AppContainer(context: Context) {
 
     private val database: AppDatabase by lazy { AppDatabase.create(appContext) }
 
-    val bookRepository: BookRepository by lazy { DefaultBookRepository(database.bookDao()) }
+    private val bookFiles: BookFiles by lazy { BookFiles(appContext.filesDir) }
+
+    val bookRepository: BookRepository by lazy { DefaultBookRepository(database.bookDao(), bookFiles) }
+
+    val bookImporter: BookImporter by lazy {
+        DefaultBookImporter(
+            contentResolver = appContext.contentResolver,
+            bookFiles = bookFiles,
+            fileReader = ReadiumBookFileReader(appContext),
+            bookRepository = bookRepository,
+            untitled = appContext.getString(R.string.book_untitled),
+        )
+    }
 
     val noteRepository: NoteRepository by lazy { DefaultNoteRepository(database.noteDao()) }
 

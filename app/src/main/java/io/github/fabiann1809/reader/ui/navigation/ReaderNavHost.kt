@@ -111,7 +111,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
         composable<LibraryRoute> {
             LibraryScreen(
                 onBookClick = { bookId -> navController.navigate(BookDetailRoute(bookId)) },
-                onAddBook = { navController.navigate(AddBookRoute) },
+                onAddPhysicalBook = { navController.navigate(AddBookRoute) },
             )
         }
         composable<ReviewRoute> {

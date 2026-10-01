@@ -4,6 +4,8 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookSort
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
+import io.github.fabiann1809.reader.data.book.importing.BookImporter
+import io.github.fabiann1809.reader.data.book.importing.ImportResult
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
@@ -39,8 +41,14 @@ class LibraryViewModelTest {
     private val collections = FakeCollectionRepository(books)
     private val preferences = FakeAppPreferences()
 
+    // Pretends to import: adds a digital book unless told to fail.
+    private var importOutcome: ImportResult? = null
+    private val importer = BookImporter { uri ->
+        importOutcome ?: ImportResult.Imported(books.addBook(Book(title = uri.substringAfterLast('/'), author = "")))
+    }
+
     private fun TestScope.viewModel(bookRepository: FakeBookRepository = books): LibraryViewModel {
-        val viewModel = LibraryViewModel(bookRepository, collections, preferences)
+        val viewModel = LibraryViewModel(bookRepository, collections, preferences, importer)
         // stateIn(WhileSubscribed) only runs the queries while someone collects.
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         return viewModel
@@ -50,7 +58,7 @@ class LibraryViewModelTest {
 
     @Test
     fun initialStateIsLoading() {
-        assertTrue(LibraryViewModel(books, collections, preferences).uiState.value.isLoading)
+        assertTrue(LibraryViewModel(books, collections, preferences, importer).uiState.value.isLoading)
     }
 
     @Test
@@ -292,5 +300,32 @@ class LibraryViewModelTest {
         assertEquals("Clásicos", created.name)
         assertEquals(setOf(1L, 2L), collections.observeBooks(LibraryFilter.Custom(created.id)).first().map { it.id }.toSet())
         assertFalse(viewModel.uiState.value.isSelecting)
+    }
+
+    @Test
+    fun importedBookAppearsOnTheShelf() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.importBook("content://picker/Neuromante")
+
+        assertEquals(ImportStatus.Idle, viewModel.importStatus.value)
+        assertTrue("Neuromante" in viewModel.titles())
+    }
+
+    @Test
+    fun importErrorsAreShownUntilDismissed() = runTest {
+        val viewModel = viewModel()
+
+        importOutcome = ImportResult.Unsupported
+        viewModel.importBook("content://picker/foto.jpg")
+        assertEquals(ImportStatus.Error(isUnsupportedFile = true), viewModel.importStatus.value)
+
+        importOutcome = ImportResult.Failed
+        viewModel.importBook("content://picker/roto.epub")
+        assertEquals(ImportStatus.Error(isUnsupportedFile = false), viewModel.importStatus.value)
+
+        viewModel.dismissImportError()
+        assertEquals(ImportStatus.Idle, viewModel.importStatus.value)
+        assertEquals(listOf("Cosmos", "Dune"), viewModel.titles())
     }
 }

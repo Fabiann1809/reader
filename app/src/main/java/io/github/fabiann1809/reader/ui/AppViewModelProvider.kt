@@ -33,6 +33,7 @@ object AppViewModelProvider {
                 bookRepository = readerApplication().container.bookRepository,
                 collectionRepository = readerApplication().container.collectionRepository,
                 preferences = readerApplication().container.appPreferences,
+                bookImporter = readerApplication().container.bookImporter,
             )
         }
         initializer {

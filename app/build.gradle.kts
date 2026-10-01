@@ -37,6 +37,8 @@ android {
     }
 
     compileOptions {
+        // Readium uses Java library APIs that older Android versions only get through desugaring.
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -70,6 +72,11 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.mlkit.text.recognition)
+
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+    implementation(libs.readium.shared)
+    implementation(libs.readium.streamer)
+    implementation(libs.readium.adapter.pdfium.document)
 
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
