@@ -74,6 +74,7 @@ fun LibraryScreen(
         onBookClick = onBookClick,
         onAddBook = onAddBook,
         onSelectFilter = viewModel::selectFilter,
+        onSearch = viewModel::search,
         onCreateCollection = viewModel::createCollection,
         onRenameCollection = viewModel::renameCurrentCollection,
         onDeleteCollection = viewModel::deleteCurrentCollection,
@@ -87,38 +88,59 @@ fun LibraryContent(
     onAddBook: () -> Unit,
     modifier: Modifier = Modifier,
     onSelectFilter: (LibraryFilter) -> Unit = {},
+    onSearch: (String) -> Unit = {},
     onCreateCollection: (String) -> Unit = {},
     onRenameCollection: (String) -> Unit = {},
     onDeleteCollection: () -> Unit = {},
 ) {
     val showFab = !uiState.isLoading && uiState.books.isNotEmpty()
     var dialog by rememberSaveable { mutableStateOf(CollectionDialog.NONE) }
+    var isSearchOpen by rememberSaveable { mutableStateOf(false) }
     val title = uiState.currentCollection?.name
         ?: stringResource((uiState.filter as? LibraryFilter.Smart)?.collection?.nameRes() ?: R.string.collection_all)
     Scaffold(
         modifier = modifier.woodWall(),
         containerColor = Color.Transparent,
         topBar = {
-            // The library bar stays forest green in both themes: it is the app's identity.
-            ReaderTopAppBar(
-                title = title,
-                onTitleClick = { dialog = CollectionDialog.PICKER },
-                onTitleClickLabel = stringResource(R.string.collection_change),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Primary40,
-                    titleContentColor = Color.White,
-                    actionIconContentColor = Color.White,
-                ),
-                actions = {
-                    // Only collections created by the user can be renamed or deleted.
-                    if (uiState.currentCollection != null) {
-                        CollectionMenu(
-                            onRename = { dialog = CollectionDialog.RENAME },
-                            onDelete = { dialog = CollectionDialog.DELETE },
-                        )
-                    }
-                },
-            )
+            if (isSearchOpen) {
+                LibrarySearchBar(
+                    query = uiState.query,
+                    onQueryChange = onSearch,
+                    onClose = {
+                        isSearchOpen = false
+                        onSearch("")
+                    },
+                )
+            } else {
+                // The library bar stays forest green in both themes: it is the app's identity.
+                ReaderTopAppBar(
+                    title = title,
+                    onTitleClick = { dialog = CollectionDialog.PICKER },
+                    onTitleClickLabel = stringResource(R.string.collection_change),
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Primary40,
+                        titleContentColor = Color.White,
+                        actionIconContentColor = Color.White,
+                    ),
+                    actions = {
+                        if (!uiState.libraryIsEmpty) {
+                            IconButton(onClick = { isSearchOpen = true }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_magnifying_glass),
+                                    contentDescription = stringResource(R.string.library_search),
+                                )
+                            }
+                        }
+                        // Only collections created by the user can be renamed or deleted.
+                        if (uiState.currentCollection != null) {
+                            CollectionMenu(
+                                onRename = { dialog = CollectionDialog.RENAME },
+                                onDelete = { dialog = CollectionDialog.DELETE },
+                            )
+                        }
+                    },
+                )
+            }
         },
         floatingActionButton = {
             if (showFab) {
@@ -144,6 +166,14 @@ fun LibraryContent(
                 action = stringResource(R.string.library_add_book),
                 actionIcon = R.drawable.ic_plus_circle,
                 onAction = onAddBook,
+            )
+            uiState.books.isEmpty() && uiState.query.isNotBlank() -> EmptyShelf(
+                contentPadding = innerPadding,
+                title = stringResource(R.string.library_search_empty_title),
+                message = stringResource(R.string.library_search_empty_message, uiState.query.trim()),
+                action = stringResource(R.string.library_search_clear),
+                actionIcon = R.drawable.ic_x,
+                onAction = { onSearch("") },
             )
             uiState.books.isEmpty() -> EmptyShelf(
                 contentPadding = innerPadding,

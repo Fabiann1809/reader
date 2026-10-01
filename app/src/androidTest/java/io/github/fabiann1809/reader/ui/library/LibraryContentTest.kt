@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
@@ -151,5 +152,45 @@ class LibraryContentTest {
         composeRule.onNodeWithText(string(R.string.collection_delete)).performClick()
         composeRule.onNodeWithText(string(R.string.action_delete)).performClick()
         assertTrue(deleted)
+    }
+
+    @Test
+    fun searchSendsTheTextAndClosingClearsIt() {
+        val queries = mutableListOf<String>()
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(books = listOf(Book(id = 1, title = "Dune", author = "F. Herbert")), isLoading = false),
+                    onBookClick = {},
+                    onAddBook = {},
+                    onSearch = { queries += it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription(string(R.string.library_search)).performClick()
+        composeRule.onNodeWithText(string(R.string.library_search_hint)).performTextInput("dune")
+        composeRule.onNodeWithContentDescription(string(R.string.library_search_close)).performClick()
+
+        assertEquals(listOf("dune", ""), queries)
+    }
+
+    @Test
+    fun searchWithoutMatchesOffersToClearIt() {
+        var cleared = false
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(isLoading = false, query = "zzz"),
+                    onBookClick = {},
+                    onAddBook = {},
+                    onSearch = { if (it.isEmpty()) cleared = true },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(string(R.string.library_search_empty_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.library_search_clear)).performClick()
+        assertTrue(cleared)
     }
 }

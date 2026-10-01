@@ -9,6 +9,7 @@ import io.github.fabiann1809.reader.data.collection.CollectionRepository
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.prefs.AppPreferences
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -29,6 +30,8 @@ data class LibraryUiState(
     val collections: List<Collection> = emptyList(),
     /** True when the user has no books at all (not just none in this collection). */
     val libraryIsEmpty: Boolean = false,
+    /** Search text; [books] only holds the matches when it is not blank. */
+    val query: String = "",
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -48,20 +51,25 @@ class LibraryViewModel(
         }
     }
 
+    // Not persisted: a search only lasts while the library is open.
+    private val query = MutableStateFlow("")
+
     val uiState: StateFlow<LibraryUiState> = combine(
         filter.flatMapLatest { (filter, collection) ->
             collectionRepository.observeBooks(filter).map { books -> Triple(filter, collection, books) }
         },
         collectionRepository.observeCollections(),
         bookRepository.observeBooks().map { it.isEmpty() },
-    ) { (filter, collection, books), collections, libraryIsEmpty ->
+        query,
+    ) { (filter, collection, books), collections, libraryIsEmpty, query ->
         LibraryUiState(
-            books = books,
+            books = books.filter { it.matchesSearch(query) },
             isLoading = false,
             filter = filter,
             currentCollection = collection,
             collections = collections,
             libraryIsEmpty = libraryIsEmpty,
+            query = query,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -69,6 +77,11 @@ class LibraryViewModel(
         started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
         initialValue = LibraryUiState(),
     )
+
+    /** Filters the shown collection by title and author as the user types. */
+    fun search(text: String) {
+        query.value = text
+    }
 
     fun selectFilter(filter: LibraryFilter) {
         viewModelScope.launch { preferences.setLibraryFilter(filter) }

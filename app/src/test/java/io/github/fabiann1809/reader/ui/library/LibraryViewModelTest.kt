@@ -142,4 +142,22 @@ class LibraryViewModelTest {
 
         assertEquals(listOf("Nuevo", "Cosmos", "Dune"), viewModel.titles())
     }
+
+    @Test
+    fun searchFiltersByTitleOrAuthorWithinTheCollection() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.search("sagan")
+        assertEquals(listOf("Cosmos"), viewModel.titles())
+
+        viewModel.search("DUN")
+        assertEquals(listOf("Dune"), viewModel.titles())
+
+        viewModel.selectFilter(LibraryFilter.Smart(SmartCollection.FAVORITES))
+        assertEquals(emptyList<String>(), viewModel.titles())
+        assertFalse(viewModel.uiState.value.libraryIsEmpty)
+
+        viewModel.search("")
+        assertEquals(listOf("Cosmos"), viewModel.titles())
+    }
 }

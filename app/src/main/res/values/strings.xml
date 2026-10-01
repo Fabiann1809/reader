@@ -10,6 +10,12 @@
     <string name="library_empty_title">Tus estantes están vacíos</string>
     <string name="library_empty_message">Añade tu primer libro y empieza a leer.</string>
     <string name="library_add_book">Añadir libro</string>
+    <string name="library_search">Buscar</string>
+    <string name="library_search_hint">Buscar por título o autor</string>
+    <string name="library_search_close">Cerrar búsqueda</string>
+    <string name="library_search_clear">Borrar búsqueda</string>
+    <string name="library_search_empty_title">Sin resultados</string>
+    <string name="library_search_empty_message">Ningún libro coincide con «%1$s».</string>
     <string name="book_cover_description">%1$s, de %2$s</string>
     <string name="book_cover_description_progress">%1$s, de %2$s, %3$d %% leído</string>
 
