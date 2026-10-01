@@ -10,13 +10,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import io.github.fabiann1809.reader.ui.AppStartViewModel
+import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.addbook.AddBookScreen
 import io.github.fabiann1809.reader.ui.bookdetail.BookDetailScreen
 import io.github.fabiann1809.reader.ui.capture.CaptureScreen
@@ -29,14 +32,24 @@ import io.github.fabiann1809.reader.ui.more.MoreEntry
 import io.github.fabiann1809.reader.ui.more.MoreScreen
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorScreen
 import io.github.fabiann1809.reader.ui.notes.AllNotesScreen
+import io.github.fabiann1809.reader.ui.onboarding.OnboardingScreen
 import io.github.fabiann1809.reader.ui.privacy.PrivacyScreen
 import io.github.fabiann1809.reader.ui.progress.ProgressScreen
 import io.github.fabiann1809.reader.ui.review.ReviewScreen
 import io.github.fabiann1809.reader.ui.settings.SettingsScreen
 
+/** App root: waits for the first-screen decision (onboarding or library), then shows the navigation. */
+@Composable
+fun ReaderApp(viewModel: AppStartViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
+    val startDestination by viewModel.startDestination.collectAsStateWithLifecycle()
+    // Reading the flag takes a few milliseconds; the window background shows meanwhile.
+    startDestination?.let { ReaderNavHost(startDestination = it) }
+}
+
 @Composable
 fun ReaderNavHost(
     modifier: Modifier = Modifier,
+    startDestination: Any = LibraryRoute,
     navController: NavHostController = rememberNavController(),
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -55,6 +68,7 @@ fun ReaderNavHost(
     ) { innerPadding ->
         ReaderNavGraph(
             navController = navController,
+            startDestination = startDestination,
             modifier = Modifier
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding),
@@ -68,17 +82,18 @@ fun ReaderNavHost(
  */
 private fun NavHostController.navigateToTab(tab: TopLevelTab) {
     navigate(tab.route) {
-        popUpTo(graph.findStartDestination().id) { saveState = true }
+        // The library is the root of the tabs even when the graph started on the onboarding.
+        popUpTo<LibraryRoute> { saveState = true }
         launchSingleTop = true
         restoreState = true
     }
 }
 
 @Composable
-private fun ReaderNavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
+private fun ReaderNavGraph(navController: NavHostController, startDestination: Any, modifier: Modifier = Modifier) {
     NavHost(
         navController = navController,
-        startDestination = LibraryRoute,
+        startDestination = startDestination,
         modifier = modifier,
         // Cross-fade between screens (design motion: short, no sideways slide).
         enterTransition = { fadeIn(tween(FADE_MILLIS)) },
@@ -86,6 +101,13 @@ private fun ReaderNavGraph(navController: NavHostController, modifier: Modifier 
         popEnterTransition = { fadeIn(tween(FADE_MILLIS)) },
         popExitTransition = { fadeOut(tween(FADE_MILLIS)) },
     ) {
+        composable<OnboardingRoute> {
+            OnboardingScreen(
+                onFinished = {
+                    navController.navigate(LibraryRoute) { popUpTo<OnboardingRoute> { inclusive = true } }
+                },
+            )
+        }
         composable<LibraryRoute> {
             LibraryScreen(
                 onBookClick = { bookId -> navController.navigate(BookDetailRoute(bookId)) },

@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import io.github.fabiann1809.reader.ui.navigation.ReaderNavHost
+import io.github.fabiann1809.reader.ui.navigation.ReaderApp
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ReaderTheme {
-                ReaderNavHost()
+                ReaderApp()
             }
         }
     }

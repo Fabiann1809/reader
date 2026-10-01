@@ -12,6 +12,8 @@ import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
 import io.github.fabiann1809.reader.data.note.DefaultNoteRepository
 import io.github.fabiann1809.reader.data.note.NoteRepository
+import io.github.fabiann1809.reader.data.prefs.AppPreferences
+import io.github.fabiann1809.reader.data.prefs.DataStoreAppPreferences
 import io.github.fabiann1809.reader.ocr.MlKitTextRecognizer
 import io.github.fabiann1809.reader.ocr.TextRecognizer
 import okhttp3.OkHttpClient
@@ -31,6 +33,8 @@ class AppContainer(context: Context) {
     val noteRepository: NoteRepository by lazy { DefaultNoteRepository(database.noteDao()) }
 
     val apiKeyStore: ApiKeyStore by lazy { KeystoreApiKeyStore(appContext) }
+
+    val appPreferences: AppPreferences by lazy { DataStoreAppPreferences(appContext) }
 
     val textRecognizer: TextRecognizer by lazy { MlKitTextRecognizer(appContext) }
 

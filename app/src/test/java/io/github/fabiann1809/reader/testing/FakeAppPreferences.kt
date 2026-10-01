@@ -1,0 +1,17 @@
+package io.github.fabiann1809.reader.testing
+
+import io.github.fabiann1809.reader.data.prefs.AppPreferences
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+
+/** In-memory AppPreferences for ViewModel tests. */
+class FakeAppPreferences(seenOnboarding: Boolean = false) : AppPreferences {
+
+    private val seen = MutableStateFlow(seenOnboarding)
+
+    override val hasSeenOnboarding: Flow<Boolean> = seen
+
+    override suspend fun markOnboardingSeen() {
+        seen.value = true
+    }
+}
