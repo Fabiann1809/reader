@@ -20,6 +20,10 @@ class FakeNoteRepository(initialNotes: List<Note> = emptyList()) : NoteRepositor
             .sortedWith(compareByDescending<Note> { it.createdAt }.thenByDescending { it.id })
     }
 
+    override fun observeAllNotes(): Flow<List<Note>> = notes.map { list ->
+        list.sortedWith(compareByDescending<Note> { it.createdAt }.thenByDescending { it.id })
+    }
+
     override suspend fun getNote(id: Long): Note? = notes.value.find { it.id == id }
 
     override suspend fun addNote(note: Note): Long {

@@ -14,6 +14,10 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE bookId = :bookId ORDER BY createdAt DESC, id DESC")
     fun observeByBook(bookId: Long): Flow<List<Note>>
 
+    // Every note of every book, newest first.
+    @Query("SELECT * FROM notes ORDER BY createdAt DESC, id DESC")
+    fun observeAll(): Flow<List<Note>>
+
     @Query("SELECT * FROM notes WHERE id = :id")
     suspend fun getById(id: Long): Note?
 

@@ -1,4 +1,4 @@
-package io.github.fabiann1809.reader.ui.bookdetail
+package io.github.fabiann1809.reader.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,7 +26,13 @@ import io.github.fabiann1809.reader.util.formatDate
 
 // Card style from the design (7.10): surface-container, 16 dp corners, no border, elevation 1.
 @Composable
-fun NoteItem(note: Note, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun NoteItem(
+    note: Note,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    // Shown where notes of several books are mixed (e.g. "Todas las notas").
+    bookTitle: String? = null,
+) {
     Card(
         onClick = onClick,
         shape = MaterialTheme.shapes.large,
@@ -35,6 +41,15 @@ fun NoteItem(note: Note, onClick: () -> Unit, modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            bookTitle?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             if (note.type == NoteType.EXPLANATION) {
                 AiLabel()
             }

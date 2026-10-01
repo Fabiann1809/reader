@@ -75,6 +75,14 @@ class NoteDaoTest {
     }
 
     @Test
+    fun observeAllReturnsNotesOfEveryBookNewestFirst() = runTest {
+        noteDao.insert(Note(bookId = insertBook("Dune"), content = "Old", createdAt = 1_000))
+        noteDao.insert(Note(bookId = insertBook("Cosmos"), content = "New", createdAt = 2_000))
+
+        assertEquals(listOf("New", "Old"), noteDao.observeAll().first().map { it.content })
+    }
+
+    @Test
     fun updatePersistsContent() = runTest {
         val id = noteDao.insert(Note(bookId = insertBook(), content = "Draft"))
 

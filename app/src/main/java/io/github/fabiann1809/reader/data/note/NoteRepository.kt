@@ -6,6 +6,9 @@ import kotlinx.coroutines.flow.Flow
 interface NoteRepository {
     fun observeNotes(bookId: Long): Flow<List<Note>>
 
+    /** Notes of all books, newest first. */
+    fun observeAllNotes(): Flow<List<Note>>
+
     suspend fun getNote(id: Long): Note?
 
     /** Returns the id of the new note. */
@@ -18,6 +21,8 @@ interface NoteRepository {
 
 class DefaultNoteRepository(private val noteDao: NoteDao) : NoteRepository {
     override fun observeNotes(bookId: Long): Flow<List<Note>> = noteDao.observeByBook(bookId)
+
+    override fun observeAllNotes(): Flow<List<Note>> = noteDao.observeAll()
 
     override suspend fun getNote(id: Long): Note? = noteDao.getById(id)
 

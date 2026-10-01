@@ -24,7 +24,7 @@ class LibraryContentTest {
 
     private fun setContent(uiState: LibraryUiState) {
         composeRule.setContent {
-            ReaderTheme { LibraryContent(uiState = uiState, onBookClick = {}, onAddBook = {}, onOpenSettings = {}) }
+            ReaderTheme { LibraryContent(uiState = uiState, onBookClick = {}, onAddBook = {}) }
         }
     }
 
@@ -64,7 +64,6 @@ class LibraryContentTest {
                     uiState = LibraryUiState(books = listOf(Book(id = 7, title = "Dune", author = "Frank Herbert")), isLoading = false),
                     onBookClick = { openedId = it },
                     onAddBook = {},
-                    onOpenSettings = {},
                 )
             }
         }

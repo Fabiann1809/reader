@@ -23,8 +23,12 @@ import io.github.fabiann1809.reader.ui.capture.CaptureScreen
 import io.github.fabiann1809.reader.ui.explanation.ExplanationScreen
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextScreen
 import io.github.fabiann1809.reader.ui.library.LibraryScreen
+import io.github.fabiann1809.reader.ui.more.AboutScreen
+import io.github.fabiann1809.reader.ui.more.BackupScreen
+import io.github.fabiann1809.reader.ui.more.MoreEntry
 import io.github.fabiann1809.reader.ui.more.MoreScreen
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorScreen
+import io.github.fabiann1809.reader.ui.notes.AllNotesScreen
 import io.github.fabiann1809.reader.ui.privacy.PrivacyScreen
 import io.github.fabiann1809.reader.ui.progress.ProgressScreen
 import io.github.fabiann1809.reader.ui.review.ReviewScreen
@@ -86,7 +90,6 @@ private fun ReaderNavGraph(navController: NavHostController, modifier: Modifier 
             LibraryScreen(
                 onBookClick = { bookId -> navController.navigate(BookDetailRoute(bookId)) },
                 onAddBook = { navController.navigate(AddBookRoute) },
-                onOpenSettings = { navController.navigate(SettingsRoute) },
             )
         }
         composable<ReviewRoute> {
@@ -96,7 +99,31 @@ private fun ReaderNavGraph(navController: NavHostController, modifier: Modifier 
             ProgressScreen()
         }
         composable<MoreRoute> {
-            MoreScreen(onOpenSettings = { navController.navigate(SettingsRoute) })
+            MoreScreen(
+                onOpen = { entry ->
+                    navController.navigate(
+                        when (entry) {
+                            MoreEntry.ALL_NOTES -> AllNotesRoute
+                            MoreEntry.BACKUP -> BackupRoute
+                            MoreEntry.SETTINGS -> SettingsRoute
+                            MoreEntry.PRIVACY -> PrivacyRoute
+                            MoreEntry.ABOUT -> AboutRoute
+                        },
+                    )
+                },
+            )
+        }
+        composable<AllNotesRoute> {
+            AllNotesScreen(
+                onNavigateUp = { navController.navigateUp() },
+                onNoteClick = { note -> navController.navigate(NoteEditorRoute(note.bookId, note.id)) },
+            )
+        }
+        composable<BackupRoute> {
+            BackupScreen(onNavigateUp = { navController.navigateUp() })
+        }
+        composable<AboutRoute> {
+            AboutScreen(onNavigateUp = { navController.navigateUp() })
         }
         composable<AddBookRoute> {
             AddBookScreen(onNavigateUp = { navController.navigateUp() })

@@ -43,3 +43,12 @@ data object SettingsRoute
 
 @Serializable
 data object PrivacyRoute
+
+@Serializable
+data object AllNotesRoute
+
+@Serializable
+data object BackupRoute
+
+@Serializable
+data object AboutRoute

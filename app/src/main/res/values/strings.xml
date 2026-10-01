@@ -162,4 +162,20 @@
     <string name="review_empty_message">Crea fichas desde tus notas y explicaciones.</string>
     <string name="progress_empty_title">Empieza tu primera sesión</string>
     <string name="progress_empty_message">Tu progreso aparecerá aquí.</string>
+
+    <!-- More -->
+    <string name="all_notes_title">Todas las notas</string>
+    <string name="backup_title">Respaldo</string>
+    <string name="backup_coming_title">Respaldo de tus datos</string>
+    <string name="backup_coming_message">Aquí podrás exportar tus libros y notas a un archivo y restaurarlos en otro teléfono. Llegará en una próxima versión.</string>
+    <string name="about_title">Acerca de</string>
+    <string name="about_version">Versión %1$s</string>
+    <string name="about_tagline">Tu biblioteca, tu progreso y un tutor que te ayuda a entender lo que lees.</string>
+    <string name="about_licenses">Licencias de terceros</string>
+    <string name="about_font_plus_jakarta">Fuente Plus Jakarta Sans</string>
+    <string name="about_font_fraunces">Fuente Fraunces</string>
+    <string name="about_icons_phosphor">Iconos Phosphor</string>
+    <string name="about_license_ofl">SIL Open Font License 1.1</string>
+    <string name="about_license_mit">Licencia MIT</string>
+    <string name="action_close">Cerrar</string>
 </resources>

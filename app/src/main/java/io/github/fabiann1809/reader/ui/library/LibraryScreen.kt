@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -57,7 +56,6 @@ import kotlin.math.ceil
 fun LibraryScreen(
     onBookClick: (Long) -> Unit,
     onAddBook: () -> Unit,
-    onOpenSettings: () -> Unit,
     viewModel: LibraryViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -66,7 +64,6 @@ fun LibraryScreen(
         uiState = uiState,
         onBookClick = onBookClick,
         onAddBook = onAddBook,
-        onOpenSettings = onOpenSettings,
     )
 }
 
@@ -75,7 +72,6 @@ fun LibraryContent(
     uiState: LibraryUiState,
     onBookClick: (Long) -> Unit,
     onAddBook: () -> Unit,
-    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val showFab = !uiState.isLoading && uiState.books.isNotEmpty()
@@ -91,14 +87,6 @@ fun LibraryContent(
                     titleContentColor = Color.White,
                     actionIconContentColor = Color.White,
                 ),
-                actions = {
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_gear_six),
-                            contentDescription = stringResource(R.string.settings_title),
-                        )
-                    }
-                },
             )
         },
         floatingActionButton = {
@@ -272,7 +260,6 @@ private fun LibraryWithBooksPreview() {
             ),
             onBookClick = {},
             onAddBook = {},
-            onOpenSettings = {},
         )
     }
 }
@@ -285,7 +272,6 @@ private fun EmptyLibraryPreview() {
             uiState = LibraryUiState(isLoading = false),
             onBookClick = {},
             onAddBook = {},
-            onOpenSettings = {},
         )
     }
 }

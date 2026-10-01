@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.ui.navigation
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -30,30 +31,25 @@ class ReaderNavHostTest {
         }
     }
 
-    @Test
-    fun startsOnLibrary() {
-        composeRule.onNodeWithContentDescription(string(R.string.settings_title)).assertIsDisplayed()
-    }
-
-    @Test
-    fun navigatesToSettingsAndBack() {
-        composeRule.onNodeWithContentDescription(string(R.string.settings_title)).performClick()
-        composeRule.onNodeWithText(string(R.string.settings_guide_title)).assertIsDisplayed()
-
-        composeRule.onNodeWithContentDescription(string(R.string.navigate_up)).performClick()
-        composeRule.onNodeWithContentDescription(string(R.string.settings_title)).assertIsDisplayed()
-    }
-
-    @Test
-    fun opensPrivacyFromSettings() {
-        composeRule.onNodeWithContentDescription(string(R.string.settings_title)).performClick()
-        composeRule.onNodeWithText(string(R.string.settings_privacy)).performScrollTo().performClick()
-
-        composeRule.onNodeWithText(string(R.string.privacy_sent_title)).assertIsDisplayed()
-    }
-
     private fun pressBack() {
         composeRule.runOnUiThread { composeRule.activity.onBackPressedDispatcher.onBackPressed() }
+    }
+
+    /** "Añadir libro" only exists in the library (as the button or the empty-state action). */
+    private fun assertOnLibrary() {
+        composeRule.waitUntil(TIMEOUT_MILLIS) {
+            composeRule.onAllNodesWithText(string(R.string.library_add_book)).fetchSemanticsNodes().isNotEmpty()
+        }
+    }
+
+    private fun openMore(entry: Int) {
+        composeRule.onNodeWithText(string(R.string.tab_more)).performClick()
+        composeRule.onNodeWithText(string(entry)).performClick()
+    }
+
+    @Test
+    fun startsOnLibrary() {
+        assertOnLibrary()
     }
 
     @Test
@@ -65,7 +61,7 @@ class ReaderNavHostTest {
         composeRule.onNodeWithText(string(R.string.progress_empty_title)).assertIsDisplayed()
 
         composeRule.onNodeWithText(string(R.string.tab_more)).performClick()
-        composeRule.onNodeWithText(string(R.string.settings_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.all_notes_title)).assertIsDisplayed()
     }
 
     @Test
@@ -75,14 +71,47 @@ class ReaderNavHostTest {
 
         pressBack()
 
-        composeRule.onNodeWithContentDescription(string(R.string.settings_title)).assertIsDisplayed()
+        assertOnLibrary()
     }
 
     @Test
-    fun bottomBarIsHiddenOnInnerScreens() {
-        composeRule.onNodeWithText(string(R.string.tab_more)).performClick()
-        composeRule.onNodeWithText(string(R.string.settings_title)).performClick()
-
+    fun opensSettingsFromMoreAndComesBack() {
+        openMore(R.string.settings_title)
+        composeRule.onNodeWithText(string(R.string.settings_guide_title)).assertIsDisplayed()
+        // The bottom bar is hidden on inner screens.
         composeRule.onNodeWithText(string(R.string.tab_review)).assertDoesNotExist()
+
+        composeRule.onNodeWithContentDescription(string(R.string.navigate_up)).performClick()
+        composeRule.onNodeWithText(string(R.string.all_notes_title)).assertIsDisplayed()
+    }
+
+    @Test
+    fun opensPrivacyFromSettings() {
+        openMore(R.string.settings_title)
+        composeRule.onNodeWithText(string(R.string.settings_privacy)).performScrollTo().performClick()
+
+        composeRule.onNodeWithText(string(R.string.privacy_sent_title)).assertIsDisplayed()
+    }
+
+    @Test
+    fun opensEveryOtherEntryOfMore() {
+        openMore(R.string.all_notes_title)
+        composeRule.onNodeWithText(string(R.string.all_notes_title)).assertIsDisplayed()
+        pressBack()
+
+        composeRule.onNodeWithText(string(R.string.backup_title)).performClick()
+        composeRule.onNodeWithText(string(R.string.backup_coming_title)).assertIsDisplayed()
+        pressBack()
+
+        composeRule.onNodeWithText(string(R.string.settings_privacy)).performClick()
+        composeRule.onNodeWithText(string(R.string.privacy_sent_title)).assertIsDisplayed()
+        pressBack()
+
+        composeRule.onNodeWithText(string(R.string.about_title)).performClick()
+        composeRule.onNodeWithText(string(R.string.about_licenses)).assertIsDisplayed()
+    }
+
+    private companion object {
+        const val TIMEOUT_MILLIS = 5_000L
     }
 }

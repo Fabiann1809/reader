@@ -18,6 +18,7 @@ import io.github.fabiann1809.reader.ui.navigation.ExplanationRoute
 import io.github.fabiann1809.reader.ui.navigation.ExtractedTextRoute
 import io.github.fabiann1809.reader.ui.navigation.NoteEditorRoute
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
+import io.github.fabiann1809.reader.ui.notes.AllNotesViewModel
 import io.github.fabiann1809.reader.ui.settings.SettingsViewModel
 
 /**
@@ -61,6 +62,12 @@ object AppViewModelProvider {
                 explainText = readerApplication().container.explainText,
                 noteRepository = readerApplication().container.noteRepository,
                 labels = ExplanationLabels.from(readerApplication()),
+            )
+        }
+        initializer {
+            AllNotesViewModel(
+                bookRepository = readerApplication().container.bookRepository,
+                noteRepository = readerApplication().container.noteRepository,
             )
         }
         initializer {
