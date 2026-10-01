@@ -6,6 +6,7 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.book.arrangedBy
+import io.github.fabiann1809.reader.data.book.markedAsRead
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
@@ -40,9 +41,12 @@ data class LibraryUiState(
     val layout: LibraryLayout = LibraryLayout(),
 )
 
+/** The book whose "Colección" sheet is open, with the user collections that already hold it. */
+data class BookCollections(val book: Book, val collectionIds: Set<Long>)
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class LibraryViewModel(
-    bookRepository: BookRepository,
+    private val bookRepository: BookRepository,
     private val collectionRepository: CollectionRepository,
     private val preferences: AppPreferences,
 ) : ViewModel() {
@@ -95,6 +99,67 @@ class LibraryViewModel(
 
     fun setArrangement(arrangement: LibraryArrangement) {
         viewModelScope.launch { preferences.setLibraryArrangement(arrangement) }
+    }
+
+    private val collectionsBookId = MutableStateFlow<Long?>(null)
+
+    /** Non-null while the "Colección" sheet of a book (opened from its cover menu) is shown. */
+    val bookCollections: StateFlow<BookCollections?> = collectionsBookId.flatMapLatest { bookId ->
+        if (bookId == null) {
+            flowOf(null)
+        } else {
+            combine(bookRepository.observeBook(bookId), collectionRepository.observeCollectionIdsOf(bookId)) { book, ids ->
+                book?.let { BookCollections(it, ids.toSet()) }
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), initialValue = null)
+
+    fun showCollectionsOf(bookId: Long) {
+        collectionsBookId.value = bookId
+    }
+
+    fun hideCollections() {
+        collectionsBookId.value = null
+    }
+
+    /** "Mis favoritos" is backed by the book's favorite flag, not by a stored collection. */
+    fun setFavorite(bookId: Long, isFavorite: Boolean) = updateBook(bookId) { it.copy(isFavorite = isFavorite) }
+
+    fun setInCollection(bookId: Long, collectionId: Long, isIncluded: Boolean) {
+        viewModelScope.launch {
+            if (isIncluded) {
+                collectionRepository.addBook(bookId, collectionId)
+            } else {
+                collectionRepository.removeBook(bookId, collectionId)
+            }
+        }
+    }
+
+    /** Creates a collection that already holds the book, without leaving the current shelf. */
+    fun createCollectionWithBook(bookId: Long, name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch {
+            val collectionId = collectionRepository.createCollection(name)
+            collectionRepository.addBook(bookId, collectionId)
+        }
+    }
+
+    fun markAsRead(bookId: Long) = updateBook(bookId) { it.markedAsRead() }
+
+    /** Its notes and collection links go with it (database cascade). */
+    fun deleteBook(bookId: Long) {
+        viewModelScope.launch {
+            val book = bookRepository.getBook(bookId) ?: return@launch
+            bookRepository.deleteBook(book)
+        }
+    }
+
+    // Reads the stored book rather than the UI state so a stale shelf can't overwrite newer data.
+    private fun updateBook(bookId: Long, change: (Book) -> Book) {
+        viewModelScope.launch {
+            val book = bookRepository.getBook(bookId) ?: return@launch
+            bookRepository.updateBook(change(book))
+        }
     }
 
     fun setLayout(layout: LibraryLayout) {

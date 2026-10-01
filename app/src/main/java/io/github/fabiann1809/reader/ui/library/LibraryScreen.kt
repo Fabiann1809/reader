@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -26,6 +27,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -57,6 +59,7 @@ import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
 import io.github.fabiann1809.reader.data.prefs.LibraryView
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
+import io.github.fabiann1809.reader.ui.bookdetail.AddToCollectionSheet
 import io.github.fabiann1809.reader.ui.components.BookCover
 import io.github.fabiann1809.reader.ui.components.LightStatusBarIcons
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
@@ -73,9 +76,20 @@ fun LibraryScreen(
     viewModel: LibraryViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val bookCollections by viewModel.bookCollections.collectAsStateWithLifecycle()
     LightStatusBarIcons()
     LibraryContent(
         uiState = uiState,
+        bookCollections = bookCollections,
+        bookActions = LibraryBookActions(
+            onShowCollections = viewModel::showCollectionsOf,
+            onHideCollections = viewModel::hideCollections,
+            onFavoriteChange = viewModel::setFavorite,
+            onCollectionChange = viewModel::setInCollection,
+            onCreateCollection = viewModel::createCollectionWithBook,
+            onMarkAsRead = viewModel::markAsRead,
+            onDelete = viewModel::deleteBook,
+        ),
         onBookClick = onBookClick,
         onAddBook = onAddBook,
         onSelectFilter = viewModel::selectFilter,
@@ -101,10 +115,28 @@ fun LibraryContent(
     onCreateCollection: (String) -> Unit = {},
     onRenameCollection: (String) -> Unit = {},
     onDeleteCollection: () -> Unit = {},
+    bookCollections: BookCollections? = null,
+    bookActions: LibraryBookActions = LibraryBookActions(),
 ) {
     val showFab = !uiState.isLoading && uiState.books.isNotEmpty()
     var dialog by rememberSaveable { mutableStateOf(LibraryDialog.NONE) }
     var isSearchOpen by rememberSaveable { mutableStateOf(false) }
+    // Cover menu: the book whose menu is open, and the one waiting for delete confirmation.
+    var menuBookId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var deleteBookId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var newCollectionForBook by rememberSaveable { mutableStateOf<Long?>(null) }
+    val menuActions = BookMenuActions(
+        // Until the reader exists (T11.2), opening a book shows its detail.
+        onOpen = onBookClick,
+        onDetail = onBookClick,
+        onCollection = bookActions.onShowCollections,
+        onMarkAsRead = bookActions.onMarkAsRead,
+        onDelete = { deleteBookId = it },
+    )
+    val bookMenu: @Composable (Book) -> Unit = { book ->
+        BookMenu(book, expanded = menuBookId == book.id, onDismiss = { menuBookId = null }, actions = menuActions)
+    }
+    val onBookLongClick: (Long) -> Unit = { menuBookId = it }
     val isShelves = uiState.layout.view == LibraryView.SHELVES
     val columns = booksPerRow(uiState.layout.booksPerRow)
     val title = uiState.currentCollection?.name
@@ -200,12 +232,63 @@ fun LibraryContent(
                     bottomSpace = FAB_SPACE,
                 ) { index, width ->
                     val book = uiState.books[index]
-                    BookCover(book = book, onClick = { onBookClick(book.id) }, modifier = Modifier.width(width))
+                    Box {
+                        BookCover(
+                            book = book,
+                            onClick = { onBookClick(book.id) },
+                            onLongClick = { onBookLongClick(book.id) },
+                            showBadges = true,
+                            modifier = Modifier.width(width),
+                        )
+                        bookMenu(book)
+                    }
                 }
-                LibraryView.GRID -> BookGrid(uiState.books, columns, innerPadding, FAB_SPACE, onBookClick)
-                LibraryView.LIST -> BookList(uiState.books, innerPadding, FAB_SPACE, onBookClick)
+                LibraryView.GRID -> BookGrid(
+                    uiState.books,
+                    columns,
+                    innerPadding,
+                    FAB_SPACE,
+                    onBookClick,
+                    onBookLongClick,
+                    bookMenu,
+                )
+                LibraryView.LIST -> BookList(uiState.books, innerPadding, FAB_SPACE, onBookClick, onBookLongClick, bookMenu)
             }
         }
+    }
+
+    bookCollections?.let { (book, collectionIds) ->
+        AddToCollectionSheet(
+            isFavorite = book.isFavorite,
+            collections = uiState.collections,
+            collectionIds = collectionIds,
+            onFavoriteChange = { bookActions.onFavoriteChange(book.id, it) },
+            onCollectionChange = { collectionId, isIncluded -> bookActions.onCollectionChange(book.id, collectionId, isIncluded) },
+            onNewCollection = { newCollectionForBook = book.id },
+            onDismiss = bookActions.onHideCollections,
+        )
+    }
+    newCollectionForBook?.let { bookId ->
+        CollectionNameDialog(
+            title = R.string.collection_new,
+            confirm = R.string.collection_create,
+            initialName = "",
+            onConfirm = { name ->
+                bookActions.onCreateCollection(bookId, name)
+                newCollectionForBook = null
+            },
+            onDismiss = { newCollectionForBook = null },
+        )
+    }
+    deleteBookId?.let { bookId ->
+        DeleteBookDialog(
+            title = uiState.books.find { it.id == bookId }?.title.orEmpty(),
+            onConfirm = {
+                bookActions.onDelete(bookId)
+                deleteBookId = null
+            },
+            onDismiss = { deleteBookId = null },
+        )
     }
 
     when (dialog) {
@@ -256,6 +339,34 @@ fun LibraryContent(
             onDismiss = { dialog = LibraryDialog.NONE },
         )
     }
+}
+
+/** Per-book actions from the cover menu and its "Colección" sheet. */
+class LibraryBookActions(
+    val onShowCollections: (bookId: Long) -> Unit = {},
+    val onHideCollections: () -> Unit = {},
+    val onFavoriteChange: (bookId: Long, isFavorite: Boolean) -> Unit = { _, _ -> },
+    val onCollectionChange: (bookId: Long, collectionId: Long, isIncluded: Boolean) -> Unit = { _, _, _ -> },
+    val onCreateCollection: (bookId: Long, name: String) -> Unit = { _, _ -> },
+    val onMarkAsRead: (bookId: Long) -> Unit = {},
+    val onDelete: (bookId: Long) -> Unit = {},
+)
+
+@Composable
+private fun DeleteBookDialog(title: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.delete_book_title)) },
+        text = { Text(stringResource(R.string.delete_book_message, title)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+    )
 }
 
 /** Which sheet or dialog is open (only one at a time). */

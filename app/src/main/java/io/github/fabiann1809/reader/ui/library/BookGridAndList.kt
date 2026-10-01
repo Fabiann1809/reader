@@ -1,7 +1,8 @@
 package io.github.fabiann1809.reader.ui.library
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,11 +24,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.ui.components.BookCover
 import io.github.fabiann1809.reader.ui.components.bookProgressText
@@ -42,6 +45,8 @@ fun BookGrid(
     contentPadding: PaddingValues,
     bottomSpace: Dp,
     onBookClick: (Long) -> Unit,
+    onBookLongClick: (Long) -> Unit,
+    menu: @Composable (Book) -> Unit,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
@@ -57,13 +62,21 @@ fun BookGrid(
         items(books, key = { it.id }) { book ->
             // Card style from the design (7.10), with a tighter padding so the cover keeps its size.
             Card(
-                onClick = { onBookClick(book.id) },
                 shape = MaterialTheme.shapes.large,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
             ) {
                 // The cover already shows title, author and progress, and carries the description.
-                BookCover(book = book, modifier = Modifier.fillMaxWidth().padding(8.dp))
+                Box(Modifier.padding(8.dp)) {
+                    BookCover(
+                        book = book,
+                        onClick = { onBookClick(book.id) },
+                        onLongClick = { onBookLongClick(book.id) },
+                        showBadges = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    menu(book)
+                }
             }
         }
     }
@@ -76,6 +89,8 @@ fun BookList(
     contentPadding: PaddingValues,
     bottomSpace: Dp,
     onBookClick: (Long) -> Unit,
+    onBookLongClick: (Long) -> Unit,
+    menu: @Composable (Book) -> Unit,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(
@@ -84,18 +99,26 @@ fun BookList(
         ),
     ) {
         items(books, key = { it.id }) { book ->
-            BookRow(book = book, onClick = { onBookClick(book.id) })
+            Box {
+                BookRow(book = book, onClick = { onBookClick(book.id) }, onLongClick = { onBookLongClick(book.id) })
+                menu(book)
+            }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(start = 88.dp))
         }
     }
 }
 
 @Composable
-private fun BookRow(book: Book, onClick: () -> Unit) {
+private fun BookRow(book: Book, onClick: () -> Unit, onLongClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(role = Role.Button, onClick = onClick)
+            .combinedClickable(
+                role = Role.Button,
+                onLongClickLabel = stringResource(R.string.book_menu),
+                onLongClick = onLongClick,
+                onClick = onClick,
+            )
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),

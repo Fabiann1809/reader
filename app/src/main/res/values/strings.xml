@@ -39,6 +39,12 @@
     <string name="format_cbz">CBZ</string>
     <string name="kind_digital">Digital</string>
     <string name="kind_physical">Físico</string>
+    <string name="book_menu">Opciones del libro</string>
+    <string name="book_menu_open">Abrir</string>
+    <string name="book_menu_detail">Detalle</string>
+    <string name="book_menu_collection">Colección</string>
+    <string name="book_menu_mark_read">Marcar como leído</string>
+    <string name="book_badge_new">Nuevo</string>
     <string name="book_cover_description">%1$s, de %2$s</string>
     <string name="book_cover_description_progress">%1$s, de %2$s, %3$d %% leído</string>
 

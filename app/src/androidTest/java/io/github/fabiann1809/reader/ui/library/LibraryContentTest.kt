@@ -5,7 +5,9 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
@@ -20,6 +22,7 @@ import io.github.fabiann1809.reader.data.prefs.LibraryLayout
 import io.github.fabiann1809.reader.data.prefs.LibraryView
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -61,6 +64,7 @@ class LibraryContentTest {
         // Covers expose title, author and progress to screen readers in one description.
         composeRule.onNodeWithContentDescription(
             composeRule.activity.getString(R.string.book_cover_description_progress, "Cosmos", "Carl Sagan", 30),
+            substring = true,
         ).assertIsDisplayed()
     }
 
@@ -79,6 +83,7 @@ class LibraryContentTest {
 
         composeRule.onNodeWithContentDescription(
             composeRule.activity.getString(R.string.book_cover_description, "Dune", "Frank Herbert"),
+            substring = true,
         ).performClick()
 
         assertEquals(7L, openedId)
@@ -284,7 +289,10 @@ class LibraryContentTest {
             }
         }
 
-        composeRule.onNodeWithContentDescription(composeRule.activity.getString(R.string.book_cover_description, "Dune", "Frank Herbert"))
+        composeRule.onNodeWithContentDescription(
+            composeRule.activity.getString(R.string.book_cover_description, "Dune", "Frank Herbert"),
+            substring = true,
+        )
             .performClick()
         assertEquals(4L, opened)
     }
@@ -308,5 +316,71 @@ class LibraryContentTest {
         composeRule.onNodeWithText("4").performClick()
 
         assertEquals(listOf(LibraryLayout(view = LibraryView.GRID), LibraryLayout(booksPerRow = 4)), layouts)
+    }
+
+    private fun setContentWithMenu(book: Book, actions: LibraryBookActions, onBookClick: (Long) -> Unit = {}) {
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(books = listOf(book), isLoading = false),
+                    onBookClick = onBookClick,
+                    onAddBook = {},
+                    bookActions = actions,
+                )
+            }
+        }
+    }
+
+    private fun longPressCover(book: Book) {
+        composeRule.onNodeWithContentDescription(string(R.string.book_cover_description).format(book.title, book.author), substring = true)
+            .performTouchInput { longClick() }
+    }
+
+    @Test
+    fun longPressMenuOpensDetailMarksAsReadAndShowsCollections() {
+        val book = Book(id = 9, title = "Dune", author = "Frank Herbert")
+        var opened: Long? = null
+        var markedAsRead: Long? = null
+        var collectionsOf: Long? = null
+        setContentWithMenu(
+            book,
+            LibraryBookActions(onMarkAsRead = { markedAsRead = it }, onShowCollections = { collectionsOf = it }),
+            onBookClick = { opened = it },
+        )
+
+        // Paper books cannot be opened in the app, so "Abrir" is not offered.
+        longPressCover(book)
+        composeRule.onNodeWithText(string(R.string.book_menu_open)).assertDoesNotExist()
+        composeRule.onNodeWithText(string(R.string.book_menu_detail)).performClick()
+        longPressCover(book)
+        composeRule.onNodeWithText(string(R.string.book_menu_mark_read)).performClick()
+        longPressCover(book)
+        composeRule.onNodeWithText(string(R.string.book_menu_collection)).performClick()
+
+        assertEquals(9L, opened)
+        assertEquals(9L, markedAsRead)
+        assertEquals(9L, collectionsOf)
+    }
+
+    @Test
+    fun deletingFromTheMenuAsksForConfirmation() {
+        val book = Book(id = 9, title = "Dune", author = "Frank Herbert")
+        var deleted: Long? = null
+        setContentWithMenu(book, LibraryBookActions(onDelete = { deleted = it }))
+
+        longPressCover(book)
+        composeRule.onNodeWithText(string(R.string.action_delete)).performClick()
+        assertNull(deleted)
+
+        composeRule.onNodeWithText(string(R.string.delete_book_message).format("Dune")).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.action_delete)).performClick()
+        assertEquals(9L, deleted)
+    }
+
+    @Test
+    fun newPhysicalBookShowsTheNewBadge() {
+        setContent(LibraryUiState(books = listOf(Book(id = 1, title = "Dune", author = "Frank Herbert")), isLoading = false))
+
+        composeRule.onNodeWithContentDescription(string(R.string.book_badge_new), substring = true).assertExists()
     }
 }

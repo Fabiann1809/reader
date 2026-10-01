@@ -189,4 +189,45 @@ class LibraryViewModelTest {
         assertEquals(LibraryLayout(view = LibraryView.GRID, booksPerRow = 4), viewModel.uiState.value.layout)
         assertEquals(LibraryLayout(view = LibraryView.GRID, booksPerRow = 4), preferences.libraryLayout.first())
     }
+
+    @Test
+    fun markAsReadFinishesTheBook() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.markAsRead(1)
+
+        assertEquals(BookStatus.FINISHED, books.getBook(1)?.status)
+    }
+
+    @Test
+    fun deleteBookRemovesItFromTheShelf() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.deleteBook(1)
+
+        assertNull(books.getBook(1))
+        assertEquals(listOf("Cosmos"), viewModel.titles())
+    }
+
+    @Test
+    fun collectionSheetFollowsTheBooksCollectionsWithoutChangingTheShelf() = runTest {
+        val viewModel = viewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.bookCollections.collect() }
+
+        viewModel.showCollectionsOf(1)
+        viewModel.createCollectionWithBook(1, "Ciencia ficción")
+        viewModel.setFavorite(1, true)
+
+        val sheet = viewModel.bookCollections.value
+        assertEquals("Dune", sheet?.book?.title)
+        assertTrue(sheet!!.book.isFavorite)
+        assertEquals(1, sheet.collectionIds.size)
+        assertEquals(LibraryFilter.Default, viewModel.uiState.value.filter)
+
+        viewModel.setInCollection(1, sheet.collectionIds.single(), isIncluded = false)
+        assertTrue(viewModel.bookCollections.value!!.collectionIds.isEmpty())
+
+        viewModel.hideCollections()
+        assertNull(viewModel.bookCollections.value)
+    }
 }
