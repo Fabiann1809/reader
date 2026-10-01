@@ -3,15 +3,20 @@ package io.github.fabiann1809.reader.ui.bookdetail
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.note.Note
+import io.github.fabiann1809.reader.data.collection.LibraryFilter
+import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.testing.FakeBookRepository
+import io.github.fabiann1809.reader.testing.FakeCollectionRepository
 import io.github.fabiann1809.reader.testing.FakeNoteRepository
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -25,9 +30,15 @@ class BookDetailViewModelTest {
     private val book = Book(id = 1, title = "Dune", author = "Frank Herbert")
     private val bookRepository = FakeBookRepository(listOf(book))
     private val noteRepository = FakeNoteRepository()
+    private val collectionRepository = FakeCollectionRepository(bookRepository)
     // Lazy so it is built after MainDispatcherRule swaps Dispatchers.Main (viewModelScope needs it).
     private val viewModel by lazy {
-        BookDetailViewModel(bookId = 1, bookRepository = bookRepository, noteRepository = noteRepository)
+        BookDetailViewModel(
+            bookId = 1,
+            bookRepository = bookRepository,
+            noteRepository = noteRepository,
+            collectionRepository = collectionRepository,
+        )
     }
 
     // stateIn(WhileSubscribed) only runs the queries while someone collects the state.
@@ -83,5 +94,52 @@ class BookDetailViewModelTest {
 
         assertNull(bookRepository.getBook(1))
         assertTrue(viewModel.isDeleted.value)
+    }
+
+    @Test
+    fun setFavoritePutsTheBookInMyFavorites() = runTest {
+        viewModel.setFavorite(true)
+
+        val favorites = collectionRepository.observeBooks(LibraryFilter.Smart(SmartCollection.FAVORITES)).first()
+        assertEquals(listOf("Dune"), favorites.map { it.title })
+
+        viewModel.setFavorite(false)
+
+        assertFalse(bookRepository.getBook(1)!!.isFavorite)
+    }
+
+    @Test
+    fun setInCollectionAddsAndRemovesTheBook() = runTest {
+        val id = collectionRepository.createCollection("Ciencia ficción")
+        collectionRepository.createCollection("Otra")
+        collectUiState()
+
+        viewModel.setInCollection(id, isIncluded = true)
+
+        val state = viewModel.uiState.value as BookDetailUiState.Success
+        assertEquals(listOf("Ciencia ficción", "Otra"), state.collections.map { it.name })
+        assertEquals(setOf(id), state.collectionIds)
+
+        viewModel.setInCollection(id, isIncluded = false)
+
+        assertEquals(emptySet<Long>(), (viewModel.uiState.value as BookDetailUiState.Success).collectionIds)
+    }
+
+    @Test
+    fun createCollectionWithBookAddsTheBookToIt() = runTest {
+        collectUiState()
+
+        viewModel.createCollectionWithBook("  Para el trabajo ")
+
+        val state = viewModel.uiState.value as BookDetailUiState.Success
+        assertEquals(listOf("Para el trabajo"), state.collections.map { it.name })
+        assertEquals(setOf(state.collections.single().id), state.collectionIds)
+    }
+
+    @Test
+    fun createCollectionWithBlankNameDoesNothing() = runTest {
+        viewModel.createCollectionWithBook("   ")
+
+        assertTrue(collectionRepository.observeCollections().first().isEmpty())
     }
 }

@@ -43,6 +43,7 @@ object AppViewModelProvider {
                 bookId = createSavedStateHandle().toRoute<BookDetailRoute>().bookId,
                 bookRepository = readerApplication().container.bookRepository,
                 noteRepository = readerApplication().container.noteRepository,
+                collectionRepository = readerApplication().container.collectionRepository,
             )
         }
         initializer {

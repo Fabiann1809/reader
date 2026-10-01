@@ -199,6 +199,7 @@
     <string name="collection_to_read">Quiero leer</string>
     <string name="collection_change">Cambiar colección</string>
     <string name="collection_new">Nueva colección</string>
+    <string name="collection_add_title">Añadir a colección</string>
     <string name="collection_name">Nombre de la colección</string>
     <string name="collection_create">Crear</string>
     <string name="collection_rename">Renombrar colección</string>

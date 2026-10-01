@@ -9,9 +9,11 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteType
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -26,14 +28,24 @@ class BookDetailContentTest {
 
     private val book = Book(id = 1, title = "Cosmos", author = "Carl Sagan")
 
-    private fun setContent(notes: List<Note>, onCapturePage: () -> Unit = {}, onDeleteBook: () -> Unit = {}) {
+    private fun setContent(
+        notes: List<Note>,
+        onCapturePage: () -> Unit = {},
+        onDeleteBook: () -> Unit = {},
+        collections: List<Collection> = emptyList(),
+        onFavoriteChange: (Boolean) -> Unit = {},
+        onCollectionChange: (Long, Boolean) -> Unit = { _, _ -> },
+    ) {
         composeRule.setContent {
             ReaderTheme {
                 BookDetailContent(
-                    uiState = BookDetailUiState.Success(book, notes),
+                    uiState = BookDetailUiState.Success(book, notes, collections),
                     onNavigateUp = {},
                     onUpdateProgress = { _, _ -> },
                     onDeleteBook = onDeleteBook,
+                    onFavoriteChange = onFavoriteChange,
+                    onCollectionChange = onCollectionChange,
+                    onCreateCollection = {},
                     onAddNote = {},
                     onNoteClick = {},
                     onCapturePage = onCapturePage,
@@ -91,6 +103,26 @@ class BookDetailContentTest {
     }
 
     @Test
+    fun addToCollectionTogglesFavoritesAndUserCollections() {
+        var favorite: Boolean? = null
+        var change: Pair<Long, Boolean>? = null
+        setContent(
+            notes = emptyList(),
+            collections = listOf(Collection(id = 7, name = "Para el trabajo")),
+            onFavoriteChange = { favorite = it },
+            onCollectionChange = { id, isIncluded -> change = id to isIncluded },
+        )
+
+        composeRule.onNodeWithContentDescription(string(R.string.more_options)).performClick()
+        composeRule.onNodeWithText(string(R.string.collection_add_title)).performClick()
+        composeRule.onNodeWithText(string(R.string.collection_favorites)).performClick()
+        composeRule.onNodeWithText("Para el trabajo").performClick()
+
+        assertEquals(true, favorite)
+        assertEquals(7L to true, change)
+    }
+
+    @Test
     fun missingBookOffersAWayBack() {
         var wentBack = false
         composeRule.setContent {
@@ -100,6 +132,9 @@ class BookDetailContentTest {
                     onNavigateUp = { wentBack = true },
                     onUpdateProgress = { _, _ -> },
                     onDeleteBook = {},
+                    onFavoriteChange = {},
+                    onCollectionChange = { _, _ -> },
+                    onCreateCollection = {},
                     onAddNote = {},
                     onNoteClick = {},
                     onCapturePage = {},

@@ -57,6 +57,7 @@ import io.github.fabiann1809.reader.ui.components.StatusMessage
 import io.github.fabiann1809.reader.ui.components.TonalButton
 import io.github.fabiann1809.reader.ui.components.bookProgressText
 import io.github.fabiann1809.reader.ui.components.labelRes
+import io.github.fabiann1809.reader.ui.library.CollectionNameDialog
 import io.github.fabiann1809.reader.ui.components.progressFraction
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import io.github.fabiann1809.reader.util.formatDate
@@ -82,6 +83,9 @@ fun BookDetailScreen(
         onNavigateUp = onNavigateUp,
         onUpdateProgress = viewModel::updateProgress,
         onDeleteBook = viewModel::deleteBook,
+        onFavoriteChange = viewModel::setFavorite,
+        onCollectionChange = viewModel::setInCollection,
+        onCreateCollection = viewModel::createCollectionWithBook,
         onAddNote = onAddNote,
         onNoteClick = onNoteClick,
         onCapturePage = onCapturePage,
@@ -94,6 +98,9 @@ fun BookDetailContent(
     onNavigateUp: () -> Unit,
     onUpdateProgress: (currentPage: Int, status: BookStatus) -> Unit,
     onDeleteBook: () -> Unit,
+    onFavoriteChange: (Boolean) -> Unit,
+    onCollectionChange: (collectionId: Long, isIncluded: Boolean) -> Unit,
+    onCreateCollection: (String) -> Unit,
     onAddNote: () -> Unit,
     onNoteClick: (Long) -> Unit,
     onCapturePage: () -> Unit,
@@ -101,6 +108,8 @@ fun BookDetailContent(
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     var showProgressDialog by rememberSaveable { mutableStateOf(false) }
+    var showCollectionSheet by rememberSaveable { mutableStateOf(false) }
+    var showNewCollectionDialog by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier,
@@ -110,7 +119,10 @@ fun BookDetailContent(
                 onNavigateUp = onNavigateUp,
                 actions = {
                     if (uiState is BookDetailUiState.Success) {
-                        MoreMenu(onDeleteClick = { showDeleteDialog = true })
+                        MoreMenu(
+                            onAddToCollectionClick = { showCollectionSheet = true },
+                            onDeleteClick = { showDeleteDialog = true },
+                        )
                     }
                 },
             )
@@ -158,6 +170,32 @@ fun BookDetailContent(
         )
     }
 
+    if (showCollectionSheet) {
+        AddToCollectionSheet(
+            isFavorite = uiState.book.isFavorite,
+            collections = uiState.collections,
+            collectionIds = uiState.collectionIds,
+            onFavoriteChange = onFavoriteChange,
+            onCollectionChange = onCollectionChange,
+            onNewCollection = { showNewCollectionDialog = true },
+            onDismiss = { showCollectionSheet = false },
+        )
+    }
+
+    // Shown over the sheet, so the new collection appears checked when the dialog closes.
+    if (showNewCollectionDialog) {
+        CollectionNameDialog(
+            title = R.string.collection_new,
+            confirm = R.string.collection_create,
+            initialName = "",
+            onConfirm = { name ->
+                onCreateCollection(name)
+                showNewCollectionDialog = false
+            },
+            onDismiss = { showNewCollectionDialog = false },
+        )
+    }
+
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -183,7 +221,7 @@ fun BookDetailContent(
 }
 
 @Composable
-private fun MoreMenu(onDeleteClick: () -> Unit) {
+private fun MoreMenu(onAddToCollectionClick: () -> Unit, onDeleteClick: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         IconButton(onClick = { expanded = true }) {
@@ -193,6 +231,14 @@ private fun MoreMenu(onDeleteClick: () -> Unit) {
             )
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.collection_add_title)) },
+                leadingIcon = { Icon(painterResource(R.drawable.ic_books), contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    onAddToCollectionClick()
+                },
+            )
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.delete_book_title), color = MaterialTheme.colorScheme.error) },
                 leadingIcon = {
@@ -369,6 +415,9 @@ private fun BookDetailPreview() {
             onNavigateUp = {},
             onUpdateProgress = { _, _ -> },
             onDeleteBook = {},
+            onFavoriteChange = {},
+            onCollectionChange = { _, _ -> },
+            onCreateCollection = {},
             onAddNote = {},
             onNoteClick = {},
             onCapturePage = {},
