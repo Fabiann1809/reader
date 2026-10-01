@@ -65,6 +65,8 @@ class MigrationTest {
             // Added in version 3: nothing is a favorite and there are no user collections yet.
             assertFalse(book.isFavorite)
             assertTrue(database.collectionDao().observeAll().first().isEmpty())
+            // Added in version 4: the book was never opened in the reader.
+            assertNull(book.readingLocation)
 
             val note = database.noteDao().observeByBook(1).first().single()
             assertEquals("Idea central", note.content)

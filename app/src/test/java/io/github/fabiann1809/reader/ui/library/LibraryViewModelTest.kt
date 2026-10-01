@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.ui.library
 
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookSort
 import io.github.fabiann1809.reader.data.book.BookStatus
@@ -354,5 +355,18 @@ class LibraryViewModelTest {
         viewModel.importBooks(listOf("content://picker/roto.epub"))
         viewModel.dismissFailedImports()
         assertEquals(ImportStatus.Idle, viewModel.importStatus.value)
+    }
+
+    @Test
+    fun continueOffersTheLastReadDigitalBookWhateverTheShelf() = runTest {
+        val viewModel = viewModel()
+        assertNull(viewModel.uiState.value.bookToContinue)
+
+        books.addBook(
+            Book(id = 3, title = "El principito", author = "", kind = BookKind.DIGITAL, lastOpenedAt = 100, createdAt = 3),
+        )
+        viewModel.selectFilter(LibraryFilter.Smart(SmartCollection.FAVORITES))
+
+        assertEquals("El principito", viewModel.uiState.value.bookToContinue?.title)
     }
 }

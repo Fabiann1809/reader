@@ -34,4 +34,17 @@ class BookRulesTest {
         assertEquals(BookStatus.FINISHED, withoutTotal.status)
         assertEquals(40, withoutTotal.currentPage)
     }
+
+    @Test
+    fun theBookToContinueIsTheDigitalOneReadMostRecently() {
+        val digital = addedToday.copy(kind = BookKind.DIGITAL, format = BookFormat.EPUB, filePath = "books/a.epub")
+        val older = digital.copy(id = 1, title = "Old", lastOpenedAt = 10)
+        val newer = digital.copy(id = 2, title = "New", lastOpenedAt = 20)
+        val neverOpened = digital.copy(id = 3, title = "Never")
+        val finished = digital.copy(id = 4, title = "Done", lastOpenedAt = 30, status = BookStatus.FINISHED)
+        val paper = addedToday.copy(id = 5, title = "Paper", lastOpenedAt = 40)
+
+        assertEquals("New", listOf(older, newer, neverOpened, finished, paper).bookToContinue()?.title)
+        assertEquals(null, listOf(neverOpened, finished, paper).bookToContinue())
+    }
 }

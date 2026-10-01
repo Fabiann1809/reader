@@ -7,8 +7,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.commitNow
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ReaderApplication
+import io.github.fabiann1809.reader.data.reader.ReaderSession
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 
@@ -19,15 +24,21 @@ import org.readium.r2.navigator.epub.EpubNavigatorFragment
  */
 class EpubReaderFragment : Fragment() {
 
+    private val bookId: Long
+        get() = requireArguments().getLong(ARG_BOOK_ID)
+
+    private val session: ReaderSession
+        get() = (requireActivity().application as ReaderApplication).container.readerSession
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        val bookId = requireArguments().getLong(ARG_BOOK_ID)
-        val publication = (requireActivity().application as ReaderApplication).container.readerSession.publication(bookId)
+        val publication = session.publication(bookId)
         // After the app process was killed nothing is open yet: Readium's dummy factory restores an empty
         // navigator, and ReaderScreen adds this fragment again once the book is reopened.
         childFragmentManager.fragmentFactory = if (publication == null) {
             EpubNavigatorFragment.createDummyFactory()
         } else {
-            EpubNavigatorFactory(publication).createFragmentFactory(initialLocator = null)
+            // Starts where the reader left off (saved in the book, or the last page turn before a rotation).
+            EpubNavigatorFactory(publication).createFragmentFactory(initialLocator = session.initialLocator(bookId))
         }
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null && publication != null) {
@@ -37,6 +48,16 @@ class EpubReaderFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         FragmentContainerView(inflater.context).apply { id = CONTAINER_ID }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_TAG) as? EpubNavigatorFragment ?: return
+        // Each page turn is reported, so reopening the book returns to the same page (T11.2).
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                navigator.currentLocator.collect { session.reportLocation(bookId, it) }
+            }
+        }
+    }
 
     companion object {
         const val ARG_BOOK_ID = "bookId"

@@ -51,14 +51,12 @@ import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.BookCover
 import io.github.fabiann1809.reader.ui.components.NoteItem
 import io.github.fabiann1809.reader.ui.components.OutlineButton
-import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.components.StatusMessage
-import io.github.fabiann1809.reader.ui.components.TonalButton
 import io.github.fabiann1809.reader.ui.components.bookProgressText
 import io.github.fabiann1809.reader.ui.components.labelRes
-import io.github.fabiann1809.reader.ui.library.CollectionNameDialog
 import io.github.fabiann1809.reader.ui.components.progressFraction
+import io.github.fabiann1809.reader.ui.library.CollectionNameDialog
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import io.github.fabiann1809.reader.util.formatDate
 import kotlin.math.roundToInt
@@ -69,6 +67,7 @@ fun BookDetailScreen(
     onAddNote: () -> Unit,
     onNoteClick: (Long) -> Unit,
     onCapturePage: () -> Unit,
+    onRead: () -> Unit = {},
     viewModel: BookDetailViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -89,6 +88,7 @@ fun BookDetailScreen(
         onAddNote = onAddNote,
         onNoteClick = onNoteClick,
         onCapturePage = onCapturePage,
+        onRead = onRead,
     )
 }
 
@@ -105,6 +105,7 @@ fun BookDetailContent(
     onNoteClick: (Long) -> Unit,
     onCapturePage: () -> Unit,
     modifier: Modifier = Modifier,
+    onRead: () -> Unit = {},
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     var showProgressDialog by rememberSaveable { mutableStateOf(false) }
@@ -150,6 +151,7 @@ fun BookDetailContent(
                 notes = uiState.notes,
                 onUpdateProgressClick = { showProgressDialog = true },
                 onCapturePage = onCapturePage,
+                onRead = onRead,
                 onAddNote = onAddNote,
                 onNoteClick = onNoteClick,
                 modifier = contentModifier,
@@ -259,6 +261,7 @@ private fun BookDetailBody(
     notes: List<Note>,
     onUpdateProgressClick: () -> Unit,
     onCapturePage: () -> Unit,
+    onRead: () -> Unit,
     onAddNote: () -> Unit,
     onNoteClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
@@ -272,7 +275,9 @@ private fun BookDetailBody(
             BookHeader(book = book)
         }
         item(key = "actions") {
-            BookActions(
+            BookDetailActions(
+                book = book,
+                onRead = onRead,
                 onCapturePage = onCapturePage,
                 onUpdateProgressClick = onUpdateProgressClick,
                 onAddNote = onAddNote,
@@ -348,32 +353,6 @@ private fun ReadingProgress(book: Book) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-    }
-}
-
-/** One primary action (capturing a page is the core of the MVP), the rest are tonal. */
-@Composable
-private fun BookActions(onCapturePage: () -> Unit, onUpdateProgressClick: () -> Unit, onAddNote: () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 8.dp)) {
-        PrimaryButton(
-            text = stringResource(R.string.capture_title),
-            onClick = onCapturePage,
-            icon = R.drawable.ic_camera,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            TonalButton(
-                text = stringResource(R.string.update_progress_short),
-                onClick = onUpdateProgressClick,
-                modifier = Modifier.weight(1f),
-            )
-            TonalButton(
-                text = stringResource(R.string.note_new_title),
-                onClick = onAddNote,
-                icon = R.drawable.ic_note_pencil,
-                modifier = Modifier.weight(1f),
-            )
-        }
     }
 }
 

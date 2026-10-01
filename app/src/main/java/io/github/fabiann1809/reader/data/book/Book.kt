@@ -29,6 +29,8 @@ data class Book(
     val language: String? = null,
     // Epoch milliseconds of the last time the book was opened in the reader.
     val lastOpenedAt: Long? = null,
+    // Where the reader left off: Readium's Locator as JSON. Null until the book is first read.
+    val readingLocation: String? = null,
     // "Mis favoritos" is this flag (a smart collection), not a stored collection.
     @ColumnInfo(defaultValue = "0")
     val isFavorite: Boolean = false,

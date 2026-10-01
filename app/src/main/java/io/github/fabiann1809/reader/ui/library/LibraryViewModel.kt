@@ -6,6 +6,7 @@ import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.book.arrangedBy
+import io.github.fabiann1809.reader.data.book.bookToContinue
 import io.github.fabiann1809.reader.data.book.importing.ImportQueue
 import io.github.fabiann1809.reader.data.book.importing.ImportStatus
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
@@ -55,11 +56,12 @@ class LibraryViewModel(
             collectionRepository.observeBooks(filter).map { books -> Triple(filter, collection, books) }
         },
         collectionRepository.observeCollections(),
-        bookRepository.observeBooks().map { it.isEmpty() },
+        // The whole library (not just this shelf): is it empty, and which book "Continuar" opens.
+        bookRepository.observeBooks().map { all -> all.isEmpty() to all.bookToContinue() },
         query,
         // combine() takes at most five typed flows, so the display state travels together.
         combine(preferences.libraryArrangement, preferences.libraryLayout, selection, ::Triple),
-    ) { (filter, collection, books), collections, libraryIsEmpty, query, (arrangement, layout, selection) ->
+    ) { (filter, collection, books), collections, (libraryIsEmpty, bookToContinue), query, (arrangement, layout, selection) ->
         val shown = books.filter { it.matchesSearch(query) }.arrangedBy(arrangement)
         LibraryUiState(
             books = shown,
@@ -68,6 +70,7 @@ class LibraryViewModel(
             currentCollection = collection,
             collections = collections,
             libraryIsEmpty = libraryIsEmpty,
+            bookToContinue = bookToContinue,
             query = query,
             arrangement = arrangement,
             layout = layout,

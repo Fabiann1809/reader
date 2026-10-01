@@ -3,14 +3,9 @@ package io.github.fabiann1809.reader.ui.library
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,14 +13,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
@@ -170,7 +161,7 @@ fun LibraryContent(
             )
         },
         floatingActionButton = {
-            if (showFab) AddBookButton(onClick = { showAddBookSheet = true })
+            if (showFab) LibraryFab(uiState.bookToContinue, onContinue = onOpenBook, onAddBook = { showAddBookSheet = true })
         },
     ) { innerPadding ->
         val empty = emptyState(uiState, { showAddBookSheet = true }, onSearch, onArrangementChange, onSelectFilter)
@@ -226,20 +217,6 @@ fun LibraryContent(
                 },
             ),
         )
-    }
-}
-
-@Composable
-private fun AddBookButton(onClick: () -> Unit) {
-    // Content overload on purpose: the text/icon overload hides the label from screen readers.
-    ExtendedFloatingActionButton(
-        onClick = onClick,
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
-    ) {
-        Icon(painterResource(R.drawable.ic_plus_circle), contentDescription = null)
-        Spacer(Modifier.width(12.dp))
-        Text(stringResource(R.string.library_add_book))
     }
 }
 

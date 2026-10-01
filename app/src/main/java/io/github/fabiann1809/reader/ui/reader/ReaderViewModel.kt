@@ -2,12 +2,15 @@ package io.github.fabiann1809.reader.ui.reader
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookRepository
+import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.data.reader.ReaderSession
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 sealed interface ReaderUiState {
@@ -23,6 +26,8 @@ class ReaderViewModel(
     private val bookId: Long,
     private val bookRepository: BookRepository,
     private val session: ReaderSession,
+    // Injected so tests control time.
+    private val now: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ReaderUiState>(ReaderUiState.Loading)
@@ -32,8 +37,28 @@ class ReaderViewModel(
         viewModelScope.launch {
             val book = bookRepository.getBook(bookId)
             val problem = if (book == null) OpenProblem.NO_FILE else session.open(book)
+            if (book != null && problem == null) markOpened()
             _uiState.value = if (problem == null) ReaderUiState.Ready(bookId) else ReaderUiState.CannotOpen(problem)
         }
+        viewModelScope.launch {
+            session.locations.filter { it.bookId == bookId }.collect { location ->
+                updateBook { it.copy(readingLocation = location.json) }
+            }
+        }
+    }
+
+    // "Continuar leyendo" and the "Último leído" order use lastOpenedAt; opening a book also means reading it.
+    private suspend fun markOpened() = updateBook { book ->
+        book.copy(
+            lastOpenedAt = now(),
+            status = if (book.status == BookStatus.TO_READ) BookStatus.READING else book.status,
+        )
+    }
+
+    // Reads the stored book first, so a change made elsewhere meanwhile is not overwritten.
+    private suspend fun updateBook(change: (Book) -> Book) {
+        val book = bookRepository.getBook(bookId) ?: return
+        bookRepository.updateBook(change(book))
     }
 
     // Leaving the reader frees the book; a rotation keeps this ViewModel, so the book stays open.

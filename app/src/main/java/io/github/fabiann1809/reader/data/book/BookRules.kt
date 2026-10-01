@@ -11,3 +11,11 @@ fun Book.isNew(now: Long = System.currentTimeMillis()): Boolean =
 
 /** Finished, with the progress moved to the last page when the page count is known. */
 fun Book.markedAsRead(): Book = copy(status = BookStatus.FINISHED, currentPage = totalPages ?: currentPage)
+
+/**
+ * The book "Continuar leyendo" opens: the digital book read most recently, unless it is finished.
+ * Null when no book was opened in the reader yet.
+ */
+fun List<Book>.bookToContinue(): Book? =
+    filter { it.kind == BookKind.DIGITAL && it.status != BookStatus.FINISHED && it.lastOpenedAt != null }
+        .maxByOrNull { it.lastOpenedAt ?: 0L }

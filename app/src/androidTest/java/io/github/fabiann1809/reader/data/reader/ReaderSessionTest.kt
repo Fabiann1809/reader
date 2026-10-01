@@ -9,12 +9,17 @@ import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.ReadiumToolkit
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.publication.Locator
 import java.io.File
 
 /** Real Readium on the small books in androidTest/assets/books. */
@@ -67,5 +72,29 @@ class ReaderSessionTest {
 
         bookFiles.resolve(damaged.filePath!!).delete()
         assertEquals(OpenProblem.NO_FILE, session.open(damaged))
+    }
+
+    @Test
+    fun theReaderStartsWhereItWasLeftAndReportsPageTurns() = runTest {
+        val saved = """{"href":"OEBPS/chapter1.xhtml","type":"application/xhtml+xml","locations":{"progression":0.5}}"""
+        val book = bookWith("principito.epub", BookFormat.EPUB).copy(readingLocation = saved)
+        assertNull(session.open(book))
+
+        val start = session.initialLocator(1)!!
+        assertEquals(0.5, start.locations.progression!!, 0.0001)
+
+        val reported = async(start = CoroutineStart.UNDISPATCHED) { session.locations.first() }
+        session.reportLocation(1, start.copyWithLocations(progression = 0.75))
+        assertEquals(0.75, Locator.fromJSON(JSONObject(reported.await().json))!!.locations.progression!!, 0.0001)
+        // A rotation recreates the navigator from the last page turn.
+        assertEquals(0.75, session.initialLocator(1)!!.locations.progression!!, 0.0001)
+    }
+
+    @Test
+    fun anUnreadableSavedLocationStartsFromTheBeginning() = runTest {
+        val book = bookWith("principito.epub", BookFormat.EPUB).copy(readingLocation = "not json")
+
+        assertNull(session.open(book))
+        assertNull(session.initialLocator(1))
     }
 }

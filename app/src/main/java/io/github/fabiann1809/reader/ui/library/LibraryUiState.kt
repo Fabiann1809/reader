@@ -23,6 +23,8 @@ data class LibraryUiState(
     val layout: LibraryLayout = LibraryLayout(),
     /** Books checked in selection mode; empty when not selecting. Only ids of shown books. */
     val selectedIds: Set<Long> = emptySet(),
+    /** What "Continuar" opens, from the whole library whatever the shelf shows. Null if nothing was read yet. */
+    val bookToContinue: Book? = null,
 ) {
     val isSelecting: Boolean
         get() = selectedIds.isNotEmpty()

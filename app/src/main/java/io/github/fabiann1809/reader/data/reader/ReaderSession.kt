@@ -5,7 +5,14 @@ import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.ReadiumToolkit
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
+import org.json.JSONException
+import org.json.JSONObject
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 
 /** Why a book could not be opened in the reader. */
@@ -20,13 +27,25 @@ enum class OpenProblem {
     UNREADABLE,
 }
 
-/** Opens a book for reading and keeps it while it is read. */
+/** Where the reader is in a book: Readium's Locator as JSON, ready to be saved in [Book.readingLocation]. */
+data class ReadingLocation(val bookId: Long, val json: String)
+
+/** Opens a book for reading, keeps it while it is read and reports where the reader is. */
 interface ReaderSession {
     /** Null when the book is open and ready, otherwise why it is not. */
     suspend fun open(book: Book): OpenProblem?
 
     /** The open publication of [bookId], or null if it is not open (e.g. after the app process was killed). */
     fun publication(bookId: Long): Publication?
+
+    /** Where to start reading [bookId]: the last reported location, or the saved one. Null for the start. */
+    fun initialLocator(bookId: Long): Locator?
+
+    /** Called by the navigator on every page turn. */
+    fun reportLocation(bookId: Long, locator: Locator)
+
+    /** Page turns, to be saved; one at a time, the newest replacing an unsaved older one. */
+    val locations: SharedFlow<ReadingLocation>
 
     fun close(bookId: Long)
 }
@@ -39,6 +58,10 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
 
     private var openBookId: Long? = null
     private var openPublication: Publication? = null
+    private var lastLocator: Locator? = null
+
+    private val _locations = MutableSharedFlow<ReadingLocation>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    override val locations: SharedFlow<ReadingLocation> = _locations.asSharedFlow()
 
     override suspend fun open(book: Book): OpenProblem? {
         if (book.id == openBookId && openPublication != null) return null
@@ -52,10 +75,19 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         closeCurrent()
         openBookId = book.id
         openPublication = publication
+        lastLocator = book.readingLocation?.let(::parseLocator)
         return null
     }
 
     override fun publication(bookId: Long): Publication? = openPublication.takeIf { bookId == openBookId }
+
+    override fun initialLocator(bookId: Long): Locator? = lastLocator.takeIf { bookId == openBookId }
+
+    override fun reportLocation(bookId: Long, locator: Locator) {
+        if (bookId != openBookId || locator == lastLocator) return
+        lastLocator = locator
+        _locations.tryEmit(ReadingLocation(bookId, locator.toJSON().toString()))
+    }
 
     override fun close(bookId: Long) {
         if (bookId == openBookId) closeCurrent()
@@ -65,5 +97,13 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         openPublication?.close()
         openPublication = null
         openBookId = null
+        lastLocator = null
+    }
+
+    // A location saved by another Readium version that can't be read just means starting from the beginning.
+    private fun parseLocator(json: String): Locator? = try {
+        Locator.fromJSON(JSONObject(json))
+    } catch (e: JSONException) {
+        null
     }
 }

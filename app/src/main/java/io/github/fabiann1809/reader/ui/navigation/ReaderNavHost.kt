@@ -182,6 +182,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onAddNote = { navController.navigate(NoteEditorRoute(bookId)) },
                 onNoteClick = { noteId -> navController.navigate(NoteEditorRoute(bookId, noteId)) },
                 onCapturePage = { navController.navigate(CaptureRoute(bookId)) },
+                onRead = { navController.navigate(ReaderRoute(bookId)) },
             )
         }
         composable<NoteEditorRoute> {
