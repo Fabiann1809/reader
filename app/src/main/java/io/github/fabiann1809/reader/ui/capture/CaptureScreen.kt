@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -46,6 +47,7 @@ import kotlinx.coroutines.launch
 fun CaptureScreen(onNavigateUp: () -> Unit, onImageReady: (Uri) -> Unit) {
     val permission = rememberCameraPermissionState()
     val context = LocalContext.current
+    val resources = LocalResources.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     // Survives rotation so the photo isn't lost.
@@ -91,7 +93,7 @@ fun CaptureScreen(onNavigateUp: () -> Unit, onImageReady: (Uri) -> Unit) {
             CameraCapture(
                 onImageCaptured = { capturedUri = it },
                 onError = {
-                    scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.capture_error)) }
+                    scope.launch { snackbarHostState.showSnackbar(resources.getString(R.string.capture_error)) }
                 },
                 onPickFromGallery = pickFromGallery,
                 onClose = onNavigateUp,

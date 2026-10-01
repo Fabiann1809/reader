@@ -36,7 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -98,7 +98,7 @@ fun SettingsContent(
     modifier: Modifier = Modifier,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
+    val resources = LocalResources.current
 
     LaunchedEffect(uiState.message) {
         val message = uiState.message ?: return@LaunchedEffect
@@ -106,7 +106,7 @@ fun SettingsContent(
             SettingsMessage.KEY_SAVED -> R.string.settings_key_saved
             SettingsMessage.KEY_CLEARED -> R.string.settings_key_cleared
         }
-        snackbarHostState.showSnackbar(context.getString(text))
+        snackbarHostState.showSnackbar(resources.getString(text))
         onMessageShown()
     }
 
