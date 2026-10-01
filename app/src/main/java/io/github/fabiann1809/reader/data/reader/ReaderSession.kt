@@ -7,13 +7,17 @@ import io.github.fabiann1809.reader.data.book.ReadiumToolkit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.locateProgression
 
 /** Why a book could not be opened in the reader. */
 enum class OpenProblem {
@@ -29,6 +33,9 @@ enum class OpenProblem {
 
 /** Where the reader is in a book: Readium's Locator as JSON, ready to be saved in [Book.readingLocation]. */
 data class ReadingLocation(val bookId: Long, val json: String)
+
+/** What the reader's controls show: the chapter's title and how far into the book (0 to 1) the page is. */
+data class ReadingPosition(val bookId: Long, val chapter: String?, val progression: Double?)
 
 /** Opens a book for reading, keeps it while it is read and reports where the reader is. */
 interface ReaderSession {
@@ -47,6 +54,15 @@ interface ReaderSession {
     /** Page turns, to be saved; one at a time, the newest replacing an unsaved older one. */
     val locations: SharedFlow<ReadingLocation>
 
+    /** The current page of the open book, also when it did not change since it was saved. */
+    val position: StateFlow<ReadingPosition?>
+
+    /** Moves the open navigator of [bookId] to [totalProgression] (0 to 1) of the book, e.g. from the progress bar. */
+    suspend fun jumpTo(bookId: Long, totalProgression: Double)
+
+    /** Where the open navigator must go (see [jumpTo]). */
+    val jumps: SharedFlow<Locator>
+
     fun close(bookId: Long)
 }
 
@@ -62,6 +78,12 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
 
     private val _locations = MutableSharedFlow<ReadingLocation>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     override val locations: SharedFlow<ReadingLocation> = _locations.asSharedFlow()
+
+    private val _position = MutableStateFlow<ReadingPosition?>(null)
+    override val position: StateFlow<ReadingPosition?> = _position.asStateFlow()
+
+    private val _jumps = MutableSharedFlow<Locator>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    override val jumps: SharedFlow<Locator> = _jumps.asSharedFlow()
 
     override suspend fun open(book: Book): OpenProblem? {
         if (book.id == openBookId && openPublication != null) return null
@@ -84,9 +106,17 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
     override fun initialLocator(bookId: Long): Locator? = lastLocator.takeIf { bookId == openBookId }
 
     override fun reportLocation(bookId: Long, locator: Locator) {
-        if (bookId != openBookId || locator == lastLocator) return
+        if (bookId != openBookId) return
+        _position.value = ReadingPosition(bookId, locator.title, locator.locations.totalProgression)
+        if (locator == lastLocator) return
         lastLocator = locator
         _locations.tryEmit(ReadingLocation(bookId, locator.toJSON().toString()))
+    }
+
+    override suspend fun jumpTo(bookId: Long, totalProgression: Double) {
+        val publication = publication(bookId) ?: return
+        val locator = publication.locateProgression(totalProgression.coerceIn(0.0, 1.0)) ?: return
+        _jumps.tryEmit(locator)
     }
 
     override fun close(bookId: Long) {
@@ -94,6 +124,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
     }
 
     private fun closeCurrent() {
+        _position.value = null
         openPublication?.close()
         openPublication = null
         openBookId = null

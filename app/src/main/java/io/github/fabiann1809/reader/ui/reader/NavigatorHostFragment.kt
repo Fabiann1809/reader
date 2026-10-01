@@ -15,7 +15,10 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ReaderApplication
 import io.github.fabiann1809.reader.data.reader.ReaderSession
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.TapEvent
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 
@@ -23,8 +26,10 @@ import org.readium.r2.shared.publication.Publication
  * Hosts one of Readium's navigators, which are Fragments, so Compose can embed it (see ReaderScreen).
  * It follows Readium's guide: the navigator's FragmentFactory needs the open publication and must be
  * set before super.onCreate, because Android recreates the navigator there (e.g. on rotation).
- * Each format only says which navigator to create.
+ * Each format only says which navigator to create. Readium marks its tap events as experimental,
+ * but they are its documented way to get taps on the page.
  */
+@OptIn(ExperimentalReadiumApi::class)
 abstract class NavigatorHostFragment : Fragment() {
 
     /** The navigator's class, the one Android restores by name. */
@@ -35,6 +40,9 @@ abstract class NavigatorHostFragment : Fragment() {
 
     /** Restores an empty navigator after the app process was killed (Readium's "dummy" factory). */
     protected abstract fun dummyNavigatorFactory(): FragmentFactory
+
+    /** Set by ReaderScreen: a tap in the middle of the page shows or hides the controls. */
+    var onCenterTap: () -> Unit = {}
 
     private val bookId: Long
         get() = requireArguments().getLong(ARG_BOOK_ID)
@@ -62,12 +70,23 @@ abstract class NavigatorHostFragment : Fragment() {
         FragmentContainerView(inflater.context).apply { id = CONTAINER_ID }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_TAG) as? Navigator ?: return
-        // Each page turn is reported, so reopening the book returns to the same page (T11.2).
+        val navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_TAG) as? VisualNavigator ?: return
+        navigator.addInputListener(CenterTapListener(view))
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                navigator.currentLocator.collect { session.reportLocation(bookId, it) }
+                // Each page turn is reported, so reopening the book returns to the same page (T11.2).
+                launch { navigator.currentLocator.collect { session.reportLocation(bookId, it) } }
+                launch { session.jumps.collect { navigator.go(it) } }
             }
+        }
+    }
+
+    /** Taps in the middle of the page go to [onCenterTap]; the others stay with Readium. */
+    private inner class CenterTapListener(private val page: View) : InputListener {
+        override fun onTap(event: TapEvent): Boolean {
+            if (!isCenterTap(event.point.x, page.width)) return false
+            onCenterTap()
+            return true
         }
     }
 

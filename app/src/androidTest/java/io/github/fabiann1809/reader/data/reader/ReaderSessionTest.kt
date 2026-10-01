@@ -99,6 +99,29 @@ class ReaderSessionTest {
     }
 
     @Test
+    fun theControlsSeeThePageEvenWhenItWasAlreadySaved() = runTest {
+        val saved = """{"href":"OEBPS/chapter1.xhtml","type":"application/xhtml+xml","title":"Capítulo 1","locations":{"totalProgression":0.5}}"""
+        assertNull(session.open(bookWith("principito.epub", BookFormat.EPUB).copy(readingLocation = saved)))
+
+        // The navigator starts on the saved page: nothing new to save, but the controls need it.
+        session.reportLocation(1, session.initialLocator(1)!!)
+
+        assertEquals(ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.5), session.position.value)
+        session.close(1)
+        assertNull(session.position.value)
+    }
+
+    @Test
+    fun jumpingSendsTheNavigatorToThatPartOfTheBook() = runTest {
+        assertNull(session.open(bookWith("principito.epub", BookFormat.EPUB)))
+
+        val jump = async(start = CoroutineStart.UNDISPATCHED) { session.jumps.first() }
+        session.jumpTo(1, totalProgression = 0.0)
+
+        assertEquals("OEBPS/chapter1.xhtml", jump.await().href.toString())
+    }
+
+    @Test
     fun anUnreadableSavedLocationStartsFromTheBeginning() = runTest {
         val book = bookWith("principito.epub", BookFormat.EPUB).copy(readingLocation = "not json")
 

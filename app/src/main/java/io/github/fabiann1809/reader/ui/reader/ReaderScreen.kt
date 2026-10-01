@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ui.reader
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,7 +41,10 @@ fun ReaderScreen(
             ReaderUiState.Loading -> CircularProgressIndicator()
             is ReaderUiState.Ready -> {
                 ImmersiveMode()
-                BookNavigator(state)
+                // While the controls are hidden, the first "Atrás" shows them; with them shown, it leaves.
+                BackHandler(enabled = !state.controlsVisible, onBack = viewModel::showControls)
+                BookNavigator(state.bookId, state.format, onCenterTap = viewModel::toggleControls)
+                ReaderControls(state, onBack = onNavigateUp, onSeek = viewModel::seekTo)
             }
             is ReaderUiState.CannotOpen -> CannotOpen(state.problem, onNavigateUp)
         }
@@ -49,13 +53,14 @@ fun ReaderScreen(
 
 /** Readium's navigator for the book's format. */
 @Composable
-private fun BookNavigator(state: ReaderUiState.Ready) {
-    val arguments = bundleOf(NavigatorHostFragment.ARG_BOOK_ID to state.bookId)
+private fun BookNavigator(bookId: Long, format: BookFormat, onCenterTap: () -> Unit) {
+    val arguments = bundleOf(NavigatorHostFragment.ARG_BOOK_ID to bookId)
     val modifier = Modifier.fillMaxSize()
-    when (state.format) {
-        BookFormat.PDF -> AndroidFragment<PdfReaderFragment>(arguments = arguments, modifier = modifier)
+    val connect: (NavigatorHostFragment) -> Unit = { it.onCenterTap = onCenterTap }
+    when (format) {
+        BookFormat.PDF -> AndroidFragment<PdfReaderFragment>(arguments = arguments, modifier = modifier, onUpdate = connect)
         // The session only opens EPUB and PDF (see ReadiumReaderSession).
-        else -> AndroidFragment<EpubReaderFragment>(arguments = arguments, modifier = modifier)
+        else -> AndroidFragment<EpubReaderFragment>(arguments = arguments, modifier = modifier, onUpdate = connect)
     }
 }
 

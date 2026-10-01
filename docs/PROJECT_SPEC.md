@@ -244,7 +244,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T11.1 Prueba técnica de Readium.** Navegador de EPUB dentro de Compose, embebido como Fragment en Compose (los navegadores de Readium están hechos con Fragments). *Hecho cuando:* un EPUB se pagina en pantalla completa.
 - [x] **T11.2 Abrir y continuar.** Guardar la posición (`Locator`) y `lastOpenedAt`; "Continuar leyendo" en el botón flotante y en el detalle. *Hecho cuando:* al reabrir, el libro vuelve a la misma página.
 - [x] **T11.3 PDF.** Visualización de PDF con PdfRenderer o el adaptador de Readium, con posición guardada. *Hecho cuando:* un PDF se lee y recuerda la página.
-- [ ] **T11.4 Overlay de controles.** Toque al centro: barra superior (atrás, capítulo, marcador, menú) e inferior (barra de progreso con capítulo, Índice, Aa, Voz, IA, Grabar). *Hecho cuando:* aparece y desaparece en 180 ms.
+- [x] **T11.4 Overlay de controles.** Toque al centro: barra superior (atrás, capítulo, marcador, menú) e inferior (barra de progreso con capítulo, Índice, Aa, Voz, IA, Grabar). *Hecho cuando:* aparece y desaparece en 180 ms.
 - [ ] **T11.5 Zonas de toque y gestos.** Izquierda, centro y derecha; deslizar; pellizcar para el tamaño; borde para el brillo; doble toque para día/noche. *Hecho cuando:* cada gesto funciona.
 - [ ] **T11.6 Índice y marcadores.** Entidad `Bookmark`. *Hecho cuando:* se salta a un capítulo y a un marcador.
 - [ ] **T11.7 Ajustes "Aa".** Temas Día, Sepia, Gris papel, Noche, AMOLED y Personalizado; fuentes (Literata, Merriweather, Source Serif, Lora, Atkinson, OpenDyslexic, Inter; todas OFL); tamaño, interlineado, márgenes y alineación; independientes del tema de la app. *Hecho cuando:* los cambios se ven al instante y persisten.
