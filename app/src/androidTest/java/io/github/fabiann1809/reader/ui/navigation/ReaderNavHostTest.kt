@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.ui.navigation
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -35,10 +36,14 @@ class ReaderNavHostTest {
         composeRule.runOnUiThread { composeRule.activity.onBackPressedDispatcher.onBackPressed() }
     }
 
-    /** "Añadir libro" only exists in the library (as the button or the empty-state action). */
+    /**
+     * Only the library has a search button or, when it is empty, "Añadir libro". The device's real
+     * books decide which one shows (and the add button says "Continuar" once a book was opened).
+     */
     private fun assertOnLibrary() {
         composeRule.waitUntil(TIMEOUT_MILLIS) {
-            composeRule.onAllNodesWithText(string(R.string.library_add_book)).fetchSemanticsNodes().isNotEmpty()
+            composeRule.onAllNodesWithContentDescription(string(R.string.library_search)).fetchSemanticsNodes().isNotEmpty() ||
+                composeRule.onAllNodesWithText(string(R.string.library_add_book)).fetchSemanticsNodes().isNotEmpty()
         }
     }
 
