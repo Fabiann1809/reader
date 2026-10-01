@@ -19,9 +19,11 @@ import io.github.fabiann1809.reader.ui.navigation.BookDetailRoute
 import io.github.fabiann1809.reader.ui.navigation.ExplanationRoute
 import io.github.fabiann1809.reader.ui.navigation.ExtractedTextRoute
 import io.github.fabiann1809.reader.ui.navigation.NoteEditorRoute
+import io.github.fabiann1809.reader.ui.navigation.ReaderRoute
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
 import io.github.fabiann1809.reader.ui.notes.AllNotesViewModel
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingViewModel
+import io.github.fabiann1809.reader.ui.reader.ReaderViewModel
 import io.github.fabiann1809.reader.ui.settings.SettingsViewModel
 
 /**
@@ -55,6 +57,13 @@ object AppViewModelProvider {
                 noteRepository = readerApplication().container.noteRepository,
                 collectionRepository = readerApplication().container.collectionRepository,
                 organizer = readerApplication().container.bookOrganizer,
+            )
+        }
+        initializer {
+            ReaderViewModel(
+                bookId = createSavedStateHandle().toRoute<ReaderRoute>().bookId,
+                bookRepository = readerApplication().container.bookRepository,
+                session = readerApplication().container.readerSession,
             )
         }
         initializer {

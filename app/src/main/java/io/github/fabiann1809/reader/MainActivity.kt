@@ -2,16 +2,17 @@ package io.github.fabiann1809.reader
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import io.github.fabiann1809.reader.ui.navigation.ReaderApp
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+// FragmentActivity (not just ComponentActivity): Readium's reader is a Fragment hosted inside Compose.
+class MainActivity : FragmentActivity() {
 
     // Asks the navigation to show the library, where the import progress is.
     private val showLibraryRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1)

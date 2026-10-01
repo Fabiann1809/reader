@@ -28,6 +28,10 @@ data object AddBookRoute
 @Serializable
 data class BookDetailRoute(val bookId: Long)
 
+// Full-screen reading of a digital book.
+@Serializable
+data class ReaderRoute(val bookId: Long)
+
 @Serializable
 data class NoteEditorRoute(val bookId: Long, val noteId: Long = NEW_NOTE_ID)
 

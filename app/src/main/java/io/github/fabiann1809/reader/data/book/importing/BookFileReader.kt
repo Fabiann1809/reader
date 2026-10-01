@@ -1,19 +1,12 @@
 package io.github.fabiann1809.reader.data.book.importing
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.util.Size
 import io.github.fabiann1809.reader.data.book.BookFormat
-import org.readium.adapter.pdfium.document.PdfiumDocumentFactory
+import io.github.fabiann1809.reader.data.book.ReadiumToolkit
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.coverFitting
-import org.readium.r2.shared.util.asset.AssetRetriever
-import org.readium.r2.shared.util.format.Specification
-import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.use
-import org.readium.r2.streamer.PublicationOpener
-import org.readium.r2.streamer.parser.DefaultPublicationParser
 import java.io.File
 
 /** What the app needs from a book file when importing it. Each field is null when the file does not have it. */
@@ -38,18 +31,7 @@ fun interface BookFileReader {
  * [BookFileReader] for EPUB, PDF (through the PDFium adapter) and CBZ with Readium, and for TXT,
  * which Readium does not handle, by itself.
  */
-class ReadiumBookFileReader(context: Context) : BookFileReader {
-
-    private val httpClient = DefaultHttpClient()
-    private val assetRetriever = AssetRetriever(context.contentResolver, httpClient)
-    private val publicationOpener = PublicationOpener(
-        publicationParser = DefaultPublicationParser(
-            context = context,
-            httpClient = httpClient,
-            assetRetriever = assetRetriever,
-            pdfFactory = PdfiumDocumentFactory(context),
-        ),
-    )
+class ReadiumBookFileReader(private val readium: ReadiumToolkit) : BookFileReader {
 
     override suspend fun read(file: File, fileName: String?): BookFileInfo? =
         readPublication(file) ?: readPlainText(file, fileName)
@@ -65,23 +47,13 @@ class ReadiumBookFileReader(context: Context) : BookFileReader {
 
     private suspend fun readPublication(file: File): BookFileInfo? {
         // Readium looks at the content, not the extension, so a renamed file is still recognized.
-        val asset = assetRetriever.retrieve(file).getOrElse { return null }
-        val format = when {
-            asset.format.conformsTo(Specification.Epub) -> BookFormat.EPUB
-            asset.format.conformsTo(Specification.Pdf) -> BookFormat.PDF
-            // A ZIP of images; comic RAR files (CBR) are not supported (see the spec's risks).
-            asset.format.conformsToAll(listOf(Specification.Zip, Specification.InformalComic)) -> BookFormat.CBZ
-            else -> null
-        }
+        val asset = readium.asset(file) ?: return null
+        val format = readium.bookFormat(asset)
         if (format == null) {
             asset.close()
             return null
         }
-        // No user interaction: importing must never prompt (e.g. for a DRM passphrase).
-        val publication = publicationOpener.open(asset, allowUserInteraction = false).getOrElse {
-            asset.close()
-            return null
-        }
+        val publication = readium.open(asset) ?: return null
         // The publication owns the asset from here and closes it.
         return publication.use { it.toInfo(format, cover = cover(it, format, file)) }
     }

@@ -15,6 +15,7 @@ import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
+import io.github.fabiann1809.reader.data.book.ReadiumToolkit
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -44,7 +45,7 @@ class BookImporterTest {
         importer = DefaultBookImporter(
             contentResolver = context.contentResolver,
             bookFiles = bookFiles,
-            fileReader = ReadiumBookFileReader(context),
+            fileReader = ReadiumBookFileReader(ReadiumToolkit(context)),
             bookRepository = books,
             untitled = "Libro sin título",
         )

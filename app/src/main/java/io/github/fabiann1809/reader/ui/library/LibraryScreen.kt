@@ -41,6 +41,7 @@ import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 fun LibraryScreen(
     onBookClick: (Long) -> Unit,
     onAddPhysicalBook: () -> Unit,
+    onOpenBook: (Long) -> Unit = onBookClick,
     viewModel: LibraryViewModel = viewModel(factory = AppViewModelProvider.Factory),
     folderViewModel: WatchedFolderViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
@@ -77,6 +78,7 @@ fun LibraryScreen(
             onDelete = viewModel::deleteSelected,
         ),
         onBookClick = onBookClick,
+        onOpenBook = onOpenBook,
         onAddPhysicalBook = onAddPhysicalBook,
         onImportFile = { pickBookFiles.launch(BOOK_MIME_TYPES) },
         watchedFolder = WatchedFolderOptions(
@@ -104,6 +106,8 @@ fun LibraryContent(
     onBookClick: (Long) -> Unit,
     onAddPhysicalBook: () -> Unit,
     modifier: Modifier = Modifier,
+    // "Abrir" in a digital book's menu: the reader.
+    onOpenBook: (Long) -> Unit = onBookClick,
     onImportFile: () -> Unit = {},
     watchedFolder: WatchedFolderOptions = WatchedFolderOptions(),
     importStatus: ImportStatus = ImportStatus.Idle,
@@ -131,8 +135,7 @@ fun LibraryContent(
     var newCollectionForBook by rememberSaveable { mutableStateOf<Long?>(null) }
 
     val menuActions = BookMenuActions(
-        // Until the reader exists (T11.2), opening a book shows its detail.
-        onOpen = onBookClick,
+        onOpen = onOpenBook,
         onDetail = onBookClick,
         onCollection = bookActions.onShowCollections,
         onMarkAsRead = bookActions.onMarkAsRead,

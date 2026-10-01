@@ -71,6 +71,10 @@
     <string name="book_menu_mark_read">Marcar como leído</string>
     <string name="book_badge_new">Nuevo</string>
     <string name="book_untitled">Libro sin título</string>
+    <string name="reader_cannot_open">No se puede abrir este libro</string>
+    <string name="reader_no_file">No encontramos el archivo del libro. Puedes importarlo de nuevo.</string>
+    <string name="reader_not_supported_yet">Por ahora el lector abre libros EPUB. Los demás formatos llegarán pronto.</string>
+    <string name="reader_unreadable">El archivo parece dañado o protegido.</string>
     <string name="book_menu_select">Seleccionar</string>
     <string name="selection_close">Cancelar selección</string>
     <plurals name="selection_count">

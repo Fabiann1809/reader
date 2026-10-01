@@ -37,6 +37,7 @@ import io.github.fabiann1809.reader.ui.notes.AllNotesScreen
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingScreen
 import io.github.fabiann1809.reader.ui.privacy.PrivacyScreen
 import io.github.fabiann1809.reader.ui.progress.ProgressScreen
+import io.github.fabiann1809.reader.ui.reader.ReaderScreen
 import io.github.fabiann1809.reader.ui.review.ReviewScreen
 import io.github.fabiann1809.reader.ui.settings.SettingsScreen
 import kotlinx.coroutines.flow.Flow
@@ -130,6 +131,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
         composable<LibraryRoute> {
             LibraryScreen(
                 onBookClick = { bookId -> navController.navigate(BookDetailRoute(bookId)) },
+                onOpenBook = { bookId -> navController.navigate(ReaderRoute(bookId)) },
                 onAddPhysicalBook = { navController.navigate(AddBookRoute) },
             )
         }
@@ -170,6 +172,9 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
             AddBookScreen(onNavigateUp = { navController.navigateUp() })
         }
         // Route arguments reach each ViewModel through its SavedStateHandle (see AppViewModelProvider).
+        composable<ReaderRoute> {
+            ReaderScreen(onNavigateUp = { navController.navigateUp() })
+        }
         composable<BookDetailRoute> { entry ->
             val bookId = entry.toRoute<BookDetailRoute>().bookId
             BookDetailScreen(

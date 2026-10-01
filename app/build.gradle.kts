@@ -75,10 +75,12 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.documentfile)
+    implementation(libs.androidx.fragment.compose)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.readium.shared)
     implementation(libs.readium.streamer)
+    implementation(libs.readium.navigator)
     implementation(libs.readium.adapter.pdfium.document)
 
     implementation(libs.okhttp)

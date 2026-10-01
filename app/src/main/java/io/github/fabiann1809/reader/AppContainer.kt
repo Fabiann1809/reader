@@ -12,6 +12,7 @@ import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
+import io.github.fabiann1809.reader.data.book.ReadiumToolkit
 import io.github.fabiann1809.reader.data.book.folder.DataStoreWatchedFolderStore
 import io.github.fabiann1809.reader.data.book.folder.DocumentFolderLister
 import io.github.fabiann1809.reader.data.book.folder.FolderLister
@@ -32,6 +33,8 @@ import io.github.fabiann1809.reader.data.note.DefaultNoteRepository
 import io.github.fabiann1809.reader.data.note.NoteRepository
 import io.github.fabiann1809.reader.data.prefs.AppPreferences
 import io.github.fabiann1809.reader.data.prefs.DataStoreAppPreferences
+import io.github.fabiann1809.reader.data.reader.ReaderSession
+import io.github.fabiann1809.reader.data.reader.ReadiumReaderSession
 import io.github.fabiann1809.reader.ocr.MlKitTextRecognizer
 import io.github.fabiann1809.reader.ocr.TextRecognizer
 import kotlinx.coroutines.CoroutineScope
@@ -51,6 +54,10 @@ class AppContainer(context: Context) {
 
     private val bookFiles: BookFiles by lazy { BookFiles(appContext.filesDir) }
 
+    private val readium: ReadiumToolkit by lazy { ReadiumToolkit(appContext) }
+
+    val readerSession: ReaderSession by lazy { ReadiumReaderSession(readium, bookFiles) }
+
     val bookRepository: BookRepository by lazy { DefaultBookRepository(database.bookDao(), bookFiles) }
 
     // App-wide work that must outlive any screen (e.g. an import started from another app's share).
@@ -61,7 +68,7 @@ class AppContainer(context: Context) {
         DefaultBookImporter(
             contentResolver = appContext.contentResolver,
             bookFiles = bookFiles,
-            fileReader = ReadiumBookFileReader(appContext),
+            fileReader = ReadiumBookFileReader(readium),
             bookRepository = bookRepository,
             untitled = appContext.getString(R.string.book_untitled),
         )
