@@ -17,6 +17,8 @@ import io.github.fabiann1809.reader.data.prefs.LibraryView
 import io.github.fabiann1809.reader.testing.FakeAppPreferences
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.FakeCollectionRepository
+import io.github.fabiann1809.reader.testing.FakeFailedImportStore
+import io.github.fabiann1809.reader.testing.FakeFileAccess
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collect
@@ -59,7 +61,7 @@ class LibraryViewModelTest {
             bookRepository,
             collections,
             preferences,
-            ImportQueue(importer, importScope),
+            ImportQueue(importer, importScope, FakeFileAccess(), FakeFailedImportStore()),
             BookOrganizer(bookRepository, collections),
         )
         // stateIn(WhileSubscribed) only runs the queries while someone collects.
@@ -71,8 +73,13 @@ class LibraryViewModelTest {
 
     @Test
     fun initialStateIsLoading() {
-        assertTrue(LibraryViewModel(books, collections, preferences, ImportQueue(importer, TestScope()), BookOrganizer(books, collections))
-                .uiState.value.isLoading)
+        assertTrue(LibraryViewModel(
+                books,
+                collections,
+                preferences,
+                ImportQueue(importer, TestScope(), FakeFileAccess(), FakeFailedImportStore()),
+                BookOrganizer(books, collections),
+            ).uiState.value.isLoading)
     }
 
     @Test

@@ -13,8 +13,10 @@ import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
 import io.github.fabiann1809.reader.data.book.importing.BookImporter
+import io.github.fabiann1809.reader.data.book.importing.DataStoreFailedImportStore
 import io.github.fabiann1809.reader.data.book.importing.DefaultBookImporter
 import io.github.fabiann1809.reader.data.book.importing.ImportQueue
+import io.github.fabiann1809.reader.data.book.importing.PersistedFileAccess
 import io.github.fabiann1809.reader.data.book.importing.ReadiumBookFileReader
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
 import io.github.fabiann1809.reader.data.collection.DefaultCollectionRepository
@@ -57,7 +59,14 @@ class AppContainer(context: Context) {
         )
     }
 
-    val importQueue: ImportQueue by lazy { ImportQueue(bookImporter, applicationScope) }
+    val importQueue: ImportQueue by lazy {
+        ImportQueue(
+            importer = bookImporter,
+            scope = applicationScope,
+            fileAccess = PersistedFileAccess(appContext.contentResolver),
+            store = DataStoreFailedImportStore(appContext),
+        )
+    }
 
     val noteRepository: NoteRepository by lazy { DefaultNoteRepository(database.noteDao()) }
 

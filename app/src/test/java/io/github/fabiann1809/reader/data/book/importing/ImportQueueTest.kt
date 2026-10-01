@@ -1,5 +1,7 @@
 package io.github.fabiann1809.reader.data.book.importing
 
+import io.github.fabiann1809.reader.testing.FakeFailedImportStore
+import io.github.fabiann1809.reader.testing.FakeFileAccess
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
@@ -21,7 +23,10 @@ class ImportQueueTest {
         }
     }
 
-    private fun TestScope.queue() = ImportQueue(importer, backgroundScope)
+    private val fileAccess = FakeFileAccess()
+    private val store = FakeFailedImportStore()
+
+    private fun TestScope.queue() = ImportQueue(importer, backgroundScope, fileAccess, store)
 
     @Test
     fun countsUpWhileImportingAndEndsIdleWhenAllWork() = runTest {
@@ -102,6 +107,53 @@ class ImportQueueTest {
 
         queue.add(emptyList())
 
+        assertEquals(ImportStatus.Idle, queue.status.value)
+    }
+
+    @Test
+    fun accessIsKeptOnlyForFilesThatFailed() = runTest {
+        val queue = queue()
+
+        queue.add(listOf("a", "bad1", "lost1"))
+        runCurrent()
+
+        assertEquals(setOf("bad1", "lost1"), fileAccess.kept)
+        assertEquals(listOf("bad1", "lost1"), store.saved.map { it.uri })
+    }
+
+    @Test
+    fun failuresFromAPreviousRunAreShownAgain() = runTest {
+        store.saved = listOf(FailedImport("lost1", "roto.epub", isUnsupported = false))
+
+        val queue = queue()
+        runCurrent()
+
+        assertEquals(ImportStatus.Failed(store.saved, importedCount = 0), queue.status.value)
+    }
+
+    @Test
+    fun discardingForgetsTheFilesAndTheirAccess() = runTest {
+        val queue = queue()
+        queue.add(listOf("bad1"))
+        runCurrent()
+
+        queue.dismiss()
+        runCurrent()
+
+        assertEquals(emptySet<String>(), fileAccess.kept)
+        assertEquals(emptyList<FailedImport>(), store.saved)
+    }
+
+    @Test
+    fun aNewBatchLetsGoOfTheFilesItDoesNotRetry() = runTest {
+        val queue = queue()
+        queue.add(listOf("bad1", "lost1"))
+        runCurrent()
+
+        queue.add(listOf("a"))
+        runCurrent()
+
+        assertEquals(emptySet<String>(), fileAccess.kept)
         assertEquals(ImportStatus.Idle, queue.status.value)
     }
 }
