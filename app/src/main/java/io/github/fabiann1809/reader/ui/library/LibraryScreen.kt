@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ui.library
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,14 +17,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -43,6 +51,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
+import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.BookCover
 import io.github.fabiann1809.reader.ui.components.LightStatusBarIcons
@@ -64,6 +73,10 @@ fun LibraryScreen(
         uiState = uiState,
         onBookClick = onBookClick,
         onAddBook = onAddBook,
+        onSelectFilter = viewModel::selectFilter,
+        onCreateCollection = viewModel::createCollection,
+        onRenameCollection = viewModel::renameCurrentCollection,
+        onDeleteCollection = viewModel::deleteCurrentCollection,
     )
 }
 
@@ -73,20 +86,38 @@ fun LibraryContent(
     onBookClick: (Long) -> Unit,
     onAddBook: () -> Unit,
     modifier: Modifier = Modifier,
+    onSelectFilter: (LibraryFilter) -> Unit = {},
+    onCreateCollection: (String) -> Unit = {},
+    onRenameCollection: (String) -> Unit = {},
+    onDeleteCollection: () -> Unit = {},
 ) {
     val showFab = !uiState.isLoading && uiState.books.isNotEmpty()
+    var dialog by rememberSaveable { mutableStateOf(CollectionDialog.NONE) }
+    val title = uiState.currentCollection?.name
+        ?: stringResource((uiState.filter as? LibraryFilter.Smart)?.collection?.nameRes() ?: R.string.collection_all)
     Scaffold(
         modifier = modifier.woodWall(),
         containerColor = Color.Transparent,
         topBar = {
             // The library bar stays forest green in both themes: it is the app's identity.
             ReaderTopAppBar(
-                title = stringResource(R.string.library_title),
+                title = title,
+                onTitleClick = { dialog = CollectionDialog.PICKER },
+                onTitleClickLabel = stringResource(R.string.collection_change),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Primary40,
                     titleContentColor = Color.White,
                     actionIconContentColor = Color.White,
                 ),
+                actions = {
+                    // Only collections created by the user can be renamed or deleted.
+                    if (uiState.currentCollection != null) {
+                        CollectionMenu(
+                            onRename = { dialog = CollectionDialog.RENAME },
+                            onDelete = { dialog = CollectionDialog.DELETE },
+                        )
+                    }
+                },
             )
         },
         floatingActionButton = {
@@ -106,11 +137,106 @@ fun LibraryContent(
     ) { innerPadding ->
         when {
             uiState.isLoading -> Bookcase(innerPadding, itemCount = PLACEHOLDER_COUNT) { _, width -> PlaceholderCover(width) }
-            uiState.books.isEmpty() -> EmptyLibrary(innerPadding, onAddBook)
+            uiState.libraryIsEmpty -> EmptyShelf(
+                contentPadding = innerPadding,
+                title = stringResource(R.string.library_empty_title),
+                message = stringResource(R.string.library_empty_message),
+                action = stringResource(R.string.library_add_book),
+                actionIcon = R.drawable.ic_plus_circle,
+                onAction = onAddBook,
+            )
+            uiState.books.isEmpty() -> EmptyShelf(
+                contentPadding = innerPadding,
+                title = stringResource(R.string.collection_empty_title),
+                message = stringResource(
+                    if (uiState.currentCollection != null) {
+                        R.string.collection_empty_message
+                    } else {
+                        R.string.collection_smart_empty_message
+                    },
+                ),
+                action = stringResource(R.string.collection_show_all),
+                actionIcon = R.drawable.ic_books,
+                onAction = { onSelectFilter(LibraryFilter.Default) },
+            )
             else -> Bookcase(innerPadding, itemCount = uiState.books.size, bottomSpace = FAB_SPACE) { index, width ->
                 val book = uiState.books[index]
                 BookCover(book = book, onClick = { onBookClick(book.id) }, modifier = Modifier.width(width))
             }
+        }
+    }
+
+    when (dialog) {
+        CollectionDialog.NONE -> Unit
+        CollectionDialog.PICKER -> CollectionPickerSheet(
+            selected = uiState.filter,
+            collections = uiState.collections,
+            onSelect = { filter ->
+                onSelectFilter(filter)
+                dialog = CollectionDialog.NONE
+            },
+            onNewCollection = { dialog = CollectionDialog.CREATE },
+            onDismiss = { dialog = CollectionDialog.NONE },
+        )
+        CollectionDialog.CREATE -> CollectionNameDialog(
+            title = R.string.collection_new,
+            confirm = R.string.collection_create,
+            initialName = "",
+            onConfirm = { name ->
+                onCreateCollection(name)
+                dialog = CollectionDialog.NONE
+            },
+            onDismiss = { dialog = CollectionDialog.NONE },
+        )
+        CollectionDialog.RENAME -> CollectionNameDialog(
+            title = R.string.collection_rename,
+            confirm = R.string.collection_rename_confirm,
+            initialName = uiState.currentCollection?.name.orEmpty(),
+            onConfirm = { name ->
+                onRenameCollection(name)
+                dialog = CollectionDialog.NONE
+            },
+            onDismiss = { dialog = CollectionDialog.NONE },
+        )
+        CollectionDialog.DELETE -> DeleteCollectionDialog(
+            name = uiState.currentCollection?.name.orEmpty(),
+            onConfirm = {
+                onDeleteCollection()
+                dialog = CollectionDialog.NONE
+            },
+            onDismiss = { dialog = CollectionDialog.NONE },
+        )
+    }
+}
+
+/** Which collection sheet or dialog is open (only one at a time). */
+private enum class CollectionDialog { NONE, PICKER, CREATE, RENAME, DELETE }
+
+@Composable
+private fun CollectionMenu(onRename: () -> Unit, onDelete: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(
+                painter = painterResource(R.drawable.ic_dots_three_vertical),
+                contentDescription = stringResource(R.string.more_options),
+            )
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.collection_rename)) },
+                onClick = {
+                    expanded = false
+                    onRename()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.collection_delete), color = MaterialTheme.colorScheme.error) },
+                onClick = {
+                    expanded = false
+                    onDelete()
+                },
+            )
         }
     }
 }
@@ -162,8 +288,16 @@ private fun PlaceholderCover(width: Dp) {
     )
 }
 
+/** Shelf with a dashed "ghost" book (design 6.6), a message and one action. */
 @Composable
-private fun EmptyLibrary(contentPadding: PaddingValues, onAddBook: () -> Unit) {
+private fun EmptyShelf(
+    contentPadding: PaddingValues,
+    title: String,
+    message: String,
+    action: String,
+    @DrawableRes actionIcon: Int,
+    onAction: () -> Unit,
+) {
     BoxWithConstraints(
         Modifier
             .fillMaxSize()
@@ -181,24 +315,19 @@ private fun EmptyLibrary(contentPadding: PaddingValues, onAddBook: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.library_empty_title),
+                    text = title,
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White,
                     textAlign = TextAlign.Center,
                 )
                 Text(
-                    text = stringResource(R.string.library_empty_message),
+                    text = message,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.8f),
                     textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(16.dp))
-                PrimaryButton(
-                    text = stringResource(R.string.library_add_book),
-                    onClick = onAddBook,
-                    icon = R.drawable.ic_plus_circle,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                PrimaryButton(text = action, onClick = onAction, icon = actionIcon, modifier = Modifier.fillMaxWidth())
             }
         }
     }

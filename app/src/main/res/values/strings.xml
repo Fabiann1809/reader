@@ -7,7 +7,6 @@
     <string name="field_optional">Opcional</string>
 
     <!-- Library -->
-    <string name="library_title">Biblioteca</string>
     <string name="library_empty_title">Tus estantes están vacíos</string>
     <string name="library_empty_message">Añade tu primer libro y empieza a leer.</string>
     <string name="library_add_book">Añadir libro</string>
@@ -190,4 +189,24 @@
     <string name="onboarding_remember_title">Recuerda lo que aprendes</string>
     <string name="onboarding_remember_text">Guarda tus notas y repásalas con fichas. Y si quieres, ponte a prueba con un quiz.</string>
     <string name="onboarding_page">Paso %1$d de %2$d</string>
+
+    <!-- Collections -->
+    <string name="collections_title">Colecciones</string>
+    <string name="collection_all">Todos</string>
+    <string name="collection_favorites">Mis favoritos</string>
+    <string name="collection_reading">Leyendo ahora</string>
+    <string name="collection_finished">Terminados</string>
+    <string name="collection_to_read">Quiero leer</string>
+    <string name="collection_change">Cambiar colección</string>
+    <string name="collection_new">Nueva colección</string>
+    <string name="collection_name">Nombre de la colección</string>
+    <string name="collection_create">Crear</string>
+    <string name="collection_rename">Renombrar colección</string>
+    <string name="collection_rename_confirm">Guardar</string>
+    <string name="collection_delete">Eliminar colección</string>
+    <string name="collection_delete_message">Se eliminará la colección «%1$s». Sus libros seguirán en tu biblioteca.</string>
+    <string name="collection_empty_title">Nada aquí todavía</string>
+    <string name="collection_empty_message">Agrega libros a esta colección desde su detalle.</string>
+    <string name="collection_smart_empty_message">Cuando algún libro encaje aquí, aparecerá en este estante.</string>
+    <string name="collection_show_all">Ver todos los libros</string>
 </resources>

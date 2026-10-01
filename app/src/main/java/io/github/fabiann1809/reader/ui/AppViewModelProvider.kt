@@ -29,7 +29,11 @@ import io.github.fabiann1809.reader.ui.settings.SettingsViewModel
 object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer {
-            LibraryViewModel(readerApplication().container.bookRepository)
+            LibraryViewModel(
+                bookRepository = readerApplication().container.bookRepository,
+                collectionRepository = readerApplication().container.collectionRepository,
+                preferences = readerApplication().container.appPreferences,
+            )
         }
         initializer {
             AddBookViewModel(readerApplication().container.bookRepository)

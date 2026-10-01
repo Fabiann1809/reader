@@ -10,8 +10,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
+import io.github.fabiann1809.reader.data.collection.Collection
+import io.github.fabiann1809.reader.data.collection.LibraryFilter
+import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,7 +34,7 @@ class LibraryContentTest {
 
     @Test
     fun showsEmptyStateWhenThereAreNoBooks() {
-        setContent(LibraryUiState(isLoading = false))
+        setContent(LibraryUiState(isLoading = false, libraryIsEmpty = true))
 
         composeRule.onNodeWithText(composeRule.activity.getString(R.string.library_empty_title))
             .assertIsDisplayed()
@@ -80,5 +84,72 @@ class LibraryContentTest {
         setContent(LibraryUiState(books = listOf(Book(id = 1, title = "Dune", author = "Frank Herbert")), isLoading = false))
 
         composeRule.onNodeWithText(composeRule.activity.getString(R.string.library_add_book)).assertIsDisplayed()
+    }
+
+    private fun string(id: Int) = composeRule.activity.getString(id)
+
+    @Test
+    fun titleShowsTheCollectionAndOpensThePicker() {
+        setContent(LibraryUiState(isLoading = false, filter = LibraryFilter.Smart(SmartCollection.FAVORITES)))
+
+        composeRule.onNodeWithText(string(R.string.collection_favorites)).performClick()
+
+        composeRule.onNodeWithText(string(R.string.collections_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.collection_new)).assertIsDisplayed()
+    }
+
+    @Test
+    fun emptyCollectionOffersToShowAllBooks() {
+        var selected: LibraryFilter? = null
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(
+                        isLoading = false,
+                        filter = LibraryFilter.Custom(1),
+                        currentCollection = Collection(id = 1, name = "Trabajo"),
+                    ),
+                    onBookClick = {},
+                    onAddBook = {},
+                    onSelectFilter = { selected = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Trabajo").assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.collection_empty_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.collection_show_all)).performClick()
+        assertEquals(LibraryFilter.Default, selected)
+    }
+
+    @Test
+    fun customCollectionMenuRenamesAndDeletes() {
+        var renamedTo: String? = null
+        var deleted = false
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(
+                        isLoading = false,
+                        filter = LibraryFilter.Custom(1),
+                        currentCollection = Collection(id = 1, name = "Trabajo"),
+                    ),
+                    onBookClick = {},
+                    onAddBook = {},
+                    onRenameCollection = { renamedTo = it },
+                    onDeleteCollection = { deleted = true },
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription(string(R.string.more_options)).performClick()
+        composeRule.onNodeWithText(string(R.string.collection_rename)).performClick()
+        composeRule.onNodeWithText(string(R.string.collection_rename_confirm)).performClick()
+        assertEquals("Trabajo", renamedTo)
+
+        composeRule.onNodeWithContentDescription(string(R.string.more_options)).performClick()
+        composeRule.onNodeWithText(string(R.string.collection_delete)).performClick()
+        composeRule.onNodeWithText(string(R.string.action_delete)).performClick()
+        assertTrue(deleted)
     }
 }

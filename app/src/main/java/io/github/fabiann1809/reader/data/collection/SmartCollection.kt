@@ -20,4 +20,27 @@ sealed interface LibraryFilter {
     data class Smart(val collection: SmartCollection) : LibraryFilter
 
     data class Custom(val collectionId: Long) : LibraryFilter
+
+    /** Stable text form for preferences, e.g. "smart:FAVORITES" or "custom:12". */
+    fun encode(): String = when (this) {
+        is Smart -> "$SMART:${collection.name}"
+        is Custom -> "$CUSTOM:$collectionId"
+    }
+
+    companion object {
+        val Default: LibraryFilter = Smart(SmartCollection.ALL)
+
+        private const val SMART = "smart"
+        private const val CUSTOM = "custom"
+
+        /** Falls back to "Todos" for anything unknown (e.g. a value from an older version). */
+        fun decode(value: String?): LibraryFilter {
+            val (type, data) = value?.split(":", limit = 2)?.takeIf { it.size == 2 } ?: return Default
+            return when (type) {
+                SMART -> SmartCollection.entries.firstOrNull { it.name == data }?.let(::Smart)
+                CUSTOM -> data.toLongOrNull()?.let(::Custom)
+                else -> null
+            } ?: Default
+        }
+    }
 }
