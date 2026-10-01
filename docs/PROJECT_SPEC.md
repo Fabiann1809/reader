@@ -298,11 +298,9 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [ ] **T17.5 Accesibilidad.** Revisión con TalkBack, texto al 200 %, reducir animaciones y háptica en volteo, selección y fin de grabación. *Hecho cuando:* pasa la checklist del diseño (4 §9 y §13).
 - [ ] **T17.6 Widget y accesos directos.** Widget con Glance (Continuar o Grabar nota) y accesos directos del ícono (Continuar, Captura, Nota de voz). *Hecho cuando:* abren el destino correcto.
 
-### Fase 18 — Nube, Pro y cupo gratuito (requiere decisiones; ver riesgos)
+### Fase 18 — Nube (requiere decisiones; ver riesgos)
 - [ ] **T18.1 Sincronización con Google Drive.** Carpeta de datos de la app (appDataFolder) con inicio de sesión de Google, estados (Sincronizado, Pendiente, Error con Reintentar) y resolución de conflictos. Cambia la decisión "sin cuentas" del spec. *Hecho cuando:* dos dispositivos ven los mismos datos.
 - [ ] **T18.2 Dropbox.** Mismo contrato que T18.1. *Hecho cuando:* sincroniza.
-- [ ] **T18.3 Free/Pro.** Límites por plan y pantalla Pro; el método de pago está por decidir, porque sin Play Store no hay Play Billing. *Hecho cuando:* los límites se aplican según el plan.
-- [ ] **T18.4 Cupo gratuito (B9).** Función intermediaria serverless con tope diario global y límite por dispositivo, como un segundo `AiProvider`. Play Integrity exige publicar en Play Store. *Hecho cuando:* la app explica sin clave propia dentro del cupo.
 
 ## 10. Riesgos técnicos (en orden)
 
@@ -319,7 +317,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 3. **Selección de texto en PDF:** PdfRenderer no da capa de texto; la alternativa es OCR de la zona (T11.14).
 4. **Formatos:** MOBI/AZW3 (propietarios), FB2, DOCX, CBR y RAR (licencia de unrar) no tienen soporte gratuito sencillo en Readium. El plan cubre EPUB, PDF, TXT y CBZ; el resto se decide aparte.
 5. **Cuota de IA:** muchas funciones nuevas usan Gemini (quiz, fichas, transcripción, análisis), y la capa gratuita tiene límites por modelo. Se puede ampliar el respaldo de modelos ante `QuotaExhausted` y cachear respuestas.
-6. **Fase 18:** contradice "sin cuentas ni sincronización" y "APK fuera de Play Store" (Play Billing y Play Integrity dependen de Play Store). Se decide antes de empezarla.
+6. **Fase 18:** contradice "sin cuentas ni sincronización". Se decide antes de empezarla.
 7. **Efecto "curl" de página:** Readium no lo trae; se ofrecen deslizar, desvanecer, continuo o ninguno.
 
 ## 11. Pendientes por decidir
@@ -327,6 +325,8 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - Nombre definitivo de la app (provisional: `Reader`).
 - ~~Primer proveedor de IA~~ → decidido: **Google Gemini** (`gemini-flash-latest`, clave gratuita de Google AI Studio).
 - Idioma de las explicaciones (por defecto, el idioma del texto o español).
+- **Modelo Free/Pro:** límites por plan y pantalla Pro. Falta decidir el método de pago (sin Play Store no hay Play Billing).
+- **Cupo gratuito (B9):** función intermediaria serverless con tope diario global y límite por dispositivo, como un segundo `AiProvider`. Play Integrity exige publicar en Play Store.
 
 ---
 
