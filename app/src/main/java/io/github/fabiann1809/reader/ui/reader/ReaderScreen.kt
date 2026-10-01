@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ui.reader
 
+import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -8,9 +9,11 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.core.os.bundleOf
 import androidx.fragment.compose.AndroidFragment
@@ -41,6 +44,7 @@ fun ReaderScreen(
             ReaderUiState.Loading -> CircularProgressIndicator()
             is ReaderUiState.Ready -> {
                 ImmersiveMode()
+                SystemBrightnessOnLeave()
                 // While the controls are hidden, the first "Atrás" shows them; with them shown, it leaves.
                 BackHandler(enabled = !state.controlsVisible, onBack = viewModel::showControls)
                 BookNavigator(state.bookId, state.format, onCenterTap = viewModel::toggleControls)
@@ -48,6 +52,19 @@ fun ReaderScreen(
             }
             is ReaderUiState.CannotOpen -> CannotOpen(state.problem, onNavigateUp)
         }
+    }
+}
+
+/**
+ * Gives the screen back the system's brightness when the reader is left (the edge drag changes it
+ * while reading). On a rotation this resets the old window, which is about to go anyway.
+ */
+@Composable
+private fun SystemBrightnessOnLeave() {
+    val view = LocalView.current
+    DisposableEffect(view) {
+        val window = (view.context as? Activity)?.window
+        onDispose { window?.let { ReaderBrightness(it).show(null) } }
     }
 }
 

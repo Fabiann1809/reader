@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ui.components
 
+import android.content.Context
 import android.provider.Settings
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.runtime.Composable
@@ -26,7 +27,9 @@ object Motion {
 @Composable
 fun rememberReduceMotion(): Boolean {
     val context = LocalContext.current
-    return remember {
-        Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
-    }
+    return remember { isReduceMotionOn(context) }
 }
+
+/** [rememberReduceMotion] for views outside Compose (e.g. the reader's page turns). */
+fun isReduceMotionOn(context: Context): Boolean =
+    Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f

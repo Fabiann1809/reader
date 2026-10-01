@@ -15,7 +15,10 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ReaderApplication
 import io.github.fabiann1809.reader.data.reader.ReaderSession
 import kotlinx.coroutines.launch
+import io.github.fabiann1809.reader.ui.components.isReduceMotionOn
+import org.readium.r2.navigator.OverflowableNavigator
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.util.DirectionalNavigationAdapter
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -41,13 +44,22 @@ abstract class NavigatorHostFragment : Fragment() {
     /** Restores an empty navigator after the app process was killed (Readium's "dummy" factory). */
     protected abstract fun dummyNavigatorFactory(): FragmentFactory
 
+    /** What a pinch does on this format, or null when its navigator handles pinches itself. */
+    protected open val onPinch: ((Float) -> Unit)? = null
+
     /** Set by ReaderScreen: a tap in the middle of the page shows or hides the controls. */
     var onCenterTap: () -> Unit = {}
+
+    private var brightness: ReaderBrightness? = null
+
+    /** The navigator, once it was added (null after the process was killed, until the book reopens). */
+    protected val navigator: VisualNavigator?
+        get() = childFragmentManager.findFragmentByTag(NAVIGATOR_TAG) as? VisualNavigator
 
     private val bookId: Long
         get() = requireArguments().getLong(ARG_BOOK_ID)
 
-    private val session: ReaderSession
+    protected val session: ReaderSession
         get() = (requireActivity().application as ReaderApplication).container.readerSession
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,11 +79,24 @@ abstract class NavigatorHostFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-        FragmentContainerView(inflater.context).apply { id = CONTAINER_ID }
+        ReaderGestureLayout(inflater.context).apply {
+            addView(FragmentContainerView(inflater.context).apply { id = CONTAINER_ID })
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_TAG) as? VisualNavigator ?: return
+        val navigator = navigator ?: return
+        // Order matters: the first listener that handles a tap wins.
         navigator.addInputListener(CenterTapListener(view))
+        (navigator as? OverflowableNavigator)?.let {
+            // Taps on the left or right 30 % turn the page, in the book's reading direction (design 03 §4).
+            navigator.addInputListener(DirectionalNavigationAdapter(it, animatedTransition = !isReduceMotionOn(view.context)))
+        }
+        val brightness = ReaderBrightness(requireActivity().window).also { brightness = it }
+        brightness.show(session.adjustments.brightness)
+        (view as ReaderGestureLayout).apply {
+            onEdgeDrag = { drag -> adjustBrightness(brightness, drag) }
+            onPinch = this@NavigatorHostFragment.onPinch
+        }
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 // Each page turn is reported, so reopening the book returns to the same page (T11.2).
@@ -79,6 +104,19 @@ abstract class NavigatorHostFragment : Fragment() {
                 launch { session.jumps.collect { navigator.go(it) } }
             }
         }
+    }
+
+    private fun adjustBrightness(brightness: ReaderBrightness, dragFraction: Float) {
+        val value = brightness.afterDrag(session.adjustments.brightness, dragFraction)
+        session.adjustments = session.adjustments.copy(brightness = value)
+        brightness.show(value)
+    }
+
+    // Fragments only apply the brightness: after a rotation Android may create and drop an extra
+    // reader, so giving the system's back is ReaderScreen's job, when the reader is left.
+    override fun onDestroyView() {
+        brightness = null
+        super.onDestroyView()
     }
 
     /** Taps in the middle of the page go to [onCenterTap]; the others stay with Readium. */

@@ -122,6 +122,19 @@ class ReaderSessionTest {
     }
 
     @Test
+    fun adjustmentsLastUntilTheBookCloses() = runTest {
+        assertNull(session.open(bookWith("principito.epub", BookFormat.EPUB)))
+        session.adjustments = ReadingAdjustments(fontSize = 1.5, brightness = 0.3f)
+
+        // Reopening the open book (e.g. after a rotation) keeps them.
+        assertNull(session.open(bookWith("principito.epub", BookFormat.EPUB)))
+        assertEquals(1.5, session.adjustments.fontSize, 0.0001)
+
+        session.close(1)
+        assertEquals(ReadingAdjustments(), session.adjustments)
+    }
+
+    @Test
     fun anUnreadableSavedLocationStartsFromTheBeginning() = runTest {
         val book = bookWith("principito.epub", BookFormat.EPUB).copy(readingLocation = "not json")
 

@@ -5,6 +5,7 @@ import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.data.reader.ReaderSession
+import io.github.fabiann1809.reader.data.reader.ReadingAdjustments
 import io.github.fabiann1809.reader.data.reader.ReadingLocation
 import io.github.fabiann1809.reader.data.reader.ReadingPosition
 import io.github.fabiann1809.reader.testing.FakeBookRepository
@@ -41,6 +42,7 @@ class ReaderViewModelTest {
         override val locations = MutableSharedFlow<ReadingLocation>(extraBufferCapacity = 8)
         override val position = MutableStateFlow<ReadingPosition?>(null)
         override val jumps = MutableSharedFlow<Locator>()
+        override var adjustments = ReadingAdjustments()
 
         override suspend fun open(book: Book): OpenProblem? = problem.also { if (it == null) opened += book.id }
 

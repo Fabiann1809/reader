@@ -34,6 +34,13 @@ enum class OpenProblem {
 /** Where the reader is in a book: Readium's Locator as JSON, ready to be saved in [Book.readingLocation]. */
 data class ReadingLocation(val bookId: Long, val json: String)
 
+/**
+ * Changes made while reading: the font size from a pinch (a multiplier, 1 = as published) and the
+ * brightness from the left edge (0 to 1, null = the system's). They last until the book closes;
+ * saving them comes with the "Aa" settings (T11.7).
+ */
+data class ReadingAdjustments(val fontSize: Double = 1.0, val brightness: Float? = null)
+
 /** What the reader's controls show: the chapter's title and how far into the book (0 to 1) the page is. */
 data class ReadingPosition(val bookId: Long, val chapter: String?, val progression: Double?)
 
@@ -63,6 +70,9 @@ interface ReaderSession {
     /** Where the open navigator must go (see [jumpTo]). */
     val jumps: SharedFlow<Locator>
 
+    /** The open book's [ReadingAdjustments]; kept here so they survive the reader being recreated. */
+    var adjustments: ReadingAdjustments
+
     fun close(bookId: Long)
 }
 
@@ -84,6 +94,8 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
 
     private val _jumps = MutableSharedFlow<Locator>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     override val jumps: SharedFlow<Locator> = _jumps.asSharedFlow()
+
+    override var adjustments = ReadingAdjustments()
 
     override suspend fun open(book: Book): OpenProblem? {
         if (book.id == openBookId && openPublication != null) return null
@@ -125,6 +137,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
 
     private fun closeCurrent() {
         _position.value = null
+        adjustments = ReadingAdjustments()
         openPublication?.close()
         openPublication = null
         openBookId = null
