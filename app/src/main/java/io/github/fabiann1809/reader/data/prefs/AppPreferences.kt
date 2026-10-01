@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
@@ -34,6 +35,11 @@ interface AppPreferences {
     val libraryArrangement: Flow<LibraryArrangement>
 
     suspend fun setLibraryArrangement(arrangement: LibraryArrangement)
+
+    /** Shelves, grid or list, and books per row, remembered between launches. */
+    val libraryLayout: Flow<LibraryLayout>
+
+    suspend fun setLibraryLayout(layout: LibraryLayout)
 }
 
 // Only one DataStore instance may exist per file, so AppContainer keeps this as a singleton.
@@ -73,6 +79,21 @@ class DataStoreAppPreferences(context: Context) : AppPreferences {
         }
     }
 
+    override val libraryLayout: Flow<LibraryLayout> = dataStore.data.map { prefs ->
+        LibraryLayout(
+            view = enumOrNull<LibraryView>(prefs[LIBRARY_VIEW]) ?: LibraryLayout().view,
+            booksPerRow = prefs[LIBRARY_BOOKS_PER_ROW]?.takeIf { it in LibraryLayout.BooksPerRowRange }
+                ?: LibraryLayout.DEFAULT_BOOKS_PER_ROW,
+        )
+    }
+
+    override suspend fun setLibraryLayout(layout: LibraryLayout) {
+        dataStore.edit { prefs ->
+            prefs[LIBRARY_VIEW] = layout.view.name
+            prefs[LIBRARY_BOOKS_PER_ROW] = layout.booksPerRow.coerceIn(LibraryLayout.BooksPerRowRange)
+        }
+    }
+
     private companion object {
         const val FILE_NAME = "app_preferences"
         val ONBOARDING_SEEN = booleanPreferencesKey("onboarding_seen")
@@ -81,6 +102,8 @@ class DataStoreAppPreferences(context: Context) : AppPreferences {
         val LIBRARY_STATUSES = stringSetPreferencesKey("library_statuses")
         val LIBRARY_FORMATS = stringSetPreferencesKey("library_formats")
         val LIBRARY_KINDS = stringSetPreferencesKey("library_kinds")
+        val LIBRARY_VIEW = stringPreferencesKey("library_view")
+        val LIBRARY_BOOKS_PER_ROW = intPreferencesKey("library_books_per_row")
     }
 }
 

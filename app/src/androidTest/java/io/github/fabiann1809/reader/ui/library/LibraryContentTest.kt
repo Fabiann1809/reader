@@ -16,6 +16,8 @@ import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
+import io.github.fabiann1809.reader.data.prefs.LibraryLayout
+import io.github.fabiann1809.reader.data.prefs.LibraryView
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -241,5 +243,70 @@ class LibraryContentTest {
         composeRule.onNodeWithText(string(R.string.library_filters_empty_message)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.arrange_clear_filters)).performClick()
         assertEquals(LibraryArrangement(sort = BookSort.AUTHOR), cleared)
+    }
+
+    @Test
+    fun listViewShowsTitleAuthorAndOpensTheBook() {
+        var opened: Long? = null
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(
+                        books = listOf(Book(id = 4, title = "Dune", author = "Frank Herbert", currentPage = 5)),
+                        isLoading = false,
+                        layout = LibraryLayout(view = LibraryView.LIST),
+                    ),
+                    onBookClick = { opened = it },
+                    onAddBook = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Frank Herbert").assertIsDisplayed()
+        composeRule.onNodeWithText("Dune").performClick()
+        assertEquals(4L, opened)
+    }
+
+    @Test
+    fun gridViewOpensTheBook() {
+        var opened: Long? = null
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(
+                        books = listOf(Book(id = 4, title = "Dune", author = "Frank Herbert")),
+                        isLoading = false,
+                        layout = LibraryLayout(view = LibraryView.GRID, booksPerRow = 2),
+                    ),
+                    onBookClick = { opened = it },
+                    onAddBook = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription(composeRule.activity.getString(R.string.book_cover_description, "Dune", "Frank Herbert"))
+            .performClick()
+        assertEquals(4L, opened)
+    }
+
+    @Test
+    fun sheetChangesViewAndBooksPerRow() {
+        val layouts = mutableListOf<LibraryLayout>()
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(books = listOf(Book(id = 1, title = "Dune", author = "F. Herbert")), isLoading = false),
+                    onBookClick = {},
+                    onAddBook = {},
+                    onLayoutChange = { layouts += it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription(string(R.string.library_arrange)).performClick()
+        composeRule.onNodeWithText(string(R.string.view_grid)).performClick()
+        composeRule.onNodeWithText("4").performClick()
+
+        assertEquals(listOf(LibraryLayout(view = LibraryView.GRID), LibraryLayout(booksPerRow = 4)), layouts)
     }
 }

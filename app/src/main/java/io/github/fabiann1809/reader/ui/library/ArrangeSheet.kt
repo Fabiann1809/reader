@@ -29,14 +29,18 @@ import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.BookSort
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
+import io.github.fabiann1809.reader.data.prefs.LibraryLayout
+import io.github.fabiann1809.reader.data.prefs.LibraryView
 import io.github.fabiann1809.reader.ui.components.labelRes
 
-/** "Ordenar y filtrar": every change applies at once, so the shelves update behind the sheet. */
+/** View, order and filters: every change applies at once, so the shelves update behind the sheet. */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ArrangeSheet(
     arrangement: LibraryArrangement,
+    layout: LibraryLayout,
     onChange: (LibraryArrangement) -> Unit,
+    onLayoutChange: (LibraryLayout) -> Unit,
     onDismiss: () -> Unit,
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
@@ -49,30 +53,47 @@ fun ArrangeSheet(
         ) {
             Text(stringResource(R.string.library_arrange), style = MaterialTheme.typography.titleMedium)
 
+            Section(R.string.arrange_view) {
+                LibraryView.entries.forEach { view ->
+                    OptionChip(stringResource(view.labelRes()), isSelected = layout.view == view) {
+                        onLayoutChange(layout.copy(view = view))
+                    }
+                }
+            }
+            // The list shows one book per row, so the count only applies to shelves and grid.
+            if (layout.view != LibraryView.LIST) {
+                Section(R.string.arrange_books_per_row) {
+                    LibraryLayout.BooksPerRowRange.forEach { count ->
+                        OptionChip(count.toString(), isSelected = layout.booksPerRow == count) {
+                            onLayoutChange(layout.copy(booksPerRow = count))
+                        }
+                    }
+                }
+            }
             Section(R.string.arrange_sort_title) {
                 BookSort.entries.forEach { sort ->
-                    OptionChip(sort.labelRes(), isSelected = arrangement.sort == sort) {
+                    OptionChip(stringResource(sort.labelRes()), isSelected = arrangement.sort == sort) {
                         onChange(arrangement.copy(sort = sort))
                     }
                 }
             }
             Section(R.string.arrange_status) {
                 BookStatus.entries.forEach { status ->
-                    OptionChip(status.labelRes(), isSelected = status in arrangement.statuses) {
+                    OptionChip(stringResource(status.labelRes()), isSelected = status in arrangement.statuses) {
                         onChange(arrangement.copy(statuses = arrangement.statuses.toggle(status)))
                     }
                 }
             }
             Section(R.string.arrange_format) {
                 BookFormat.entries.forEach { format ->
-                    OptionChip(format.labelRes(), isSelected = format in arrangement.formats) {
+                    OptionChip(stringResource(format.labelRes()), isSelected = format in arrangement.formats) {
                         onChange(arrangement.copy(formats = arrangement.formats.toggle(format)))
                     }
                 }
             }
             Section(R.string.arrange_kind) {
                 BookKind.entries.forEach { kind ->
-                    OptionChip(kind.labelRes(), isSelected = kind in arrangement.kinds) {
+                    OptionChip(stringResource(kind.labelRes()), isSelected = kind in arrangement.kinds) {
                         onChange(arrangement.copy(kinds = arrangement.kinds.toggle(kind)))
                     }
                 }
@@ -98,11 +119,11 @@ private fun Section(@StringRes title: Int, chips: @Composable () -> Unit) {
 
 // Design 7.5: selected chips use primary-95 with a check.
 @Composable
-private fun OptionChip(@StringRes label: Int, isSelected: Boolean, onClick: () -> Unit) {
+private fun OptionChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
     FilterChip(
         selected = isSelected,
         onClick = onClick,
-        label = { Text(stringResource(label)) },
+        label = { Text(label) },
         leadingIcon = if (isSelected) {
             { Icon(painterResource(R.drawable.ic_check), contentDescription = null, modifier = Modifier.size(18.dp)) }
         } else {
@@ -140,4 +161,11 @@ private fun BookFormat.labelRes(): Int = when (this) {
 private fun BookKind.labelRes(): Int = when (this) {
     BookKind.DIGITAL -> R.string.kind_digital
     BookKind.PHYSICAL -> R.string.kind_physical
+}
+
+@StringRes
+private fun LibraryView.labelRes(): Int = when (this) {
+    LibraryView.SHELVES -> R.string.view_shelves
+    LibraryView.GRID -> R.string.view_grid
+    LibraryView.LIST -> R.string.view_list
 }

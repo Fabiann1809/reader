@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -53,11 +54,14 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
+import io.github.fabiann1809.reader.data.prefs.LibraryLayout
+import io.github.fabiann1809.reader.data.prefs.LibraryView
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.BookCover
 import io.github.fabiann1809.reader.ui.components.LightStatusBarIcons
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
+import io.github.fabiann1809.reader.ui.components.StatusMessage
 import io.github.fabiann1809.reader.ui.theme.Primary40
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import kotlin.math.ceil
@@ -77,6 +81,7 @@ fun LibraryScreen(
         onSelectFilter = viewModel::selectFilter,
         onSearch = viewModel::search,
         onArrangementChange = viewModel::setArrangement,
+        onLayoutChange = viewModel::setLayout,
         onCreateCollection = viewModel::createCollection,
         onRenameCollection = viewModel::renameCurrentCollection,
         onDeleteCollection = viewModel::deleteCurrentCollection,
@@ -92,6 +97,7 @@ fun LibraryContent(
     onSelectFilter: (LibraryFilter) -> Unit = {},
     onSearch: (String) -> Unit = {},
     onArrangementChange: (LibraryArrangement) -> Unit = {},
+    onLayoutChange: (LibraryLayout) -> Unit = {},
     onCreateCollection: (String) -> Unit = {},
     onRenameCollection: (String) -> Unit = {},
     onDeleteCollection: () -> Unit = {},
@@ -99,11 +105,14 @@ fun LibraryContent(
     val showFab = !uiState.isLoading && uiState.books.isNotEmpty()
     var dialog by rememberSaveable { mutableStateOf(LibraryDialog.NONE) }
     var isSearchOpen by rememberSaveable { mutableStateOf(false) }
+    val isShelves = uiState.layout.view == LibraryView.SHELVES
+    val columns = booksPerRow(uiState.layout.booksPerRow)
     val title = uiState.currentCollection?.name
         ?: stringResource((uiState.filter as? LibraryFilter.Smart)?.collection?.nameRes() ?: R.string.collection_all)
     Scaffold(
-        modifier = modifier.woodWall(),
-        containerColor = Color.Transparent,
+        // Only the shelves view has the wooden wall (design 6.5).
+        modifier = if (isShelves) modifier.woodWall() else modifier,
+        containerColor = if (isShelves) Color.Transparent else MaterialTheme.colorScheme.surface,
         topBar = {
             if (isSearchOpen) {
                 LibrarySearchBar(
@@ -166,50 +175,35 @@ fun LibraryContent(
             }
         },
     ) { innerPadding ->
+        val empty = emptyState(uiState, onAddBook, onSearch, onArrangementChange, onSelectFilter)
         when {
-            uiState.isLoading -> Bookcase(innerPadding, itemCount = PLACEHOLDER_COUNT) { _, width -> PlaceholderCover(width) }
-            uiState.libraryIsEmpty -> EmptyShelf(
-                contentPadding = innerPadding,
-                title = stringResource(R.string.library_empty_title),
-                message = stringResource(R.string.library_empty_message),
-                action = stringResource(R.string.library_add_book),
-                actionIcon = R.drawable.ic_plus_circle,
-                onAction = onAddBook,
-            )
-            // The search is cleared first; if the filters still hide everything, this shows again for them.
-            uiState.books.isEmpty() && uiState.query.isNotBlank() -> EmptyShelf(
-                contentPadding = innerPadding,
-                title = stringResource(R.string.library_search_empty_title),
-                message = stringResource(R.string.library_search_empty_message, uiState.query.trim()),
-                action = stringResource(R.string.library_search_clear),
-                actionIcon = R.drawable.ic_x,
-                onAction = { onSearch("") },
-            )
-            uiState.books.isEmpty() && uiState.arrangement.hasFilters -> EmptyShelf(
-                contentPadding = innerPadding,
-                title = stringResource(R.string.library_search_empty_title),
-                message = stringResource(R.string.library_filters_empty_message),
-                action = stringResource(R.string.arrange_clear_filters),
-                actionIcon = R.drawable.ic_x,
-                onAction = { onArrangementChange(uiState.arrangement.withoutFilters()) },
-            )
-            uiState.books.isEmpty() -> EmptyShelf(
-                contentPadding = innerPadding,
-                title = stringResource(R.string.collection_empty_title),
-                message = stringResource(
-                    if (uiState.currentCollection != null) {
-                        R.string.collection_empty_message
-                    } else {
-                        R.string.collection_smart_empty_message
-                    },
-                ),
-                action = stringResource(R.string.collection_show_all),
-                actionIcon = R.drawable.ic_books,
-                onAction = { onSelectFilter(LibraryFilter.Default) },
-            )
-            else -> Bookcase(innerPadding, itemCount = uiState.books.size, bottomSpace = FAB_SPACE) { index, width ->
-                val book = uiState.books[index]
-                BookCover(book = book, onClick = { onBookClick(book.id) }, modifier = Modifier.width(width))
+            uiState.isLoading && isShelves -> Bookcase(innerPadding, columns, itemCount = PLACEHOLDER_COUNT) { _, width ->
+                PlaceholderCover(width)
+            }
+            uiState.isLoading -> Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+            empty != null && isShelves -> EmptyShelf(innerPadding, empty)
+            empty != null -> Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                StatusMessage(
+                    icon = empty.icon,
+                    title = empty.title,
+                    message = empty.message,
+                    action = { PrimaryButton(text = empty.action, onClick = empty.onAction, icon = empty.actionIcon) },
+                )
+            }
+            else -> when (uiState.layout.view) {
+                LibraryView.SHELVES -> Bookcase(
+                    innerPadding,
+                    columns,
+                    itemCount = uiState.books.size,
+                    bottomSpace = FAB_SPACE,
+                ) { index, width ->
+                    val book = uiState.books[index]
+                    BookCover(book = book, onClick = { onBookClick(book.id) }, modifier = Modifier.width(width))
+                }
+                LibraryView.GRID -> BookGrid(uiState.books, columns, innerPadding, FAB_SPACE, onBookClick)
+                LibraryView.LIST -> BookList(uiState.books, innerPadding, FAB_SPACE, onBookClick)
             }
         }
     }
@@ -218,7 +212,9 @@ fun LibraryContent(
         LibraryDialog.NONE -> Unit
         LibraryDialog.ARRANGE -> ArrangeSheet(
             arrangement = uiState.arrangement,
+            layout = uiState.layout,
             onChange = onArrangementChange,
+            onLayoutChange = onLayoutChange,
             onDismiss = { dialog = LibraryDialog.NONE },
         )
         LibraryDialog.PICKER -> CollectionPickerSheet(
@@ -301,12 +297,12 @@ private fun CollectionMenu(onRename: () -> Unit, onDelete: () -> Unit) {
 @Composable
 private fun Bookcase(
     contentPadding: PaddingValues,
+    columns: Int,
     itemCount: Int,
     bottomSpace: Dp = 0.dp,
     slot: @Composable (index: Int, width: Dp) -> Unit,
 ) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val columns = shelfColumns()
         val bookWidth = shelfBookWidth(maxWidth, columns)
         val rowHeight = shelfRowHeight(bookWidth)
         val shelvesWithBooks = ceil(itemCount / columns.toFloat()).toInt()
@@ -327,9 +323,64 @@ private fun Bookcase(
     }
 }
 
-/** 3 books per shelf; 2 when the system font is scaled up a lot, so titles stay readable. */
+/** The user's books per row, capped at 2 when the system font is scaled up a lot so titles stay readable. */
 @Composable
-private fun shelfColumns(): Int = if (LocalDensity.current.fontScale > LARGE_FONT_SCALE) 2 else 3
+private fun booksPerRow(chosen: Int): Int = if (LocalDensity.current.fontScale > LARGE_FONT_SCALE) minOf(chosen, 2) else chosen
+
+/** Texts and action of an empty library, collection, search or filter result. */
+private class EmptyState(
+    val title: String,
+    val message: String,
+    val action: String,
+    @DrawableRes val actionIcon: Int,
+    val onAction: () -> Unit,
+    @DrawableRes val icon: Int = R.drawable.ic_books,
+)
+
+/** Null when there are books to show. */
+@Composable
+private fun emptyState(
+    uiState: LibraryUiState,
+    onAddBook: () -> Unit,
+    onSearch: (String) -> Unit,
+    onArrangementChange: (LibraryArrangement) -> Unit,
+    onSelectFilter: (LibraryFilter) -> Unit,
+): EmptyState? = when {
+    uiState.libraryIsEmpty -> EmptyState(
+        title = stringResource(R.string.library_empty_title),
+        message = stringResource(R.string.library_empty_message),
+        action = stringResource(R.string.library_add_book),
+        actionIcon = R.drawable.ic_plus_circle,
+        onAction = onAddBook,
+    )
+    uiState.books.isNotEmpty() -> null
+    // The search is cleared first; if the filters still hide everything, this shows again for them.
+    uiState.query.isNotBlank() -> EmptyState(
+        title = stringResource(R.string.library_search_empty_title),
+        message = stringResource(R.string.library_search_empty_message, uiState.query.trim()),
+        action = stringResource(R.string.library_search_clear),
+        actionIcon = R.drawable.ic_x,
+        onAction = { onSearch("") },
+        icon = R.drawable.ic_magnifying_glass,
+    )
+    uiState.arrangement.hasFilters -> EmptyState(
+        title = stringResource(R.string.library_search_empty_title),
+        message = stringResource(R.string.library_filters_empty_message),
+        action = stringResource(R.string.arrange_clear_filters),
+        actionIcon = R.drawable.ic_x,
+        onAction = { onArrangementChange(uiState.arrangement.withoutFilters()) },
+        icon = R.drawable.ic_funnel_simple,
+    )
+    else -> EmptyState(
+        title = stringResource(R.string.collection_empty_title),
+        message = stringResource(
+            if (uiState.currentCollection != null) R.string.collection_empty_message else R.string.collection_smart_empty_message,
+        ),
+        action = stringResource(R.string.collection_show_all),
+        actionIcon = R.drawable.ic_books,
+        onAction = { onSelectFilter(LibraryFilter.Default) },
+    )
+}
 
 @Composable
 private fun PlaceholderCover(width: Dp) {
@@ -343,14 +394,7 @@ private fun PlaceholderCover(width: Dp) {
 
 /** Shelf with a dashed "ghost" book (design 6.6), a message and one action. */
 @Composable
-private fun EmptyShelf(
-    contentPadding: PaddingValues,
-    title: String,
-    message: String,
-    action: String,
-    @DrawableRes actionIcon: Int,
-    onAction: () -> Unit,
-) {
+private fun EmptyShelf(contentPadding: PaddingValues, empty: EmptyState) {
     BoxWithConstraints(
         Modifier
             .fillMaxSize()
@@ -368,19 +412,24 @@ private fun EmptyShelf(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(
-                    text = title,
+                    text = empty.title,
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White,
                     textAlign = TextAlign.Center,
                 )
                 Text(
-                    text = message,
+                    text = empty.message,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.8f),
                     textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(16.dp))
-                PrimaryButton(text = action, onClick = onAction, icon = actionIcon, modifier = Modifier.fillMaxWidth())
+                PrimaryButton(
+                    text = empty.action,
+                    onClick = empty.onAction,
+                    icon = empty.actionIcon,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
     }

@@ -10,6 +10,7 @@ import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.prefs.AppPreferences
+import io.github.fabiann1809.reader.data.prefs.LibraryLayout
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,6 +37,7 @@ data class LibraryUiState(
     val query: String = "",
     /** Shelf order and filters already applied to [books]. */
     val arrangement: LibraryArrangement = LibraryArrangement(),
+    val layout: LibraryLayout = LibraryLayout(),
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -65,8 +67,9 @@ class LibraryViewModel(
         collectionRepository.observeCollections(),
         bookRepository.observeBooks().map { it.isEmpty() },
         query,
-        preferences.libraryArrangement,
-    ) { (filter, collection, books), collections, libraryIsEmpty, query, arrangement ->
+        // combine() takes at most five typed flows, so the two display preferences travel together.
+        combine(preferences.libraryArrangement, preferences.libraryLayout, ::Pair),
+    ) { (filter, collection, books), collections, libraryIsEmpty, query, (arrangement, layout) ->
         LibraryUiState(
             books = books.filter { it.matchesSearch(query) }.arrangedBy(arrangement),
             isLoading = false,
@@ -76,6 +79,7 @@ class LibraryViewModel(
             libraryIsEmpty = libraryIsEmpty,
             query = query,
             arrangement = arrangement,
+            layout = layout,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -91,6 +95,10 @@ class LibraryViewModel(
 
     fun setArrangement(arrangement: LibraryArrangement) {
         viewModelScope.launch { preferences.setLibraryArrangement(arrangement) }
+    }
+
+    fun setLayout(layout: LibraryLayout) {
+        viewModelScope.launch { preferences.setLibraryLayout(layout) }
     }
 
     fun selectFilter(filter: LibraryFilter) {

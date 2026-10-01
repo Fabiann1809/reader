@@ -17,7 +17,12 @@
     <string name="library_search_empty_title">Sin resultados</string>
     <string name="library_search_empty_message">Ningún libro coincide con «%1$s».</string>
     <string name="library_filters_empty_message">Ningún libro coincide con los filtros elegidos.</string>
-    <string name="library_arrange">Ordenar y filtrar</string>
+    <string name="library_arrange">Vista, orden y filtros</string>
+    <string name="arrange_view">Vista</string>
+    <string name="arrange_books_per_row">Libros por fila</string>
+    <string name="view_shelves">Estantes</string>
+    <string name="view_grid">Cuadrícula</string>
+    <string name="view_list">Lista</string>
     <string name="arrange_sort_title">Ordenar por</string>
     <string name="arrange_status">Estado</string>
     <string name="arrange_format">Formato</string>

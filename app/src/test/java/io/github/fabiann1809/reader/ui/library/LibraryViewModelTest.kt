@@ -6,6 +6,8 @@ import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
+import io.github.fabiann1809.reader.data.prefs.LibraryLayout
+import io.github.fabiann1809.reader.data.prefs.LibraryView
 import io.github.fabiann1809.reader.testing.FakeAppPreferences
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.FakeCollectionRepository
@@ -175,5 +177,16 @@ class LibraryViewModelTest {
         assertEquals(listOf("Dune"), viewModel.titles())
         assertEquals(setOf(BookStatus.READING), preferences.libraryArrangement.first().statuses)
         assertTrue(viewModel.uiState.value.arrangement.hasFilters)
+    }
+
+    @Test
+    fun layoutStartsOnShelvesAndIsRemembered() = runTest {
+        val viewModel = viewModel()
+        assertEquals(LibraryLayout(view = LibraryView.SHELVES, booksPerRow = 3), viewModel.uiState.value.layout)
+
+        viewModel.setLayout(LibraryLayout(view = LibraryView.GRID, booksPerRow = 4))
+
+        assertEquals(LibraryLayout(view = LibraryView.GRID, booksPerRow = 4), viewModel.uiState.value.layout)
+        assertEquals(LibraryLayout(view = LibraryView.GRID, booksPerRow = 4), preferences.libraryLayout.first())
     }
 }
