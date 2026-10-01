@@ -1,9 +1,12 @@
 package io.github.fabiann1809.reader.data.book.importing
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.util.Size
 import io.github.fabiann1809.reader.data.book.BookFormat
 import org.readium.adapter.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.coverFitting
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.format.Specification
 import org.readium.r2.shared.util.getOrElse
@@ -13,12 +16,14 @@ import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.streamer.parser.DefaultPublicationParser
 import java.io.File
 
-/** What the app needs from a book file when importing it. Every text field is null when the file does not say. */
+/** What the app needs from a book file when importing it. Each field is null when the file does not have it. */
 data class BookFileInfo(
     val format: BookFormat,
     val title: String?,
     val author: String?,
     val language: String?,
+    /** Already scaled to fit [MaxCoverSize]. */
+    val cover: Bitmap? = null,
 )
 
 /** Reads the format and metadata of a book file. Returns null when the file is not a book the app supports. */
@@ -58,13 +63,21 @@ class ReadiumBookFileReader(context: Context) : BookFileReader {
             return null
         }
         // The publication owns the asset from here and closes it.
-        return publication.use { it.toInfo(format) }
+        return publication.use { it.toInfo(format, cover = cover(it, format, file)) }
     }
 
-    private fun Publication.toInfo(format: BookFormat) = BookFileInfo(
+    // EPUB: the cover image the book declares. PDF: the first page, rendered with PdfRenderer on white
+    // because PDFium draws pages on a transparent bitmap.
+    private suspend fun cover(publication: Publication, format: BookFormat, file: File): Bitmap? = when (format) {
+        BookFormat.PDF -> renderPdfCover(file)
+        else -> publication.coverFitting(Size(MaxCoverSize.width, MaxCoverSize.height))
+    }
+
+    private fun Publication.toInfo(format: BookFormat, cover: Bitmap?) = BookFileInfo(
         format = format,
         title = metadata.title?.trim()?.ifEmpty { null },
         author = metadata.authors.map { it.name.trim() }.filter { it.isNotEmpty() }.joinToString(", ").ifEmpty { null },
         language = metadata.languages.firstOrNull(),
+        cover = cover,
     )
 }

@@ -1,6 +1,8 @@
 package io.github.fabiann1809.reader.data.book.importing
 
 import android.content.Context
+import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.net.Uri
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
@@ -114,5 +116,40 @@ class BookImporterTest {
 
         assertEquals(ImportResult.Failed, importer.import(missing.toString()))
         assertTrue(storedFiles().isEmpty())
+    }
+
+    private fun storedCover(book: Book) = BitmapFactory.decodeFile(bookFiles.resolve(book.coverPath!!).path)
+
+    @Test
+    fun epubCoverIsStoredScaledDown() = runTest {
+        val book = importedBook("principito.epub")
+
+        assertTrue(book.coverPath!!.startsWith("covers/"))
+        val cover = storedCover(book)
+        // The 600x900 red image of the fixture, scaled to fit 480x720.
+        assertEquals(480, cover.width)
+        assertEquals(720, cover.height)
+        assertTrue(Color.red(cover.getPixel(10, 10)) > 150)
+    }
+
+    @Test
+    fun pdfCoverIsTheFirstPageOnWhite() = runTest {
+        val cover = storedCover(importedBook("cosmos.pdf"))
+
+        // The fixture page is 300x400 points with only a short text near the top; it is enlarged to 480x640.
+        assertEquals(480, cover.width)
+        assertEquals(640, cover.height)
+        val corner = cover.getPixel(cover.width - 2, cover.height - 2)
+        assertTrue(Color.red(corner) > 240 && Color.green(corner) > 240 && Color.blue(corner) > 240)
+    }
+
+    @Test
+    fun deletingTheBookAlsoDeletesItsFileAndCover() = runTest {
+        val book = importedBook("principito.epub")
+
+        books.deleteBook(book)
+
+        assertTrue(storedFiles().isEmpty())
+        assertTrue(File(workDir, "files/covers").list().isNullOrEmpty())
     }
 }

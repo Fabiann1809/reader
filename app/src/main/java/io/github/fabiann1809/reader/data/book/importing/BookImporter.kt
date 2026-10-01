@@ -59,6 +59,8 @@ class DefaultBookImporter(
                 format = info.format,
                 filePath = bookFiles.relativePath(stored),
                 language = info.language,
+                // A book without a cover image keeps the generated cover.
+                coverPath = info.cover?.let(bookFiles::saveCover),
             )
             return ImportResult.Imported(bookRepository.addBook(book))
         } catch (e: CancellationException) {

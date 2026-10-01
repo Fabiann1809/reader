@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -31,6 +32,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -54,8 +56,9 @@ import kotlin.math.roundToInt
 private val CoverShape = RoundedCornerShape(topStart = 2.dp, bottomStart = 2.dp, topEnd = 4.dp, bottomEnd = 4.dp)
 
 /**
- * Generated cover for a book (the app has no cover images): a muted color picked from the title,
- * the title in serif, the author, and a thin progress bar at the bottom when progress is known.
+ * A book's cover: its stored cover image when it has one (imported books), otherwise a generated one
+ * with a muted color picked from the title, the title in serif and the author. Both get a thin
+ * progress bar at the bottom when progress is known.
  */
 @Composable
 fun BookCover(
@@ -71,6 +74,7 @@ fun BookCover(
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val progress = book.progressFraction()
+    val coverImage = rememberCoverImage(book.coverPath)
     val baseDescription = if (progress == null) {
         stringResource(R.string.book_cover_description, book.title, book.author)
     } else {
@@ -108,6 +112,15 @@ fun BookCover(
                 if (onClick != null) role = Role.Button
             },
     ) {
+        // The real cover replaces the generated one; the gloss, spine and progress stay on top of both.
+        if (coverImage != null) {
+            Image(
+                bitmap = coverImage,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
         // Subtle diagonal gloss.
         Box(
             Modifier
@@ -121,28 +134,31 @@ fun BookCover(
                 .width(3.dp)
                 .background(Brush.horizontalGradient(listOf(Color.White.copy(alpha = 0.18f), Color.Transparent))),
         )
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 10.dp, end = 8.dp, bottom = 12.dp),
-        ) {
-            Text(
-                text = book.title,
-                color = Color.White,
-                fontFamily = Fraunces,
-                fontSize = titleSize,
-                lineHeight = titleSize * 1.15f,
-                style = MaterialTheme.typography.titleSmall,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = book.author,
-                color = Color.White.copy(alpha = 0.7f),
-                style = MaterialTheme.typography.labelSmall,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+        // A real cover already shows its title and author.
+        if (coverImage == null) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = 10.dp, end = 8.dp, bottom = 12.dp),
+            ) {
+                Text(
+                    text = book.title,
+                    color = Color.White,
+                    fontFamily = Fraunces,
+                    fontSize = titleSize,
+                    lineHeight = titleSize * 1.15f,
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = book.author,
+                    color = Color.White.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
         if (showBadges) {
             CoverBadges(book, Modifier.align(Alignment.TopEnd))

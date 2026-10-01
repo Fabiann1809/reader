@@ -32,9 +32,12 @@ class DefaultBookRepository(private val bookDao: BookDao, private val bookFiles:
 
     override suspend fun updateBook(book: Book) = bookDao.update(book)
 
-    /** Also removes the imported file, which nothing else points to. */
+    /** Also removes the imported file and the cover, which nothing else points to. */
     override suspend fun deleteBook(book: Book) {
         bookDao.delete(book)
-        withContext(Dispatchers.IO) { bookFiles.delete(book.filePath) }
+        withContext(Dispatchers.IO) {
+            bookFiles.delete(book.filePath)
+            bookFiles.delete(book.coverPath)
+        }
     }
 }
