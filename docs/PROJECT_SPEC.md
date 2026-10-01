@@ -246,7 +246,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T11.3 PDF.** Visualización de PDF con PdfRenderer o el adaptador de Readium, con posición guardada. *Hecho cuando:* un PDF se lee y recuerda la página.
 - [x] **T11.4 Overlay de controles.** Toque al centro: barra superior (atrás, capítulo, marcador, menú) e inferior (barra de progreso con capítulo, Índice, Aa, Voz, IA, Grabar). *Hecho cuando:* aparece y desaparece en 180 ms.
 - [x] **T11.5 Zonas de toque y gestos.** Izquierda, centro y derecha; deslizar; pellizcar para el tamaño; borde izquierdo para el brillo. El tamaño y el brillo valen mientras se lee (se pierden al cerrar el libro; "Aa" los guardará). Sin doble toque: el cambio día/noche está en "Aa" (T11.7). *Hecho cuando:* cada gesto funciona.
-- [ ] **T11.6 Índice y marcadores.** Entidad `Bookmark`. *Hecho cuando:* se salta a un capítulo y a un marcador.
+- [x] **T11.6 Índice y marcadores.** Entidad `Bookmark`. *Hecho cuando:* se salta a un capítulo y a un marcador.
 - [ ] **T11.7 Ajustes "Aa".** Temas Día, Sepia, Gris papel, Noche, AMOLED y Personalizado; fuentes (Literata, Merriweather, Source Serif, Lora, Atkinson, OpenDyslexic, Inter; todas OFL); tamaño, interlineado, márgenes y alineación; independientes del tema de la app; el cambio rápido Día/Noche vive aquí. *Hecho cuando:* los cambios se ven al instante y persisten.
 - [ ] **T11.8 Efecto de página.** Deslizar, desvanecer, desplazamiento continuo o ninguno. *Hecho cuando:* se elige y se aplica.
 - [ ] **T11.9 Indicadores discretos.** Hora, batería y página/total; mantener la pantalla encendida. *Hecho cuando:* son activables.

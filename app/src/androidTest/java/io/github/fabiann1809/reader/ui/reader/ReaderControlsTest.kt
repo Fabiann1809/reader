@@ -44,7 +44,7 @@ class ReaderControlsTest {
             R.string.reader_voice_description,
             R.string.reader_ai_description,
             R.string.reader_record_description,
-            R.string.reader_bookmark,
+            R.string.reader_bookmark_add,
             R.string.reader_progress,
         ).forEach { composeRule.onNodeWithContentDescription(string(it)).assertIsDisplayed() }
     }

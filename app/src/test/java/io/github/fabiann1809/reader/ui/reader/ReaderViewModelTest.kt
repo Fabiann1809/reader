@@ -3,11 +3,14 @@ package io.github.fabiann1809.reader.ui.reader
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.BookStatus
+import io.github.fabiann1809.reader.data.bookmark.Bookmark
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.data.reader.ReaderSession
 import io.github.fabiann1809.reader.data.reader.ReadingAdjustments
 import io.github.fabiann1809.reader.data.reader.ReadingLocation
 import io.github.fabiann1809.reader.data.reader.ReadingPosition
+import io.github.fabiann1809.reader.data.reader.TocEntry
+import io.github.fabiann1809.reader.testing.FakeBookmarkRepository
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -39,6 +42,10 @@ class ReaderViewModelTest {
     private class FakeSession(private val problem: OpenProblem? = null) : ReaderSession {
         val opened = mutableListOf<Long>()
         val jumpedTo = mutableListOf<Double>()
+        val jumpedToChapters = mutableListOf<TocEntry>()
+        val jumpedToLocations = mutableListOf<String>()
+        var location: String? = "{\"href\":\"c1.xhtml\"}"
+        val toc = listOf(TocEntry(index = 0, title = "Capítulo 1", level = 0, href = "c1.xhtml"))
         override val locations = MutableSharedFlow<ReadingLocation>(extraBufferCapacity = 8)
         override val position = MutableStateFlow<ReadingPosition?>(null)
         override val jumps = MutableSharedFlow<Locator>()
@@ -56,11 +63,25 @@ class ReaderViewModelTest {
             jumpedTo += totalProgression
         }
 
+        override fun tableOfContents(bookId: Long): List<TocEntry> = toc
+
+        override suspend fun jumpToChapter(bookId: Long, entry: TocEntry) {
+            jumpedToChapters += entry
+        }
+
+        override fun jumpToLocation(bookId: Long, location: String) {
+            jumpedToLocations += location
+        }
+
+        override fun currentLocation(bookId: Long): String? = location
+
         override fun close(bookId: Long) = Unit
     }
 
+    private val bookmarks = FakeBookmarkRepository()
+
     private fun viewModel(bookId: Long, session: ReaderSession) =
-        ReaderViewModel(bookId = bookId, bookRepository = books, session = session, now = { 5_000L })
+        ReaderViewModel(bookId = bookId, bookRepository = books, bookmarkRepository = bookmarks, session = session, now = { 5_000L })
 
     @Test
     fun anOpenedBookIsReady() {
@@ -68,7 +89,10 @@ class ReaderViewModelTest {
 
         val viewModel = viewModel(bookId = 1, session = session)
 
-        assertEquals(ReaderUiState.Ready(bookId = 1, format = BookFormat.EPUB, title = "El principito"), viewModel.uiState.value)
+        assertEquals(
+            ReaderUiState.Ready(bookId = 1, format = BookFormat.EPUB, title = "El principito", tableOfContents = session.toc),
+            viewModel.uiState.value,
+        )
         assertEquals(listOf(1L), session.opened)
     }
 
@@ -122,6 +146,75 @@ class ReaderViewModelTest {
         viewModel.seekTo(0.5f)
 
         assertEquals(listOf(0.5), session.jumpedTo)
+    }
+
+    @Test
+    fun theBookmarkButtonMarksThePageAndThenUnmarksIt() = runTest {
+        val session = FakeSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.2, href = "c1.xhtml", position = 4)
+
+        viewModel.toggleBookmark()
+
+        val bookmark = bookmarks.currentBookmarks.single()
+        assertEquals(session.location, bookmark.location)
+        assertEquals(4, bookmark.position)
+        assertEquals("Capítulo 1", bookmark.chapter)
+        assertEquals(5_000L, bookmark.createdAt)
+        assertTrue(ready(viewModel).pageIsBookmarked)
+
+        viewModel.toggleBookmark()
+
+        assertTrue(bookmarks.currentBookmarks.isEmpty())
+        assertFalse(ready(viewModel).pageIsBookmarked)
+    }
+
+    @Test
+    fun nothingIsMarkedBeforeTheFirstPage() = runTest {
+        val session = FakeSession().apply { location = null }
+        val viewModel = viewModel(bookId = 1, session = session)
+
+        viewModel.toggleBookmark()
+
+        assertTrue(bookmarks.currentBookmarks.isEmpty())
+    }
+
+    @Test
+    fun choosingAChapterGoesThereAndLeavesThePageClear() {
+        val session = FakeSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        viewModel.toggleControls()
+        viewModel.showContents()
+        assertTrue(ready(viewModel).contentsVisible)
+
+        viewModel.goToChapter(session.toc.single())
+
+        assertEquals(session.toc, session.jumpedToChapters)
+        assertFalse(ready(viewModel).contentsVisible)
+        assertFalse(ready(viewModel).controlsVisible)
+    }
+
+    @Test
+    fun choosingABookmarkGoesToItsLocation() = runTest {
+        val session = FakeSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        bookmarks.addBookmark(Bookmark(bookId = 1, location = "{\"saved\":true}", position = 9))
+        viewModel.showContents()
+
+        viewModel.goToBookmark(ready(viewModel).bookmarks.single())
+
+        assertEquals(listOf("{\"saved\":true}"), session.jumpedToLocations)
+        assertFalse(ready(viewModel).contentsVisible)
+    }
+
+    @Test
+    fun deletingABookmarkRemovesItFromTheList() = runTest {
+        val viewModel = viewModel(bookId = 1, session = FakeSession())
+        bookmarks.addBookmark(Bookmark(bookId = 1, location = "{}", position = 9))
+
+        viewModel.deleteBookmark(ready(viewModel).bookmarks.single())
+
+        assertTrue(ready(viewModel).bookmarks.isEmpty())
     }
 
     private fun ready(viewModel: ReaderViewModel) = viewModel.uiState.value as ReaderUiState.Ready

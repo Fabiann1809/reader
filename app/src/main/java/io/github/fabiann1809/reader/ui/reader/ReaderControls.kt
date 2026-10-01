@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -68,8 +69,8 @@ private val BarElevation = 6.dp
 /**
  * The reader's overlay (design 7.8): a top bar (back, title, bookmark, menu) and a bottom bar
  * (progress bar with the chapter, and the reading actions). They slide in and fade in 180 ms.
- * Actions without a feature yet get one in their own task: bookmarks and index (T11.6), "Aa"
- * (T11.7), voice (T11.15), AI (T11.11) and recording (phase 13).
+ * Actions without a feature yet get one in their own task: "Aa" (T11.7), voice (T11.15), AI
+ * (T11.11), recording (phase 13) and the menu.
  */
 @Composable
 fun ReaderControls(
@@ -93,7 +94,7 @@ fun ReaderControls(
             exit = barExit(toTop = true, reduceMotion),
             modifier = Modifier.align(Alignment.TopCenter),
         ) {
-            TopBar(title = state.title, onBack = onBack, onBookmark = onBookmark, onMenu = onMenu)
+            TopBar(title = state.title, bookmarked = state.pageIsBookmarked, onBack = onBack, onBookmark = onBookmark, onMenu = onMenu)
         }
         AnimatedVisibility(
             visible = state.controlsVisible,
@@ -138,7 +139,7 @@ private fun ControlsBar(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun TopBar(title: String, onBack: () -> Unit, onBookmark: () -> Unit, onMenu: () -> Unit) {
+private fun TopBar(title: String, bookmarked: Boolean, onBack: () -> Unit, onBookmark: () -> Unit, onMenu: () -> Unit) {
     ControlsBar {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -157,16 +158,20 @@ private fun TopBar(title: String, onBack: () -> Unit, onBookmark: () -> Unit, on
                     .weight(1f)
                     .padding(horizontal = 8.dp),
             )
-            BarIcon(R.drawable.ic_bookmark_simple, R.string.reader_bookmark, onBookmark)
+            if (bookmarked) {
+                BarIcon(R.drawable.ic_bookmark_simple_fill, R.string.reader_bookmark_remove, onBookmark, tint = MaterialTheme.colorScheme.primary)
+            } else {
+                BarIcon(R.drawable.ic_bookmark_simple, R.string.reader_bookmark_add, onBookmark)
+            }
             BarIcon(R.drawable.ic_dots_three_vertical, R.string.more_options, onMenu)
         }
     }
 }
 
 @Composable
-private fun BarIcon(@DrawableRes icon: Int, description: Int, onClick: () -> Unit) {
+private fun BarIcon(@DrawableRes icon: Int, description: Int, onClick: () -> Unit, tint: Color = LocalContentColor.current) {
     IconButton(onClick = onClick) {
-        Icon(painterResource(icon), contentDescription = stringResource(description))
+        Icon(painterResource(icon), contentDescription = stringResource(description), tint = tint)
     }
 }
 

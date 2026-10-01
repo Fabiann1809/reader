@@ -81,6 +81,15 @@
     <string name="reader_not_supported_yet">Por ahora el lector abre libros EPUB y PDF. Los demás formatos llegarán pronto.</string>
     <string name="reader_unreadable">El archivo parece dañado o protegido.</string>
     <string name="reader_bookmark">Marcador</string>
+    <string name="reader_bookmark_add">Marcar esta página</string>
+    <string name="reader_bookmark_remove">Quitar el marcador de esta página</string>
+    <string name="reader_bookmarks">Marcadores</string>
+    <string name="reader_bookmark_detail">%1$d %% · %2$s</string>
+    <string name="reader_bookmark_delete">Borrar marcador</string>
+    <string name="reader_bookmarks_empty_title">Aún no tienes marcadores</string>
+    <string name="reader_bookmarks_empty_hint">Toca el marcador de la barra de arriba para guardar la página.</string>
+    <string name="reader_toc_empty">Este libro no tiene índice.</string>
+    <string name="reader_untitled_chapter">Sin título</string>
     <string name="reader_progress">Progreso de lectura</string>
     <string name="reader_progress_percent">%1$d %%</string>
     <string name="reader_index">Índice</string>

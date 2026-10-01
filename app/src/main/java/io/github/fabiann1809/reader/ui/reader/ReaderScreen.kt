@@ -48,7 +48,22 @@ fun ReaderScreen(
                 // While the controls are hidden, the first "Atrás" shows them; with them shown, it leaves.
                 BackHandler(enabled = !state.controlsVisible, onBack = viewModel::showControls)
                 BookNavigator(state.bookId, state.format, onCenterTap = viewModel::toggleControls)
-                ReaderControls(state, onBack = onNavigateUp, onSeek = viewModel::seekTo)
+                ReaderControls(
+                    state,
+                    onBack = onNavigateUp,
+                    onSeek = viewModel::seekTo,
+                    onBookmark = viewModel::toggleBookmark,
+                    onIndex = viewModel::showContents,
+                )
+                if (state.contentsVisible) {
+                    ContentsSheet(
+                        state,
+                        onChapterClick = viewModel::goToChapter,
+                        onBookmarkClick = viewModel::goToBookmark,
+                        onDeleteBookmark = viewModel::deleteBookmark,
+                        onDismiss = viewModel::hideContents,
+                    )
+                }
             }
             is ReaderUiState.CannotOpen -> CannotOpen(state.problem, onNavigateUp)
         }

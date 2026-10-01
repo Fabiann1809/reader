@@ -63,6 +63,7 @@ object AppViewModelProvider {
             ReaderViewModel(
                 bookId = createSavedStateHandle().toRoute<ReaderRoute>().bookId,
                 bookRepository = readerApplication().container.bookRepository,
+                bookmarkRepository = readerApplication().container.bookmarkRepository,
                 session = readerApplication().container.readerSession,
             )
         }

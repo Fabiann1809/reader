@@ -17,6 +17,7 @@ import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Locator
@@ -106,7 +107,10 @@ class ReaderSessionTest {
         // The navigator starts on the saved page: nothing new to save, but the controls need it.
         session.reportLocation(1, session.initialLocator(1)!!)
 
-        assertEquals(ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.5), session.position.value)
+        assertEquals(
+            ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.5, href = "OEBPS/chapter1.xhtml"),
+            session.position.value,
+        )
         session.close(1)
         assertNull(session.position.value)
     }
@@ -122,6 +126,35 @@ class ReaderSessionTest {
     }
 
     @Test
+    fun theIndexListsTheChaptersAndJumpsToThem() = runTest {
+        assertNull(session.open(bookWith("principito.epub", BookFormat.EPUB)))
+
+        val chapter = session.tableOfContents(1).single()
+        assertEquals("Capítulo 1", chapter.title)
+        assertEquals(0, chapter.level)
+
+        val jump = async(start = CoroutineStart.UNDISPATCHED) { session.jumps.first() }
+        session.jumpToChapter(1, chapter)
+        assertEquals("OEBPS/chapter1.xhtml", jump.await().href.toString())
+
+        session.close(1)
+        assertTrue(session.tableOfContents(1).isEmpty())
+    }
+
+    @Test
+    fun aBookmarkSavesThePageAndJumpsBackToIt() = runTest {
+        assertNull(session.open(bookWith("principito.epub", BookFormat.EPUB)))
+        assertNull(session.currentLocation(1))
+
+        session.reportLocation(1, Locator.fromJSON(JSONObject(CHAPTER_HALFWAY))!!)
+        val saved = session.currentLocation(1)!!
+
+        val jump = async(start = CoroutineStart.UNDISPATCHED) { session.jumps.first() }
+        session.jumpToLocation(1, saved)
+        assertEquals(0.5, jump.await().locations.progression!!, 0.0001)
+    }
+
+    @Test
     fun adjustmentsLastUntilTheBookCloses() = runTest {
         assertNull(session.open(bookWith("principito.epub", BookFormat.EPUB)))
         session.adjustments = ReadingAdjustments(fontSize = 1.5, brightness = 0.3f)
@@ -132,6 +165,10 @@ class ReaderSessionTest {
 
         session.close(1)
         assertEquals(ReadingAdjustments(), session.adjustments)
+    }
+
+    private companion object {
+        const val CHAPTER_HALFWAY = """{"href":"OEBPS/chapter1.xhtml","type":"application/xhtml+xml","locations":{"progression":0.5}}"""
     }
 
     @Test

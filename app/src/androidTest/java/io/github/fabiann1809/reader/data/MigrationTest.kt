@@ -67,6 +67,8 @@ class MigrationTest {
             assertTrue(database.collectionDao().observeAll().first().isEmpty())
             // Added in version 4: the book was never opened in the reader.
             assertNull(book.readingLocation)
+            // Added in version 5: no bookmarks yet.
+            assertTrue(database.bookmarkDao().observeByBook(1).first().isEmpty())
 
             val note = database.noteDao().observeByBook(1).first().single()
             assertEquals("Idea central", note.content)

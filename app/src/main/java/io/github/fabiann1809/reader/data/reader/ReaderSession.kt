@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.locateProgression
@@ -41,8 +42,18 @@ data class ReadingLocation(val bookId: Long, val json: String)
  */
 data class ReadingAdjustments(val fontSize: Double = 1.0, val brightness: Float? = null)
 
-/** What the reader's controls show: the chapter's title and how far into the book (0 to 1) the page is. */
-data class ReadingPosition(val bookId: Long, val chapter: String?, val progression: Double?)
+/**
+ * What the reader's controls show: the chapter's title and how far into the book (0 to 1) the page
+ * is. [href] is the chapter's file and [position] Readium's position number (about a page; a PDF's
+ * page), to highlight the chapter in the index and to know if the page is bookmarked.
+ */
+data class ReadingPosition(
+    val bookId: Long,
+    val chapter: String?,
+    val progression: Double?,
+    val href: String? = null,
+    val position: Int? = null,
+)
 
 /** Opens a book for reading, keeps it while it is read and reports where the reader is. */
 interface ReaderSession {
@@ -67,6 +78,18 @@ interface ReaderSession {
     /** Moves the open navigator of [bookId] to [totalProgression] (0 to 1) of the book, e.g. from the progress bar. */
     suspend fun jumpTo(bookId: Long, totalProgression: Double)
 
+    /** The open book's table of contents in reading order; empty when it has none. */
+    fun tableOfContents(bookId: Long): List<TocEntry>
+
+    /** Moves the open navigator of [bookId] to the chapter of [entry]. */
+    suspend fun jumpToChapter(bookId: Long, entry: TocEntry)
+
+    /** Moves the open navigator of [bookId] to a saved [location] (a Locator as JSON, e.g. a bookmark's). */
+    fun jumpToLocation(bookId: Long, location: String)
+
+    /** The page shown now, as a Locator in JSON to bookmark it; null before the navigator reported one. */
+    fun currentLocation(bookId: Long): String?
+
     /** Where the open navigator must go (see [jumpTo]). */
     val jumps: SharedFlow<Locator>
 
@@ -85,6 +108,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
     private var openBookId: Long? = null
     private var openPublication: Publication? = null
     private var lastLocator: Locator? = null
+    private var toc: List<Pair<TocEntry, Link>> = emptyList()
 
     private val _locations = MutableSharedFlow<ReadingLocation>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     override val locations: SharedFlow<ReadingLocation> = _locations.asSharedFlow()
@@ -110,6 +134,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         openBookId = book.id
         openPublication = publication
         lastLocator = book.readingLocation?.let(::parseLocator)
+        toc = flattenToc(publication.tableOfContents)
         return null
     }
 
@@ -119,7 +144,13 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
 
     override fun reportLocation(bookId: Long, locator: Locator) {
         if (bookId != openBookId) return
-        _position.value = ReadingPosition(bookId, locator.title, locator.locations.totalProgression)
+        _position.value = ReadingPosition(
+            bookId = bookId,
+            chapter = locator.title,
+            progression = locator.locations.totalProgression,
+            href = locator.href.fileHref(),
+            position = locator.locations.position,
+        )
         if (locator == lastLocator) return
         lastLocator = locator
         _locations.tryEmit(ReadingLocation(bookId, locator.toJSON().toString()))
@@ -130,6 +161,21 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         val locator = publication.locateProgression(totalProgression.coerceIn(0.0, 1.0)) ?: return
         _jumps.tryEmit(locator)
     }
+
+    override fun tableOfContents(bookId: Long): List<TocEntry> = if (bookId == openBookId) toc.map { it.first } else emptyList()
+
+    override suspend fun jumpToChapter(bookId: Long, entry: TocEntry) {
+        val publication = publication(bookId) ?: return
+        val link = toc.getOrNull(entry.index)?.second ?: return
+        publication.locatorFromLink(link)?.let { _jumps.tryEmit(it) }
+    }
+
+    override fun jumpToLocation(bookId: Long, location: String) {
+        if (bookId != openBookId) return
+        parseLocator(location)?.let { _jumps.tryEmit(it) }
+    }
+
+    override fun currentLocation(bookId: Long): String? = lastLocator.takeIf { bookId == openBookId }?.toJSON()?.toString()
 
     override fun close(bookId: Long) {
         if (bookId == openBookId) closeCurrent()
@@ -142,6 +188,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         openPublication = null
         openBookId = null
         lastLocator = null
+        toc = emptyList()
     }
 
     // A location saved by another Readium version that can't be read just means starting from the beginning.
