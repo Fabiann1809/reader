@@ -1,7 +1,5 @@
-package io.github.fabiann1809.reader.ui.library
+package io.github.fabiann1809.reader.data.book.importing
 
-import io.github.fabiann1809.reader.data.book.importing.BookImporter
-import io.github.fabiann1809.reader.data.book.importing.ImportResult
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent

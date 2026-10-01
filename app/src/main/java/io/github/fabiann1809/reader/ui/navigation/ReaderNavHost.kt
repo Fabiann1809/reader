@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -37,13 +39,21 @@ import io.github.fabiann1809.reader.ui.privacy.PrivacyScreen
 import io.github.fabiann1809.reader.ui.progress.ProgressScreen
 import io.github.fabiann1809.reader.ui.review.ReviewScreen
 import io.github.fabiann1809.reader.ui.settings.SettingsScreen
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
-/** App root: waits for the first-screen decision (onboarding or library), then shows the navigation. */
+/**
+ * App root: waits for the first-screen decision (onboarding or library), then shows the navigation.
+ * [showLibraryRequests] emits when books arrive from another app, to show the import progress.
+ */
 @Composable
-fun ReaderApp(viewModel: AppStartViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
+fun ReaderApp(
+    showLibraryRequests: Flow<Unit> = emptyFlow(),
+    viewModel: AppStartViewModel = viewModel(factory = AppViewModelProvider.Factory),
+) {
     val startDestination by viewModel.startDestination.collectAsStateWithLifecycle()
     // Reading the flag takes a few milliseconds; the window background shows meanwhile.
-    startDestination?.let { ReaderNavHost(startDestination = it) }
+    startDestination?.let { ReaderNavHost(startDestination = it, showLibraryRequests = showLibraryRequests) }
 }
 
 @Composable
@@ -51,7 +61,16 @@ fun ReaderNavHost(
     modifier: Modifier = Modifier,
     startDestination: Any = LibraryRoute,
     navController: NavHostController = rememberNavController(),
+    showLibraryRequests: Flow<Unit> = emptyFlow(),
 ) {
+    LaunchedEffect(navController, showLibraryRequests) {
+        showLibraryRequests.collect {
+            // No destination yet means the graph is not ready. The onboarding ends on the library anyway,
+            // and jumping there would skip it.
+            val destination = navController.currentDestination ?: return@collect
+            if (!destination.hasRoute<OnboardingRoute>()) navController.navigateToTab(TopLevelTab.LIBRARY)
+        }
+    }
     val backStackEntry by navController.currentBackStackEntryAsState()
     // The bottom bar only shows on the four top-level screens; everything else is full screen.
     val currentTab = TopLevelTab.of(backStackEntry?.destination)

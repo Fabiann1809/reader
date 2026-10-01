@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.data.book.importing
 import android.content.ContentResolver
 import android.net.Uri
 import android.provider.OpenableColumns
+import androidx.core.net.toUri
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookKind
@@ -43,7 +44,7 @@ class DefaultBookImporter(
 ) : BookImporter {
 
     override suspend fun import(uri: String): ImportResult = withContext(Dispatchers.IO) {
-        importFrom(Uri.parse(uri))
+        importFrom(uri.toUri())
     }
 
     private suspend fun importFrom(uri: Uri): ImportResult {

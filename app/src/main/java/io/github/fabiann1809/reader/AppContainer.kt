@@ -13,6 +13,7 @@ import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
 import io.github.fabiann1809.reader.data.book.importing.BookImporter
 import io.github.fabiann1809.reader.data.book.importing.DefaultBookImporter
+import io.github.fabiann1809.reader.data.book.importing.ImportQueue
 import io.github.fabiann1809.reader.data.book.importing.ReadiumBookFileReader
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
 import io.github.fabiann1809.reader.data.collection.DefaultCollectionRepository
@@ -22,6 +23,9 @@ import io.github.fabiann1809.reader.data.prefs.AppPreferences
 import io.github.fabiann1809.reader.data.prefs.DataStoreAppPreferences
 import io.github.fabiann1809.reader.ocr.MlKitTextRecognizer
 import io.github.fabiann1809.reader.ocr.TextRecognizer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 
@@ -38,7 +42,11 @@ class AppContainer(context: Context) {
 
     val bookRepository: BookRepository by lazy { DefaultBookRepository(database.bookDao(), bookFiles) }
 
-    val bookImporter: BookImporter by lazy {
+    // App-wide work that must outlive any screen (e.g. an import started from another app's share).
+    // Main dispatcher: the import queue keeps its state on the main thread; the slow parts switch to IO.
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    private val bookImporter: BookImporter by lazy {
         DefaultBookImporter(
             contentResolver = appContext.contentResolver,
             bookFiles = bookFiles,
@@ -47,6 +55,8 @@ class AppContainer(context: Context) {
             untitled = appContext.getString(R.string.book_untitled),
         )
     }
+
+    val importQueue: ImportQueue by lazy { ImportQueue(bookImporter, applicationScope) }
 
     val noteRepository: NoteRepository by lazy { DefaultNoteRepository(database.noteDao()) }
 

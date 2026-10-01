@@ -5,7 +5,10 @@ import io.github.fabiann1809.reader.data.book.BookSort
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.book.importing.BookImporter
+import io.github.fabiann1809.reader.data.book.importing.FailedImport
+import io.github.fabiann1809.reader.data.book.importing.ImportQueue
 import io.github.fabiann1809.reader.data.book.importing.ImportResult
+import io.github.fabiann1809.reader.data.book.importing.ImportStatus
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
@@ -14,6 +17,7 @@ import io.github.fabiann1809.reader.testing.FakeAppPreferences
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.FakeCollectionRepository
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -48,7 +52,9 @@ class LibraryViewModelTest {
     }
 
     private fun TestScope.viewModel(bookRepository: FakeBookRepository = books): LibraryViewModel {
-        val viewModel = LibraryViewModel(bookRepository, collections, preferences, importer)
+        // Imports run eagerly, as the app's main-thread scope would between two frames.
+        val importScope = CoroutineScope(backgroundScope.coroutineContext + UnconfinedTestDispatcher(testScheduler))
+        val viewModel = LibraryViewModel(bookRepository, collections, preferences, ImportQueue(importer, importScope))
         // stateIn(WhileSubscribed) only runs the queries while someone collects.
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         return viewModel
@@ -58,7 +64,7 @@ class LibraryViewModelTest {
 
     @Test
     fun initialStateIsLoading() {
-        assertTrue(LibraryViewModel(books, collections, preferences, importer).uiState.value.isLoading)
+        assertTrue(LibraryViewModel(books, collections, preferences, ImportQueue(importer, TestScope())).uiState.value.isLoading)
     }
 
     @Test

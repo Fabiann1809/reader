@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
+import androidx.core.graphics.createBitmap
 import java.io.File
 import java.io.IOException
 import kotlin.math.min
@@ -40,7 +41,7 @@ fun renderPdfCover(file: File): Bitmap? {
                 renderer.openPage(0).use { page ->
                     // Page sizes are in points (1/72 inch), usually smaller than the cover we want.
                     val size = fitInside(page.width, page.height, canEnlarge = true)
-                    Bitmap.createBitmap(size.width, size.height, Bitmap.Config.ARGB_8888).apply {
+                    createBitmap(size.width, size.height).apply {
                         eraseColor(Color.WHITE)
                         page.render(this, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                     }

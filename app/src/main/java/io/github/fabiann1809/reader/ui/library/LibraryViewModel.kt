@@ -6,7 +6,8 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.book.arrangedBy
-import io.github.fabiann1809.reader.data.book.importing.BookImporter
+import io.github.fabiann1809.reader.data.book.importing.ImportQueue
+import io.github.fabiann1809.reader.data.book.importing.ImportStatus
 import io.github.fabiann1809.reader.data.book.markedAsRead
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
@@ -56,7 +57,7 @@ class LibraryViewModel(
     private val bookRepository: BookRepository,
     private val collectionRepository: CollectionRepository,
     private val preferences: AppPreferences,
-    private val bookImporter: BookImporter,
+    private val importQueue: ImportQueue,
 ) : ViewModel() {
 
     // A custom collection that no longer exists (deleted elsewhere) falls back to "Todos".
@@ -115,7 +116,6 @@ class LibraryViewModel(
         viewModelScope.launch { preferences.setLibraryArrangement(arrangement) }
     }
 
-    private val importQueue = ImportQueue(bookImporter, viewModelScope)
     val importStatus: StateFlow<ImportStatus> = importQueue.status
 
     /** [uris] are the documents picked in the system file picker. New books appear on the shelves by themselves. */

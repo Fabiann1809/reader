@@ -1,7 +1,5 @@
-package io.github.fabiann1809.reader.ui.library
+package io.github.fabiann1809.reader.data.book.importing
 
-import io.github.fabiann1809.reader.data.book.importing.BookImporter
-import io.github.fabiann1809.reader.data.book.importing.ImportResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,8 +22,10 @@ sealed interface ImportStatus {
 }
 
 /**
- * Imports picked files one at a time (copying several big files at once would only compete for
- * the disk). Files picked while a batch runs join it, so the counter keeps growing instead of resetting.
+ * Imports files one at a time (copying several big files at once would only compete for the disk).
+ * There is one per app (see AppContainer), so files picked in the library and files shared from
+ * other apps join the same batch, and the counter keeps growing instead of resetting.
+ * Call it from the main thread only; [scope] should run on it too, so its state needs no locking.
  */
 class ImportQueue(private val importer: BookImporter, private val scope: CoroutineScope) {
 
