@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.testing
 
+import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.prefs.AppPreferences
 import kotlinx.coroutines.flow.Flow
@@ -22,5 +23,13 @@ class FakeAppPreferences(seenOnboarding: Boolean = false) : AppPreferences {
 
     override suspend fun setLibraryFilter(filter: LibraryFilter) {
         this.filter.value = filter
+    }
+
+    private val arrangement = MutableStateFlow(LibraryArrangement())
+
+    override val libraryArrangement: Flow<LibraryArrangement> = arrangement
+
+    override suspend fun setLibraryArrangement(arrangement: LibraryArrangement) {
+        this.arrangement.value = arrangement
     }
 }

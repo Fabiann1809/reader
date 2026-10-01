@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookRepository
+import io.github.fabiann1809.reader.data.book.LibraryArrangement
+import io.github.fabiann1809.reader.data.book.arrangedBy
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
@@ -32,6 +34,8 @@ data class LibraryUiState(
     val libraryIsEmpty: Boolean = false,
     /** Search text; [books] only holds the matches when it is not blank. */
     val query: String = "",
+    /** Shelf order and filters already applied to [books]. */
+    val arrangement: LibraryArrangement = LibraryArrangement(),
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -61,15 +65,17 @@ class LibraryViewModel(
         collectionRepository.observeCollections(),
         bookRepository.observeBooks().map { it.isEmpty() },
         query,
-    ) { (filter, collection, books), collections, libraryIsEmpty, query ->
+        preferences.libraryArrangement,
+    ) { (filter, collection, books), collections, libraryIsEmpty, query, arrangement ->
         LibraryUiState(
-            books = books.filter { it.matchesSearch(query) },
+            books = books.filter { it.matchesSearch(query) }.arrangedBy(arrangement),
             isLoading = false,
             filter = filter,
             currentCollection = collection,
             collections = collections,
             libraryIsEmpty = libraryIsEmpty,
             query = query,
+            arrangement = arrangement,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -81,6 +87,10 @@ class LibraryViewModel(
     /** Filters the shown collection by title and author as the user types. */
     fun search(text: String) {
         query.value = text
+    }
+
+    fun setArrangement(arrangement: LibraryArrangement) {
+        viewModelScope.launch { preferences.setLibraryArrangement(arrangement) }
     }
 
     fun selectFilter(filter: LibraryFilter) {

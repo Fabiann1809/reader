@@ -51,6 +51,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
+import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.BookCover
@@ -75,6 +76,7 @@ fun LibraryScreen(
         onAddBook = onAddBook,
         onSelectFilter = viewModel::selectFilter,
         onSearch = viewModel::search,
+        onArrangementChange = viewModel::setArrangement,
         onCreateCollection = viewModel::createCollection,
         onRenameCollection = viewModel::renameCurrentCollection,
         onDeleteCollection = viewModel::deleteCurrentCollection,
@@ -89,12 +91,13 @@ fun LibraryContent(
     modifier: Modifier = Modifier,
     onSelectFilter: (LibraryFilter) -> Unit = {},
     onSearch: (String) -> Unit = {},
+    onArrangementChange: (LibraryArrangement) -> Unit = {},
     onCreateCollection: (String) -> Unit = {},
     onRenameCollection: (String) -> Unit = {},
     onDeleteCollection: () -> Unit = {},
 ) {
     val showFab = !uiState.isLoading && uiState.books.isNotEmpty()
-    var dialog by rememberSaveable { mutableStateOf(CollectionDialog.NONE) }
+    var dialog by rememberSaveable { mutableStateOf(LibraryDialog.NONE) }
     var isSearchOpen by rememberSaveable { mutableStateOf(false) }
     val title = uiState.currentCollection?.name
         ?: stringResource((uiState.filter as? LibraryFilter.Smart)?.collection?.nameRes() ?: R.string.collection_all)
@@ -115,7 +118,7 @@ fun LibraryContent(
                 // The library bar stays forest green in both themes: it is the app's identity.
                 ReaderTopAppBar(
                     title = title,
-                    onTitleClick = { dialog = CollectionDialog.PICKER },
+                    onTitleClick = { dialog = LibraryDialog.PICKER },
                     onTitleClickLabel = stringResource(R.string.collection_change),
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = Primary40,
@@ -130,12 +133,18 @@ fun LibraryContent(
                                     contentDescription = stringResource(R.string.library_search),
                                 )
                             }
+                            IconButton(onClick = { dialog = LibraryDialog.ARRANGE }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_funnel_simple),
+                                    contentDescription = stringResource(R.string.library_arrange),
+                                )
+                            }
                         }
                         // Only collections created by the user can be renamed or deleted.
                         if (uiState.currentCollection != null) {
                             CollectionMenu(
-                                onRename = { dialog = CollectionDialog.RENAME },
-                                onDelete = { dialog = CollectionDialog.DELETE },
+                                onRename = { dialog = LibraryDialog.RENAME },
+                                onDelete = { dialog = LibraryDialog.DELETE },
                             )
                         }
                     },
@@ -167,6 +176,7 @@ fun LibraryContent(
                 actionIcon = R.drawable.ic_plus_circle,
                 onAction = onAddBook,
             )
+            // The search is cleared first; if the filters still hide everything, this shows again for them.
             uiState.books.isEmpty() && uiState.query.isNotBlank() -> EmptyShelf(
                 contentPadding = innerPadding,
                 title = stringResource(R.string.library_search_empty_title),
@@ -174,6 +184,14 @@ fun LibraryContent(
                 action = stringResource(R.string.library_search_clear),
                 actionIcon = R.drawable.ic_x,
                 onAction = { onSearch("") },
+            )
+            uiState.books.isEmpty() && uiState.arrangement.hasFilters -> EmptyShelf(
+                contentPadding = innerPadding,
+                title = stringResource(R.string.library_search_empty_title),
+                message = stringResource(R.string.library_filters_empty_message),
+                action = stringResource(R.string.arrange_clear_filters),
+                actionIcon = R.drawable.ic_x,
+                onAction = { onArrangementChange(uiState.arrangement.withoutFilters()) },
             )
             uiState.books.isEmpty() -> EmptyShelf(
                 contentPadding = innerPadding,
@@ -197,50 +215,55 @@ fun LibraryContent(
     }
 
     when (dialog) {
-        CollectionDialog.NONE -> Unit
-        CollectionDialog.PICKER -> CollectionPickerSheet(
+        LibraryDialog.NONE -> Unit
+        LibraryDialog.ARRANGE -> ArrangeSheet(
+            arrangement = uiState.arrangement,
+            onChange = onArrangementChange,
+            onDismiss = { dialog = LibraryDialog.NONE },
+        )
+        LibraryDialog.PICKER -> CollectionPickerSheet(
             selected = uiState.filter,
             collections = uiState.collections,
             onSelect = { filter ->
                 onSelectFilter(filter)
-                dialog = CollectionDialog.NONE
+                dialog = LibraryDialog.NONE
             },
-            onNewCollection = { dialog = CollectionDialog.CREATE },
-            onDismiss = { dialog = CollectionDialog.NONE },
+            onNewCollection = { dialog = LibraryDialog.CREATE },
+            onDismiss = { dialog = LibraryDialog.NONE },
         )
-        CollectionDialog.CREATE -> CollectionNameDialog(
+        LibraryDialog.CREATE -> CollectionNameDialog(
             title = R.string.collection_new,
             confirm = R.string.collection_create,
             initialName = "",
             onConfirm = { name ->
                 onCreateCollection(name)
-                dialog = CollectionDialog.NONE
+                dialog = LibraryDialog.NONE
             },
-            onDismiss = { dialog = CollectionDialog.NONE },
+            onDismiss = { dialog = LibraryDialog.NONE },
         )
-        CollectionDialog.RENAME -> CollectionNameDialog(
+        LibraryDialog.RENAME -> CollectionNameDialog(
             title = R.string.collection_rename,
             confirm = R.string.collection_rename_confirm,
             initialName = uiState.currentCollection?.name.orEmpty(),
             onConfirm = { name ->
                 onRenameCollection(name)
-                dialog = CollectionDialog.NONE
+                dialog = LibraryDialog.NONE
             },
-            onDismiss = { dialog = CollectionDialog.NONE },
+            onDismiss = { dialog = LibraryDialog.NONE },
         )
-        CollectionDialog.DELETE -> DeleteCollectionDialog(
+        LibraryDialog.DELETE -> DeleteCollectionDialog(
             name = uiState.currentCollection?.name.orEmpty(),
             onConfirm = {
                 onDeleteCollection()
-                dialog = CollectionDialog.NONE
+                dialog = LibraryDialog.NONE
             },
-            onDismiss = { dialog = CollectionDialog.NONE },
+            onDismiss = { dialog = LibraryDialog.NONE },
         )
     }
 }
 
-/** Which collection sheet or dialog is open (only one at a time). */
-private enum class CollectionDialog { NONE, PICKER, CREATE, RENAME, DELETE }
+/** Which sheet or dialog is open (only one at a time). */
+private enum class LibraryDialog { NONE, PICKER, CREATE, RENAME, DELETE, ARRANGE }
 
 @Composable
 private fun CollectionMenu(onRename: () -> Unit, onDelete: () -> Unit) {

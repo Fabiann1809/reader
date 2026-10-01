@@ -10,7 +10,9 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookSort
 import io.github.fabiann1809.reader.data.book.BookStatus
+import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
@@ -192,5 +194,52 @@ class LibraryContentTest {
         composeRule.onNodeWithText(string(R.string.library_search_empty_title)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.library_search_clear)).performClick()
         assertTrue(cleared)
+    }
+
+    @Test
+    fun arrangeSheetChangesSortAndFilters() {
+        val changes = mutableListOf<LibraryArrangement>()
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(books = listOf(Book(id = 1, title = "Dune", author = "F. Herbert")), isLoading = false),
+                    onBookClick = {},
+                    onAddBook = {},
+                    onArrangementChange = { changes += it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription(string(R.string.library_arrange)).performClick()
+        composeRule.onNodeWithText(string(R.string.sort_title)).performClick()
+        composeRule.onNodeWithText(string(R.string.book_status_reading)).performClick()
+
+        assertEquals(
+            listOf(
+                LibraryArrangement(sort = BookSort.TITLE),
+                LibraryArrangement(statuses = setOf(BookStatus.READING)),
+            ),
+            changes,
+        )
+    }
+
+    @Test
+    fun filtersHidingEverythingOfferToClearThem() {
+        var cleared: LibraryArrangement? = null
+        val filtered = LibraryArrangement(sort = BookSort.AUTHOR, statuses = setOf(BookStatus.FINISHED))
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(isLoading = false, arrangement = filtered),
+                    onBookClick = {},
+                    onAddBook = {},
+                    onArrangementChange = { cleared = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(string(R.string.library_filters_empty_message)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.arrange_clear_filters)).performClick()
+        assertEquals(LibraryArrangement(sort = BookSort.AUTHOR), cleared)
     }
 }

@@ -16,6 +16,24 @@
     <string name="library_search_clear">Borrar búsqueda</string>
     <string name="library_search_empty_title">Sin resultados</string>
     <string name="library_search_empty_message">Ningún libro coincide con «%1$s».</string>
+    <string name="library_filters_empty_message">Ningún libro coincide con los filtros elegidos.</string>
+    <string name="library_arrange">Ordenar y filtrar</string>
+    <string name="arrange_sort_title">Ordenar por</string>
+    <string name="arrange_status">Estado</string>
+    <string name="arrange_format">Formato</string>
+    <string name="arrange_kind">Tipo</string>
+    <string name="arrange_clear_filters">Quitar filtros</string>
+    <string name="sort_last_read">Último leído</string>
+    <string name="sort_title">Título</string>
+    <string name="sort_author">Autor</string>
+    <string name="sort_date_added">Fecha añadido</string>
+    <string name="sort_progress">Progreso</string>
+    <string name="format_epub">EPUB</string>
+    <string name="format_pdf">PDF</string>
+    <string name="format_txt">TXT</string>
+    <string name="format_cbz">CBZ</string>
+    <string name="kind_digital">Digital</string>
+    <string name="kind_physical">Físico</string>
     <string name="book_cover_description">%1$s, de %2$s</string>
     <string name="book_cover_description_progress">%1$s, de %2$s, %3$d %% leído</string>
 

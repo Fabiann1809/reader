@@ -1,7 +1,9 @@
 package io.github.fabiann1809.reader.ui.library
 
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookSort
 import io.github.fabiann1809.reader.data.book.BookStatus
+import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.testing.FakeAppPreferences
@@ -159,5 +161,19 @@ class LibraryViewModelTest {
 
         viewModel.search("")
         assertEquals(listOf("Cosmos"), viewModel.titles())
+    }
+
+    @Test
+    fun arrangementSortsFiltersAndIsRemembered() = runTest {
+        val viewModel = viewModel()
+        val arrangement = LibraryArrangement(sort = BookSort.TITLE)
+
+        viewModel.setArrangement(arrangement)
+        assertEquals(listOf("Cosmos", "Dune"), viewModel.titles())
+
+        viewModel.setArrangement(arrangement.copy(statuses = setOf(BookStatus.READING)))
+        assertEquals(listOf("Dune"), viewModel.titles())
+        assertEquals(setOf(BookStatus.READING), preferences.libraryArrangement.first().statuses)
+        assertTrue(viewModel.uiState.value.arrangement.hasFilters)
     }
 }
