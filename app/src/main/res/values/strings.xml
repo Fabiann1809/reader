@@ -11,7 +11,7 @@
     <string name="library_empty_message">Añade tu primer libro y empieza a leer.</string>
     <string name="library_add_book">Añadir libro</string>
     <string name="add_book_from_file">Desde un archivo</string>
-    <string name="add_book_from_file_hint">EPUB o PDF del teléfono, Google Drive o Dropbox</string>
+    <string name="add_book_from_file_hint">EPUB, PDF, TXT o CBZ del teléfono, Google Drive o Dropbox</string>
     <string name="add_book_physical">Libro físico</string>
     <string name="add_book_physical_hint">Un libro en papel que registras a mano</string>
     <plurals name="import_progress">

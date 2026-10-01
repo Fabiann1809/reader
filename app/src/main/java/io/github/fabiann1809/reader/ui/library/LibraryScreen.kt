@@ -488,9 +488,16 @@ private fun DeleteBookDialog(title: String, onConfirm: () -> Unit, onDismiss: ()
     )
 }
 
-// Some providers report EPUB files as generic binary data, so that type is accepted too;
-// anything that is not really an EPUB or PDF is rejected after reading it.
-private val BOOK_MIME_TYPES = arrayOf("application/epub+zip", "application/pdf", "application/octet-stream")
+// Some providers report EPUB and CBZ files as generic binary data, so that type is accepted too;
+// anything that is not really a supported book is rejected after reading it.
+private val BOOK_MIME_TYPES = arrayOf(
+    "application/epub+zip",
+    "application/pdf",
+    "application/vnd.comicbook+zip",
+    "application/x-cbz",
+    "text/plain",
+    "application/octet-stream",
+)
 
 /** Sheet or dialog opened from the selection bar. */
 private enum class SelectionDialog { NONE, COLLECTION, NEW_COLLECTION, DELETE }

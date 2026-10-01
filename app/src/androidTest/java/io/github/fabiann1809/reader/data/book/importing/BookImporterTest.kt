@@ -152,4 +152,32 @@ class BookImporterTest {
         assertTrue(storedFiles().isEmpty())
         assertTrue(File(workDir, "files/covers").list().isNullOrEmpty())
     }
+
+    @Test
+    fun cbzIsImportedWithItsFirstPageAsCover() = runTest {
+        val book = importedBook("mafalda_tomo_1.cbz")
+
+        assertEquals(BookFormat.CBZ, book.format)
+        // Comics carry no title metadata Readium reads, so the file name is used.
+        assertEquals("mafalda tomo 1", book.title)
+        assertTrue(book.filePath!!.endsWith(".cbz"))
+        // Page 001 is blue; 002 (stored first in the archive) is light grey.
+        assertTrue(Color.blue(storedCover(book).getPixel(10, 10)) > 150)
+    }
+
+    @Test
+    fun txtIsImportedWithTheFileNameAsTitleAndNoCover() = runTest {
+        val book = importedBook("cuento_de_navidad.txt")
+
+        assertEquals(BookFormat.TXT, book.format)
+        assertEquals("cuento de navidad", book.title)
+        assertEquals(null, book.coverPath)
+        assertTrue(book.filePath!!.endsWith(".txt"))
+    }
+
+    @Test
+    fun aTxtFileWithBinaryContentIsRejected() = runTest {
+        assertEquals(ImportResult.Unsupported("falso.txt"), importer.import(picked("falso.txt").toString()))
+        assertTrue(storedFiles().isEmpty())
+    }
 }

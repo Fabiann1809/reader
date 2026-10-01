@@ -26,12 +26,18 @@ data class BookFileInfo(
     val cover: Bitmap? = null,
 )
 
-/** Reads the format and metadata of a book file. Returns null when the file is not a book the app supports. */
+/**
+ * Reads the format and metadata of a book file. [fileName] is the name the user's file had
+ * (null if unknown). Returns null when the file is not a book the app supports.
+ */
 fun interface BookFileReader {
-    suspend fun read(file: File): BookFileInfo?
+    suspend fun read(file: File, fileName: String?): BookFileInfo?
 }
 
-/** [BookFileReader] backed by Readium: EPUB natively, PDF through the PDFium adapter. */
+/**
+ * [BookFileReader] for EPUB, PDF (through the PDFium adapter) and CBZ with Readium, and for TXT,
+ * which Readium does not handle, by itself.
+ */
 class ReadiumBookFileReader(context: Context) : BookFileReader {
 
     private val httpClient = DefaultHttpClient()
@@ -45,12 +51,26 @@ class ReadiumBookFileReader(context: Context) : BookFileReader {
         ),
     )
 
-    override suspend fun read(file: File): BookFileInfo? {
+    override suspend fun read(file: File, fileName: String?): BookFileInfo? =
+        readPublication(file) ?: readPlainText(file, fileName)
+
+    // Plain text has no format of its own to recognize, so it needs both the .txt name and text content
+    // (content alone would also accept HTML, CSV, logs...). Its title comes from the file name.
+    private fun readPlainText(file: File, fileName: String?): BookFileInfo? =
+        if (hasExtension(fileName, "txt") && isPlainTextFile(file)) {
+            BookFileInfo(format = BookFormat.TXT, title = null, author = null, language = null)
+        } else {
+            null
+        }
+
+    private suspend fun readPublication(file: File): BookFileInfo? {
         // Readium looks at the content, not the extension, so a renamed file is still recognized.
         val asset = assetRetriever.retrieve(file).getOrElse { return null }
         val format = when {
             asset.format.conformsTo(Specification.Epub) -> BookFormat.EPUB
             asset.format.conformsTo(Specification.Pdf) -> BookFormat.PDF
+            // A ZIP of images; comic RAR files (CBR) are not supported (see the spec's risks).
+            asset.format.conformsToAll(listOf(Specification.Zip, Specification.InformalComic)) -> BookFormat.CBZ
             else -> null
         }
         if (format == null) {
@@ -66,8 +86,8 @@ class ReadiumBookFileReader(context: Context) : BookFileReader {
         return publication.use { it.toInfo(format, cover = cover(it, format, file)) }
     }
 
-    // EPUB: the cover image the book declares. PDF: the first page, rendered with PdfRenderer on white
-    // because PDFium draws pages on a transparent bitmap.
+    // EPUB: the cover image the book declares. CBZ: its first image. PDF: the first page, rendered
+    // with PdfRenderer on white because PDFium draws pages on a transparent bitmap.
     private suspend fun cover(publication: Publication, format: BookFormat, file: File): Bitmap? = when (format) {
         BookFormat.PDF -> renderPdfCover(file)
         else -> publication.coverFitting(Size(MaxCoverSize.width, MaxCoverSize.height))

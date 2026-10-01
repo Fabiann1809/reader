@@ -16,7 +16,7 @@ import java.io.IOException
 sealed interface ImportResult {
     data class Imported(val bookId: Long) : ImportResult
 
-    /** The file is not an EPUB or PDF the app can read (or it is damaged). [fileName] is null if unknown. */
+    /** The file is not a book the app can read (EPUB, PDF, TXT or CBZ), or it is damaged. [fileName] is null if unknown. */
     data class Unsupported(val fileName: String?) : ImportResult
 
     /** The file could not be copied (e.g. a cloud file that failed to download). */
@@ -51,7 +51,7 @@ class DefaultBookImporter(
         val copy = bookFiles.newFile(extension = PARTIAL_EXTENSION)
         try {
             if (!copyTo(uri, copy)) return ImportResult.Failed(fileName).also { copy.delete() }
-            val info = readSafely(copy) ?: return ImportResult.Unsupported(fileName).also { copy.delete() }
+            val info = readSafely(copy, fileName) ?: return ImportResult.Unsupported(fileName).also { copy.delete() }
             val stored = copy.withExtension(info.format.name.lowercase())
             val book = Book(
                 title = info.title ?: titleFromFileName(fileName).ifEmpty { untitled },
@@ -83,8 +83,8 @@ class DefaultBookImporter(
 
     // A damaged file can make the parsers (including native PDFium) throw; that is "unsupported", not a crash.
     @Suppress("TooGenericExceptionCaught")
-    private suspend fun readSafely(file: File): BookFileInfo? = try {
-        fileReader.read(file)
+    private suspend fun readSafely(file: File, fileName: String?): BookFileInfo? = try {
+        fileReader.read(file, fileName)
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
