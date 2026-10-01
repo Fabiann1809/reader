@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
+import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ReaderApplication
 import io.github.fabiann1809.reader.ui.addbook.AddBookViewModel
 import io.github.fabiann1809.reader.ui.bookdetail.BookDetailViewModel
@@ -13,6 +14,7 @@ import io.github.fabiann1809.reader.ui.explanation.ExplanationLabels
 import io.github.fabiann1809.reader.ui.explanation.ExplanationViewModel
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextViewModel
 import io.github.fabiann1809.reader.ui.library.LibraryViewModel
+import io.github.fabiann1809.reader.ui.library.WatchedFolderViewModel
 import io.github.fabiann1809.reader.ui.navigation.BookDetailRoute
 import io.github.fabiann1809.reader.ui.navigation.ExplanationRoute
 import io.github.fabiann1809.reader.ui.navigation.ExtractedTextRoute
@@ -35,6 +37,12 @@ object AppViewModelProvider {
                 preferences = readerApplication().container.appPreferences,
                 importQueue = readerApplication().container.importQueue,
                 organizer = readerApplication().container.bookOrganizer,
+            )
+        }
+        initializer {
+            WatchedFolderViewModel(
+                manager = readerApplication().container.watchedFolderManager,
+                fallbackName = readerApplication().getString(R.string.watched_folder_default_name),
             )
         }
         initializer {

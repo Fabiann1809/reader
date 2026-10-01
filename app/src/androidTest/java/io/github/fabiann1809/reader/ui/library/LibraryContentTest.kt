@@ -1,6 +1,9 @@
 package io.github.fabiann1809.reader.ui.library
 
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.longClick
@@ -512,5 +515,36 @@ class LibraryContentTest {
         composeRule.onNodeWithText(string(R.string.import_error_dismiss)).performClick()
         assertTrue(retried)
         assertTrue(dismissed)
+    }
+
+    @Test
+    fun addBookOffersToWatchAFolderAndToStopWatchingIt() {
+        var watched = false
+        var stopped = false
+        var folderName: String? by mutableStateOf(null)
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(isLoading = false, libraryIsEmpty = true),
+                    onBookClick = {},
+                    onAddPhysicalBook = {},
+                    watchedFolder = WatchedFolderOptions(
+                        folderName = folderName,
+                        onWatch = { watched = true },
+                        onStopWatching = { stopped = true },
+                    ),
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(string(R.string.library_add_book)).performClick()
+        composeRule.onNodeWithText(string(R.string.watched_folder_add)).performClick()
+        assertTrue(watched)
+
+        folderName = "Libros"
+        composeRule.onNodeWithText(string(R.string.library_add_book)).performClick()
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.watched_folder_current, "Libros")).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.watched_folder_stop)).performClick()
+        assertTrue(stopped)
     }
 }

@@ -12,9 +12,17 @@ import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
+import io.github.fabiann1809.reader.data.book.folder.DataStoreWatchedFolderStore
+import io.github.fabiann1809.reader.data.book.folder.DocumentFolderLister
+import io.github.fabiann1809.reader.data.book.folder.FolderLister
+import io.github.fabiann1809.reader.data.book.folder.WatchedFolderManager
+import io.github.fabiann1809.reader.data.book.folder.WatchedFolderStore
+import io.github.fabiann1809.reader.data.book.folder.WatchedFolderSync
+import io.github.fabiann1809.reader.data.book.folder.WorkManagerFolderSyncScheduler
 import io.github.fabiann1809.reader.data.book.importing.BookImporter
 import io.github.fabiann1809.reader.data.book.importing.DataStoreFailedImportStore
 import io.github.fabiann1809.reader.data.book.importing.DefaultBookImporter
+import io.github.fabiann1809.reader.data.book.importing.FileAccess
 import io.github.fabiann1809.reader.data.book.importing.ImportQueue
 import io.github.fabiann1809.reader.data.book.importing.PersistedFileAccess
 import io.github.fabiann1809.reader.data.book.importing.ReadiumBookFileReader
@@ -59,12 +67,29 @@ class AppContainer(context: Context) {
         )
     }
 
+    private val fileAccess: FileAccess by lazy { PersistedFileAccess(appContext.contentResolver) }
+
     val importQueue: ImportQueue by lazy {
         ImportQueue(
             importer = bookImporter,
             scope = applicationScope,
-            fileAccess = PersistedFileAccess(appContext.contentResolver),
+            fileAccess = fileAccess,
             store = DataStoreFailedImportStore(appContext),
+        )
+    }
+
+    // The watched folder (T10.6): its store and lister are shared by the background check and the screen.
+    private val watchedFolderStore: WatchedFolderStore by lazy { DataStoreWatchedFolderStore(appContext) }
+    private val folderLister: FolderLister by lazy { DocumentFolderLister(appContext) }
+
+    val watchedFolderSync: WatchedFolderSync by lazy { WatchedFolderSync(watchedFolderStore, folderLister, bookImporter) }
+
+    val watchedFolderManager: WatchedFolderManager by lazy {
+        WatchedFolderManager(
+            store = watchedFolderStore,
+            lister = folderLister,
+            folderAccess = fileAccess,
+            scheduler = WorkManagerFolderSyncScheduler(appContext),
         )
     }
 

@@ -73,6 +73,9 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.mlkit.text.recognition)
 
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.documentfile)
+
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.readium.shared)
     implementation(libs.readium.streamer)

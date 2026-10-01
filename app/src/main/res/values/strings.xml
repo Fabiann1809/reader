@@ -12,6 +12,13 @@
     <string name="library_add_book">Añadir libro</string>
     <string name="add_book_from_file">Desde un archivo</string>
     <string name="add_book_from_file_hint">EPUB, PDF, TXT o CBZ del teléfono, Google Drive o Dropbox</string>
+    <string name="watched_folder_add">Vigilar una carpeta</string>
+    <string name="watched_folder_add_hint">Sus libros, y los que agregues después, entran solos</string>
+    <string name="watched_folder_current">Carpeta vigilada: %1$s</string>
+    <string name="watched_folder_change_hint">Toca para elegir otra carpeta</string>
+    <string name="watched_folder_stop">Dejar de vigilar la carpeta</string>
+    <string name="watched_folder_stop_hint">Los libros que ya entraron se quedan en tus estantes</string>
+    <string name="watched_folder_default_name">Carpeta</string>
     <string name="add_book_physical">Libro físico</string>
     <string name="add_book_physical_hint">Un libro en papel que registras a mano</string>
     <plurals name="import_progress">

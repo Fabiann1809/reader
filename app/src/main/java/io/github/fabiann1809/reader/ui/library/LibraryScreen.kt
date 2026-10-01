@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
@@ -41,6 +42,7 @@ fun LibraryScreen(
     onBookClick: (Long) -> Unit,
     onAddPhysicalBook: () -> Unit,
     viewModel: LibraryViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    folderViewModel: WatchedFolderViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val importStatus by viewModel.importStatus.collectAsStateWithLifecycle()
@@ -48,6 +50,10 @@ fun LibraryScreen(
     // The system picker (SAF) shows local files plus providers like Google Drive and Dropbox.
     val pickBookFiles = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         viewModel.importBooks(uris.map { it.toString() })
+    }
+    val watchedFolder by folderViewModel.folder.collectAsStateWithLifecycle()
+    val pickFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) folderViewModel.watch(uri.toString())
     }
     LightStatusBarIcons()
     LibraryContent(
@@ -73,6 +79,11 @@ fun LibraryScreen(
         onBookClick = onBookClick,
         onAddPhysicalBook = onAddPhysicalBook,
         onImportFile = { pickBookFiles.launch(BOOK_MIME_TYPES) },
+        watchedFolder = WatchedFolderOptions(
+            folderName = watchedFolder?.name,
+            onWatch = { pickFolder.launch(watchedFolder?.uri?.toUri()) },
+            onStopWatching = folderViewModel::stopWatching,
+        ),
         importStatus = importStatus,
         onRetryImports = viewModel::retryFailedImports,
         onDismissImportErrors = viewModel::dismissFailedImports,
@@ -94,6 +105,7 @@ fun LibraryContent(
     onAddPhysicalBook: () -> Unit,
     modifier: Modifier = Modifier,
     onImportFile: () -> Unit = {},
+    watchedFolder: WatchedFolderOptions = WatchedFolderOptions(),
     importStatus: ImportStatus = ImportStatus.Idle,
     onRetryImports: () -> Unit = {},
     onDismissImportErrors: () -> Unit = {},
@@ -199,6 +211,17 @@ fun LibraryContent(
                 onAddPhysicalBook()
             },
             onDismiss = { showAddBookSheet = false },
+            watchedFolder = WatchedFolderOptions(
+                folderName = watchedFolder.folderName,
+                onWatch = {
+                    showAddBookSheet = false
+                    watchedFolder.onWatch()
+                },
+                onStopWatching = {
+                    showAddBookSheet = false
+                    watchedFolder.onStopWatching()
+                },
+            ),
         )
     }
 }
