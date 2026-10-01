@@ -22,6 +22,7 @@ import io.github.fabiann1809.reader.data.prefs.LibraryLayout
 import io.github.fabiann1809.reader.data.prefs.LibraryView
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -382,5 +383,60 @@ class LibraryContentTest {
         setContent(LibraryUiState(books = listOf(Book(id = 1, title = "Dune", author = "Frank Herbert")), isLoading = false))
 
         composeRule.onNodeWithContentDescription(string(R.string.book_badge_new), substring = true).assertExists()
+    }
+
+    @Test
+    fun selectionModeTogglesOnTapAndConfirmsDeletion() {
+        val dune = Book(id = 1, title = "Dune", author = "Frank Herbert")
+        val cosmos = Book(id = 2, title = "Cosmos", author = "Carl Sagan")
+        val toggled = mutableListOf<Long>()
+        var deleted = false
+        var opened = false
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(books = listOf(dune, cosmos), isLoading = false, selectedIds = setOf(1, 2)),
+                    onBookClick = { opened = true },
+                    onAddBook = {},
+                    selectionActions = LibrarySelectionActions(onToggle = { toggled += it }, onDelete = { deleted = true }),
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(composeRule.activity.resources.getQuantityString(R.plurals.selection_count, 2, 2))
+            .assertIsDisplayed()
+        // A tap checks or unchecks instead of opening the book.
+        composeRule.onNodeWithContentDescription(string(R.string.book_cover_description).format("Cosmos", "Carl Sagan"), substring = true)
+            .performClick()
+        assertEquals(listOf(2L), toggled)
+        assertFalse(opened)
+
+        composeRule.onNodeWithContentDescription(string(R.string.action_delete)).performClick()
+        assertFalse(deleted)
+        composeRule.onNodeWithText(composeRule.activity.resources.getQuantityString(R.plurals.delete_books_message, 2, 2))
+            .assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.action_delete)).performClick()
+        assertTrue(deleted)
+    }
+
+    @Test
+    fun selectFromTheCoverMenuStartsSelection() {
+        val book = Book(id = 5, title = "Dune", author = "Frank Herbert")
+        var selected: Long? = null
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(books = listOf(book), isLoading = false),
+                    onBookClick = {},
+                    onAddBook = {},
+                    selectionActions = LibrarySelectionActions(onToggle = { selected = it }),
+                )
+            }
+        }
+
+        longPressCover(book)
+        composeRule.onNodeWithText(string(R.string.book_menu_select)).performClick()
+
+        assertEquals(5L, selected)
     }
 }

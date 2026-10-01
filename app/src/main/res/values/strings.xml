@@ -45,6 +45,17 @@
     <string name="book_menu_collection">Colección</string>
     <string name="book_menu_mark_read">Marcar como leído</string>
     <string name="book_badge_new">Nuevo</string>
+    <string name="book_menu_select">Seleccionar</string>
+    <string name="selection_close">Cancelar selección</string>
+    <plurals name="selection_count">
+        <item quantity="one">%1$d seleccionado</item>
+        <item quantity="other">%1$d seleccionados</item>
+    </plurals>
+    <string name="delete_books_title">Eliminar libros</string>
+    <plurals name="delete_books_message">
+        <item quantity="one">Se eliminará %1$d libro junto con todas sus notas. Esta acción no se puede deshacer.</item>
+        <item quantity="other">Se eliminarán %1$d libros junto con todas sus notas. Esta acción no se puede deshacer.</item>
+    </plurals>
     <string name="book_cover_description">%1$s, de %2$s</string>
     <string name="book_cover_description_progress">%1$s, de %2$s, %3$d %% leído</string>
 

@@ -90,6 +90,14 @@ fun LibraryScreen(
             onMarkAsRead = viewModel::markAsRead,
             onDelete = viewModel::deleteBook,
         ),
+        selectionActions = LibrarySelectionActions(
+            onToggle = viewModel::toggleSelection,
+            onClear = viewModel::clearSelection,
+            onAddToFavorites = viewModel::addSelectedToFavorites,
+            onAddToCollection = viewModel::addSelectedToCollection,
+            onCreateCollection = viewModel::createCollectionWithSelected,
+            onDelete = viewModel::deleteSelected,
+        ),
         onBookClick = onBookClick,
         onAddBook = onAddBook,
         onSelectFilter = viewModel::selectFilter,
@@ -117,14 +125,16 @@ fun LibraryContent(
     onDeleteCollection: () -> Unit = {},
     bookCollections: BookCollections? = null,
     bookActions: LibraryBookActions = LibraryBookActions(),
+    selectionActions: LibrarySelectionActions = LibrarySelectionActions(),
 ) {
-    val showFab = !uiState.isLoading && uiState.books.isNotEmpty()
+    val showFab = !uiState.isLoading && uiState.books.isNotEmpty() && !uiState.isSelecting
     var dialog by rememberSaveable { mutableStateOf(LibraryDialog.NONE) }
     var isSearchOpen by rememberSaveable { mutableStateOf(false) }
     // Cover menu: the book whose menu is open, and the one waiting for delete confirmation.
     var menuBookId by rememberSaveable { mutableStateOf<Long?>(null) }
     var deleteBookId by rememberSaveable { mutableStateOf<Long?>(null) }
     var newCollectionForBook by rememberSaveable { mutableStateOf<Long?>(null) }
+    var selectionDialog by rememberSaveable { mutableStateOf(SelectionDialog.NONE) }
     val menuActions = BookMenuActions(
         // Until the reader exists (T11.2), opening a book shows its detail.
         onOpen = onBookClick,
@@ -132,11 +142,17 @@ fun LibraryContent(
         onCollection = bookActions.onShowCollections,
         onMarkAsRead = bookActions.onMarkAsRead,
         onDelete = { deleteBookId = it },
+        onSelect = selectionActions.onToggle,
     )
-    val bookMenu: @Composable (Book) -> Unit = { book ->
-        BookMenu(book, expanded = menuBookId == book.id, onDismiss = { menuBookId = null }, actions = menuActions)
+    val bookFrame: BookFrame = { book, frameModifier, content ->
+        SelectionFrame(isSelected = if (uiState.isSelecting) book.id in uiState.selectedIds else null, modifier = frameModifier) {
+            content()
+            BookMenu(book, expanded = menuBookId == book.id, onDismiss = { menuBookId = null }, actions = menuActions)
+        }
     }
-    val onBookLongClick: (Long) -> Unit = { menuBookId = it }
+    // While selecting, every tap checks or unchecks a book instead of opening it.
+    val onCoverClick: (Long) -> Unit = if (uiState.isSelecting) selectionActions.onToggle else onBookClick
+    val onBookLongClick: (Long) -> Unit = if (uiState.isSelecting) selectionActions.onToggle else { id -> menuBookId = id }
     val isShelves = uiState.layout.view == LibraryView.SHELVES
     val columns = booksPerRow(uiState.layout.booksPerRow)
     val title = uiState.currentCollection?.name
@@ -146,7 +162,14 @@ fun LibraryContent(
         modifier = if (isShelves) modifier.woodWall() else modifier,
         containerColor = if (isShelves) Color.Transparent else MaterialTheme.colorScheme.surface,
         topBar = {
-            if (isSearchOpen) {
+            if (uiState.isSelecting) {
+                SelectionTopBar(
+                    count = uiState.selectedIds.size,
+                    onClose = selectionActions.onClear,
+                    onAddToCollection = { selectionDialog = SelectionDialog.COLLECTION },
+                    onDelete = { selectionDialog = SelectionDialog.DELETE },
+                )
+            } else if (isSearchOpen) {
                 LibrarySearchBar(
                     query = uiState.query,
                     onQueryChange = onSearch,
@@ -232,15 +255,14 @@ fun LibraryContent(
                     bottomSpace = FAB_SPACE,
                 ) { index, width ->
                     val book = uiState.books[index]
-                    Box {
+                    bookFrame(book, Modifier) {
                         BookCover(
                             book = book,
-                            onClick = { onBookClick(book.id) },
+                            onClick = { onCoverClick(book.id) },
                             onLongClick = { onBookLongClick(book.id) },
                             showBadges = true,
                             modifier = Modifier.width(width),
                         )
-                        bookMenu(book)
                     }
                 }
                 LibraryView.GRID -> BookGrid(
@@ -248,11 +270,11 @@ fun LibraryContent(
                     columns,
                     innerPadding,
                     FAB_SPACE,
-                    onBookClick,
+                    onCoverClick,
                     onBookLongClick,
-                    bookMenu,
+                    bookFrame,
                 )
-                LibraryView.LIST -> BookList(uiState.books, innerPadding, FAB_SPACE, onBookClick, onBookLongClick, bookMenu)
+                LibraryView.LIST -> BookList(uiState.books, innerPadding, FAB_SPACE, onCoverClick, onBookLongClick, bookFrame)
             }
         }
     }
@@ -280,6 +302,41 @@ fun LibraryContent(
             onDismiss = { newCollectionForBook = null },
         )
     }
+    when (selectionDialog) {
+        SelectionDialog.NONE -> Unit
+        SelectionDialog.COLLECTION -> AddSelectionToCollectionSheet(
+            collections = uiState.collections,
+            onFavorites = {
+                selectionActions.onAddToFavorites()
+                selectionDialog = SelectionDialog.NONE
+            },
+            onCollection = { collectionId ->
+                selectionActions.onAddToCollection(collectionId)
+                selectionDialog = SelectionDialog.NONE
+            },
+            onNewCollection = { selectionDialog = SelectionDialog.NEW_COLLECTION },
+            onDismiss = { selectionDialog = SelectionDialog.NONE },
+        )
+        SelectionDialog.NEW_COLLECTION -> CollectionNameDialog(
+            title = R.string.collection_new,
+            confirm = R.string.collection_create,
+            initialName = "",
+            onConfirm = { name ->
+                selectionActions.onCreateCollection(name)
+                selectionDialog = SelectionDialog.NONE
+            },
+            onDismiss = { selectionDialog = SelectionDialog.NONE },
+        )
+        SelectionDialog.DELETE -> DeleteBooksDialog(
+            count = uiState.selectedIds.size,
+            onConfirm = {
+                selectionActions.onDelete()
+                selectionDialog = SelectionDialog.NONE
+            },
+            onDismiss = { selectionDialog = SelectionDialog.NONE },
+        )
+    }
+
     deleteBookId?.let { bookId ->
         DeleteBookDialog(
             title = uiState.books.find { it.id == bookId }?.title.orEmpty(),
@@ -368,6 +425,9 @@ private fun DeleteBookDialog(title: String, onConfirm: () -> Unit, onDismiss: ()
         },
     )
 }
+
+/** Sheet or dialog opened from the selection bar. */
+private enum class SelectionDialog { NONE, COLLECTION, NEW_COLLECTION, DELETE }
 
 /** Which sheet or dialog is open (only one at a time). */
 private enum class LibraryDialog { NONE, PICKER, CREATE, RENAME, DELETE, ARRANGE }

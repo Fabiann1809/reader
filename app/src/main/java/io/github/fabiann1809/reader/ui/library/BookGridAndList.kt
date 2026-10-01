@@ -2,7 +2,6 @@ package io.github.fabiann1809.reader.ui.library
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -37,6 +36,9 @@ import io.github.fabiann1809.reader.ui.components.bookProgressText
 import io.github.fabiann1809.reader.ui.components.progressFraction
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
+/** Wraps each book with what the library adds around it: its long-press menu and the selection look. */
+typealias BookFrame = @Composable (book: Book, modifier: Modifier, content: @Composable () -> Unit) -> Unit
+
 /** "Cuadrícula" (design 6.5): covers in cards on the plain surface, without the wood. */
 @Composable
 fun BookGrid(
@@ -46,7 +48,7 @@ fun BookGrid(
     bottomSpace: Dp,
     onBookClick: (Long) -> Unit,
     onBookLongClick: (Long) -> Unit,
-    menu: @Composable (Book) -> Unit,
+    bookFrame: BookFrame,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
@@ -67,7 +69,7 @@ fun BookGrid(
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
             ) {
                 // The cover already shows title, author and progress, and carries the description.
-                Box(Modifier.padding(8.dp)) {
+                bookFrame(book, Modifier.padding(8.dp)) {
                     BookCover(
                         book = book,
                         onClick = { onBookClick(book.id) },
@@ -75,7 +77,6 @@ fun BookGrid(
                         showBadges = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    menu(book)
                 }
             }
         }
@@ -90,7 +91,7 @@ fun BookList(
     bottomSpace: Dp,
     onBookClick: (Long) -> Unit,
     onBookLongClick: (Long) -> Unit,
-    menu: @Composable (Book) -> Unit,
+    bookFrame: BookFrame,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(
@@ -99,9 +100,8 @@ fun BookList(
         ),
     ) {
         items(books, key = { it.id }) { book ->
-            Box {
+            bookFrame(book, Modifier) {
                 BookRow(book = book, onClick = { onBookClick(book.id) }, onLongClick = { onBookLongClick(book.id) })
-                menu(book)
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(start = 88.dp))
         }

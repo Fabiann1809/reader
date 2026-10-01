@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class LibraryUiState(
@@ -39,7 +40,12 @@ data class LibraryUiState(
     /** Shelf order and filters already applied to [books]. */
     val arrangement: LibraryArrangement = LibraryArrangement(),
     val layout: LibraryLayout = LibraryLayout(),
-)
+    /** Books checked in selection mode; empty when not selecting. Only ids of shown books. */
+    val selectedIds: Set<Long> = emptySet(),
+) {
+    val isSelecting: Boolean
+        get() = selectedIds.isNotEmpty()
+}
 
 /** The book whose "Colección" sheet is open, with the user collections that already hold it. */
 data class BookCollections(val book: Book, val collectionIds: Set<Long>)
@@ -64,6 +70,9 @@ class LibraryViewModel(
     // Not persisted: a search only lasts while the library is open.
     private val query = MutableStateFlow("")
 
+    // Not persisted either; selection ends when the user leaves the library.
+    private val selection = MutableStateFlow<Set<Long>>(emptySet())
+
     val uiState: StateFlow<LibraryUiState> = combine(
         filter.flatMapLatest { (filter, collection) ->
             collectionRepository.observeBooks(filter).map { books -> Triple(filter, collection, books) }
@@ -71,11 +80,12 @@ class LibraryViewModel(
         collectionRepository.observeCollections(),
         bookRepository.observeBooks().map { it.isEmpty() },
         query,
-        // combine() takes at most five typed flows, so the two display preferences travel together.
-        combine(preferences.libraryArrangement, preferences.libraryLayout, ::Pair),
-    ) { (filter, collection, books), collections, libraryIsEmpty, query, (arrangement, layout) ->
+        // combine() takes at most five typed flows, so the display state travels together.
+        combine(preferences.libraryArrangement, preferences.libraryLayout, selection, ::Triple),
+    ) { (filter, collection, books), collections, libraryIsEmpty, query, (arrangement, layout, selection) ->
+        val shown = books.filter { it.matchesSearch(query) }.arrangedBy(arrangement)
         LibraryUiState(
-            books = books.filter { it.matchesSearch(query) }.arrangedBy(arrangement),
+            books = shown,
             isLoading = false,
             filter = filter,
             currentCollection = collection,
@@ -84,6 +94,8 @@ class LibraryViewModel(
             query = query,
             arrangement = arrangement,
             layout = layout,
+            // Only shown books count: hidden (searched out, filtered, deleted) ones are never acted on.
+            selectedIds = shown.mapTo(mutableSetOf()) { it.id }.intersect(selection),
         )
     }.stateIn(
         scope = viewModelScope,
@@ -160,6 +172,44 @@ class LibraryViewModel(
             val book = bookRepository.getBook(bookId) ?: return@launch
             bookRepository.updateBook(change(book))
         }
+    }
+
+    /** Checks or unchecks a book; unchecking the last one ends selection mode. */
+    fun toggleSelection(bookId: Long) {
+        selection.update { if (bookId in it) it - bookId else it + bookId }
+    }
+
+    fun clearSelection() {
+        selection.value = emptySet()
+    }
+
+    fun addSelectedToFavorites() = forEachSelected { bookId ->
+        bookRepository.getBook(bookId)?.let { bookRepository.updateBook(it.copy(isFavorite = true)) }
+    }
+
+    fun addSelectedToCollection(collectionId: Long) = forEachSelected { bookId ->
+        collectionRepository.addBook(bookId, collectionId)
+    }
+
+    fun createCollectionWithSelected(name: String) {
+        if (name.isBlank()) return
+        val bookIds = uiState.value.selectedIds
+        clearSelection()
+        viewModelScope.launch {
+            val collectionId = collectionRepository.createCollection(name)
+            bookIds.forEach { collectionRepository.addBook(it, collectionId) }
+        }
+    }
+
+    fun deleteSelected() = forEachSelected { bookId ->
+        bookRepository.getBook(bookId)?.let { bookRepository.deleteBook(it) }
+    }
+
+    /** Applies [action] to every selected book, then leaves selection mode. */
+    private fun forEachSelected(action: suspend (Long) -> Unit) {
+        val bookIds = uiState.value.selectedIds
+        clearSelection()
+        viewModelScope.launch { bookIds.forEach { action(it) } }
     }
 
     fun setLayout(layout: LibraryLayout) {

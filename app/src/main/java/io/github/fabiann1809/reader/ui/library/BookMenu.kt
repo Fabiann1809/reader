@@ -18,9 +18,10 @@ class BookMenuActions(
     val onCollection: (Long) -> Unit,
     val onMarkAsRead: (Long) -> Unit,
     val onDelete: (Long) -> Unit,
+    val onSelect: (Long) -> Unit,
 )
 
-/** Long-press menu of a cover (design 6.4): Abrir · Detalle · Colección · Marcar como leído · Eliminar. */
+/** Long-press menu of a cover (design 6.4): Abrir · Detalle · Colección · Marcar como leído · Seleccionar · Eliminar. */
 @Composable
 fun BookMenu(book: Book, expanded: Boolean, onDismiss: () -> Unit, actions: BookMenuActions) {
     DropdownMenu(expanded = expanded, onDismissRequest = onDismiss) {
@@ -37,6 +38,8 @@ fun BookMenu(book: Book, expanded: Boolean, onDismiss: () -> Unit, actions: Book
         item(stringResource(R.string.book_menu_detail), actions.onDetail)
         item(stringResource(R.string.book_menu_collection), actions.onCollection)
         if (book.status != BookStatus.FINISHED) item(stringResource(R.string.book_menu_mark_read), actions.onMarkAsRead)
+        // Entry to multiple selection, since long-press already opens this menu.
+        item(stringResource(R.string.book_menu_select), actions.onSelect)
         item(stringResource(R.string.action_delete), actions.onDelete, isDestructive = true)
     }
 }

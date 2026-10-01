@@ -230,4 +230,67 @@ class LibraryViewModelTest {
         viewModel.hideCollections()
         assertNull(viewModel.bookCollections.value)
     }
+
+    @Test
+    fun togglingSelectsAndTheLastUncheckEndsSelection() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.toggleSelection(1)
+        viewModel.toggleSelection(2)
+        assertEquals(setOf(1L, 2L), viewModel.uiState.value.selectedIds)
+        assertTrue(viewModel.uiState.value.isSelecting)
+
+        viewModel.toggleSelection(1)
+        viewModel.toggleSelection(2)
+        assertFalse(viewModel.uiState.value.isSelecting)
+    }
+
+    @Test
+    fun booksHiddenBySearchAreNotActedOn() = runTest {
+        val viewModel = viewModel()
+        viewModel.toggleSelection(1)
+        viewModel.toggleSelection(2)
+
+        viewModel.search("dune")
+        assertEquals(setOf(1L), viewModel.uiState.value.selectedIds)
+
+        viewModel.deleteSelected()
+        viewModel.search("")
+
+        assertEquals(listOf("Cosmos"), viewModel.titles())
+        assertFalse(viewModel.uiState.value.isSelecting)
+    }
+
+    @Test
+    fun selectedBooksGoToACollectionOrFavoritesAndSelectionEnds() = runTest {
+        val viewModel = viewModel()
+        val collectionId = collections.createCollection("Ciencia")
+
+        viewModel.toggleSelection(1)
+        viewModel.toggleSelection(2)
+        viewModel.addSelectedToCollection(collectionId)
+        assertFalse(viewModel.uiState.value.isSelecting)
+
+        viewModel.toggleSelection(1)
+        viewModel.addSelectedToFavorites()
+
+        viewModel.selectFilter(LibraryFilter.Custom(collectionId))
+        assertEquals(listOf("Cosmos", "Dune"), viewModel.titles())
+        viewModel.selectFilter(LibraryFilter.Smart(SmartCollection.FAVORITES))
+        assertEquals(listOf("Cosmos", "Dune"), viewModel.titles())
+    }
+
+    @Test
+    fun createCollectionWithSelectedHoldsEverySelectedBook() = runTest {
+        val viewModel = viewModel()
+        viewModel.toggleSelection(1)
+        viewModel.toggleSelection(2)
+
+        viewModel.createCollectionWithSelected("Clásicos")
+
+        val created = viewModel.uiState.value.collections.single()
+        assertEquals("Clásicos", created.name)
+        assertEquals(setOf(1L, 2L), collections.observeBooks(LibraryFilter.Custom(created.id)).first().map { it.id }.toSet())
+        assertFalse(viewModel.uiState.value.isSelecting)
+    }
 }
