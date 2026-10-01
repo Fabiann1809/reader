@@ -89,6 +89,11 @@ Más adelante se añadirán operaciones como `generateQuiz(...)`. La app debe ma
 **Book**
 - `id` (PK), `title`, `author`, `currentPage` (Int), `totalPages` (Int?, opcional), `status` (POR_LEER / LEYENDO / TERMINADO), `createdAt`
 - Desde la versión 2 (T8.2): `kind` (DIGITAL / FISICO; los libros anteriores son físicos), `format` (EPUB / PDF / TXT / CBZ, opcional), `filePath`, `coverPath`, `language`, `lastOpenedAt` (todos opcionales)
+- Desde la versión 3 (T9.1): `isFavorite` (Boolean).
+
+**Collection** (versión 3, T9.1) — colecciones creadas por el usuario
+- `id` (PK), `name`, `createdAt`; relación muchos a muchos con Book en `book_collections` (`bookId`, `collectionId`, `addedAt`; borrado en cascada por ambos lados).
+- Las colecciones por defecto (Todos, Mis favoritos, Leyendo ahora, Terminados, Quiero leer) no se guardan: se calculan de `isFavorite` y `status`.
 
 **Note**
 - `id` (PK), `bookId` (FK → Book, borrado en cascada), `page` (Int?), `sourceText` (texto original capturado, opcional), `content` (nota o explicación), `type` (MANUAL / EXPLICACION), `createdAt`
@@ -216,7 +221,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T8.5 Onboarding.** Tres pasos saltables; se muestra solo la primera vez (DataStore). *Hecho cuando:* aparece en la primera apertura y no vuelve a aparecer.
 
 ### Fase 9 — Biblioteca completa
-- [ ] **T9.1 Colecciones.** Entidades `Collection` + `BookCollectionCrossRef`. Colecciones por defecto: Todos, Mis favoritos, Leyendo ahora, Terminados y Quiero leer (estas tres últimas derivadas del estado). *Hecho cuando:* se crean y se listan.
+- [x] **T9.1 Colecciones.** Entidades `Collection` + `BookCollectionCrossRef`. Colecciones por defecto: Todos, Mis favoritos, Leyendo ahora, Terminados y Quiero leer (estas tres últimas derivadas del estado). *Hecho cuando:* se crean y se listan.
 - [ ] **T9.2 Selector de colección.** Título de la barra con ▾; cambiar de colección filtra los estantes, y una colección vacía muestra "Nada aquí todavía". *Hecho cuando:* se cambia de colección.
 - [ ] **T9.3 Añadir a colección.** Desde el detalle del libro. *Hecho cuando:* el libro aparece en la colección.
 - [ ] **T9.4 Búsqueda.** Por título y autor. *Hecho cuando:* filtra mientras se escribe.

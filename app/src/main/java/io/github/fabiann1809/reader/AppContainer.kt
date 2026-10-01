@@ -10,6 +10,8 @@ import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
 import io.github.fabiann1809.reader.data.apikey.KeystoreApiKeyStore
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
+import io.github.fabiann1809.reader.data.collection.CollectionRepository
+import io.github.fabiann1809.reader.data.collection.DefaultCollectionRepository
 import io.github.fabiann1809.reader.data.note.DefaultNoteRepository
 import io.github.fabiann1809.reader.data.note.NoteRepository
 import io.github.fabiann1809.reader.data.prefs.AppPreferences
@@ -31,6 +33,10 @@ class AppContainer(context: Context) {
     val bookRepository: BookRepository by lazy { DefaultBookRepository(database.bookDao()) }
 
     val noteRepository: NoteRepository by lazy { DefaultNoteRepository(database.noteDao()) }
+
+    val collectionRepository: CollectionRepository by lazy {
+        DefaultCollectionRepository(database.collectionDao(), database.bookDao())
+    }
 
     val apiKeyStore: ApiKeyStore by lazy { KeystoreApiKeyStore(appContext) }
 

@@ -10,7 +10,9 @@ import io.github.fabiann1809.reader.data.note.NoteType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -60,6 +62,9 @@ class MigrationTest {
             assertNull(book.coverPath)
             assertNull(book.language)
             assertNull(book.lastOpenedAt)
+            // Added in version 3: nothing is a favorite and there are no user collections yet.
+            assertFalse(book.isFavorite)
+            assertTrue(database.collectionDao().observeAll().first().isEmpty())
 
             val note = database.noteDao().observeByBook(1).first().single()
             assertEquals("Idea central", note.content)
