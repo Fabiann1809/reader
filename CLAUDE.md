@@ -4,7 +4,7 @@ Android reading assistant (Kotlin, Jetpack Compose, MVVM, Room, CameraX, ML Kit 
 Product spec and task list: `docs/PROJECT_SPEC.md` (written in Spanish). Always read it before starting a task.
 
 ## Workflow
-1. Work on **one task at a time**, in the order of `docs/PROJECT_SPEC.md` section 8. Do not start later tasks or add anything outside the MVP scope.
+1. Work on **one task at a time**, in the order of `docs/PROJECT_SPEC.md` (section 8 for the MVP, then the phases in section 9). Do not add anything that is not in the spec or the design.
 2. A task or fix is done only when:
    - `./gradlew assembleDebug` succeeds,
    - relevant tests pass (`./gradlew testDebugUnitTest`, and `connectedDebugAndroidTest` when a device is available),
@@ -14,10 +14,10 @@ Product spec and task list: `docs/PROJECT_SPEC.md` (written in Spanish). Always 
 
 ## Commits
 4. One commit per task or fix. Tick the task checkbox (`[x]`) in `docs/PROJECT_SPEC.md` in the same commit, then push to `main`.
-5. Format: [Conventional Commits](https://www.conventionalcommits.org/) in English: `type(scope): imperative summary (Txx)`.
+5. Format: [Conventional Commits](https://www.conventionalcommits.org/) in English: `type(scope): imperative summary` (no task id).
    - Types: `feat`, `fix`, `refactor`, `test`, `docs`, `build`, `chore`, `style`.
-   - Scopes: `data`, `library`, `notes`, `ai`, `ocr`, `camera`, `ui`, `build`.
-   - Summary ≤ 72 chars, imperative mood, no trailing period. Example: `feat(library): add book list screen (T2.1)`.
+   - Scopes: `data`, `library`, `notes`, `ai`, `ocr`, `camera`, `ui`, `build`, `reader`, `voice`, `review`, `quiz`, `progress`, `backup`, `sync`.
+   - Summary ≤ 72 chars, imperative mood, no trailing period. Example: `feat(library): add book list screen`.
 6. The only author is `Fabiann1809 <leiderfabian538@gmail.com>`. **Never** add `Co-Authored-By` trailers or any AI/tool attribution to commits or PRs.
 
 ## Code

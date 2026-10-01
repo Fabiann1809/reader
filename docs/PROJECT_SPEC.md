@@ -107,7 +107,7 @@ Tablas posteriores (post-MVP): `Flashcard`, `Quiz`, `QuizQuestion`, `VoiceNote`.
 6. Guardar la explicación como nota.
 7. Generar el APK de prueba.
 
-### Fuera del MVP (no empezar hasta terminar el MVP)
+### Fuera del MVP (se implementa en las fases 8 a 18, ver sección 9)
 - Importar EPUB/PDF y seleccionar texto dentro de la app.
 - Notas de voz.
 - Fichas de repaso y repetición espaciada.
@@ -122,9 +122,9 @@ Tablas posteriores (post-MVP): `Flashcard`, `Quiz`, `QuizQuestion`, `VoiceNote`.
 
 1. **Una tarea a la vez.** No adelantes tareas de otras fases.
 2. Al terminar cada tarea, verifica que el proyecto **compila** y cumple su criterio de "Hecho cuando".
-3. Haz un **commit por tarea o fix** siguiendo Conventional Commits en inglés con el ID de la tarea (por ejemplo `feat(library): add book list screen (T2.1)`). Ver sección 12.
+3. Haz un **commit por tarea o fix** siguiendo Conventional Commits en inglés, sin el ID de la tarea (por ejemplo `feat(library): add book list screen`). Ver sección 12.
 4. **Nunca** escribas claves de API en el código, en el repositorio ni en los logs.
-5. No agregues funciones fuera del alcance del MVP. Si algo es ambiguo, **pregunta** antes de asumir.
+5. Trabaja las fases en orden (MVP en la sección 8, después la sección 9) y no agregues funciones que no estén en el spec ni en el diseño. Si algo es ambiguo, **pregunta** antes de asumir.
 6. Mantén el código simple y legible: es un proyecto de aprendizaje además de un producto.
 7. Explica brevemente qué hiciste y por qué al cerrar cada tarea.
 
@@ -197,20 +197,112 @@ Cada tarea debe poder completarse en una sesión corta.
 
 ---
 
-## 9. Después del MVP (backlog, no iniciar aún)
+## 9. Después del MVP: todo lo que lleva la app
 
-- **B1** Importar EPUB/PDF (privado por usuario, almacenamiento interno).
-- **B2** Lector con selección de texto y explicación directa (Readium para EPUB, PdfRenderer para PDF).
-- **B3** Notas de voz con transcripción.
-- **B4** Fichas de repaso generadas desde notas.
-- **B5** Repetición espaciada básica.
-- **B6** Evaluación de comprensión: el usuario escribe su interpretación y la IA da retroalimentación.
-- **B7** Quizzes tipo test por capítulo (solo si el usuario lo pide).
-- **B8** Respaldo: exportar e importar los datos a un archivo.
-- **B9** Modo con cupo gratuito: función intermediaria serverless, Play Integrity, tope diario global y límite por dispositivo.
-- **B10** Metas de lectura y estadísticas.
+Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader: Interfaz móvil con IA", `04-system-design.md` y láminas). El cierre de versión (T7.3 a T7.5) se hace cuando todo esto esté listo.
 
----
+**Reglas técnicas para todas las fases:**
+- Cada cambio de esquema de Room lleva su migración y su prueba (`MigrationTestHelper`); nunca migración destructiva.
+- Toda operación de IA nueva pasa por `AiProvider` con salida estructurada (JSON con esquema), como el explicador.
+- Se reutilizan los componentes de `ui/components` y los tokens del tema; cada pantalla tiene estados vacío, cargando y error, en claro y oscuro.
+- Todo sigue local y sin cuentas hasta la fase 18.
+
+### Fase 8 — Bases para crecer
+- [ ] **T8.1 Migraciones.** Configurar migraciones de Room y `MigrationTestHelper`. *Hecho cuando:* una migración de prueba 1→2 pasa su test sin perder datos.
+- [ ] **T8.2 Libro ampliado.** Agregar a `Book`: `kind` (DIGITAL/FISICO), `format`, `filePath`, `coverPath`, `language`, `lastOpenedAt`. *Hecho cuando:* los libros existentes migran y se ven igual.
+- [ ] **T8.3 Barra inferior.** Cuatro destinos (Biblioteca, Repasar, Progreso, Más) con pill activa, cambio de pestaña con fundido y "Atrás" según el diseño (3 §6). Repasar y Progreso empiezan con su estado vacío. *Hecho cuando:* se navega entre pestañas y "Atrás" vuelve a Biblioteca.
+- [ ] **T8.4 Pantalla Más.** Entradas a Todas las notas, Respaldo, Ajustes, Privacidad y Acerca de. *Hecho cuando:* cada entrada abre su pantalla o su estado vacío.
+- [ ] **T8.5 Onboarding.** Tres pasos saltables; se muestra solo la primera vez (DataStore). *Hecho cuando:* aparece en la primera apertura y no vuelve a aparecer.
+
+### Fase 9 — Biblioteca completa
+- [ ] **T9.1 Colecciones.** Entidades `Collection` + `BookCollectionCrossRef`. Colecciones por defecto: Todos, Mis favoritos, Leyendo ahora, Terminados y Quiero leer (estas tres últimas derivadas del estado). *Hecho cuando:* se crean y se listan.
+- [ ] **T9.2 Selector de colección.** Título de la barra con ▾; cambiar de colección filtra los estantes, y una colección vacía muestra "Nada aquí todavía". *Hecho cuando:* se cambia de colección.
+- [ ] **T9.3 Añadir a colección.** Desde el detalle del libro. *Hecho cuando:* el libro aparece en la colección.
+- [ ] **T9.4 Búsqueda.** Por título y autor. *Hecho cuando:* filtra mientras se escribe.
+- [ ] **T9.5 Ordenar y filtrar.** Hoja inferior: ordenar por último leído, título, autor, fecha o progreso; filtrar por estado, formato y digital/físico. *Hecho cuando:* los estantes respetan la selección y esta persiste.
+- [ ] **T9.6 Vistas.** Estantes, Cuadrícula y Lista; libros por estante de 2 a 4. *Hecho cuando:* la vista elegida persiste.
+- [ ] **T9.7 Menú de portada.** Mantener pulsado: Abrir, Detalle, Colección, Marcar como leído, Eliminar. Insignias "Nuevo" y "Físico". *Hecho cuando:* cada opción funciona.
+- [ ] **T9.8 Selección múltiple.** Marcar varios libros (check y atenuado) para mover a colección o eliminar. *Hecho cuando:* se aplica a todos los marcados.
+- [ ] **T9.9 Movimiento.** Los libros aparecen con una leve subida escalonada; se respeta "reducir animaciones". *Hecho cuando:* se ve la animación y se desactiva con el ajuste del sistema.
+
+### Fase 10 — Importar libros (B1)
+- [ ] **T10.1 Importar archivo.** Selector del sistema (SAF; incluye Drive y Dropbox si están instalados), copia a almacenamiento interno y lectura de metadatos (título y autor) con Readium para EPUB y PDF. *Hecho cuando:* un EPUB y un PDF aparecen en el estante con sus datos.
+- [ ] **T10.2 Portadas reales.** Portada del EPUB y primera página del PDF (PdfRenderer) guardadas en el almacenamiento interno; `BookCover` usa la imagen si existe. *Hecho cuando:* se ven las portadas.
+- [ ] **T10.3 Estados de importación.** "Importando 3 de 7…", error con Reintentar o Descartar (lámina 1f). *Hecho cuando:* se ven al importar varios archivos y uno dañado.
+- [ ] **T10.4 TXT y CBZ.** Formatos simples que Readium o el propio código soportan. *Hecho cuando:* se abren.
+- [ ] **T10.5 Compartir hacia Reader.** Intent filter para recibir archivos desde otras apps. *Hecho cuando:* "Compartir → Reader" importa el libro.
+- [ ] **T10.6 Carpeta vigilada.** Carpeta elegida con permiso persistente, revisada con WorkManager. *Hecho cuando:* un archivo nuevo en la carpeta aparece en la biblioteca.
+- [ ] **T10.7 Libro físico con portada e ISBN.** Foto de portada y escaneo de ISBN (ML Kit Barcode + Open Library, gratis), con edición manual. *Hecho cuando:* el ISBN autocompleta título y autor.
+
+### Fase 11 — Lector (B2)
+- [ ] **T11.1 Prueba técnica de Readium.** Navegador de EPUB dentro de Compose, embebido como Fragment en Compose (los navegadores de Readium están hechos con Fragments). *Hecho cuando:* un EPUB se pagina en pantalla completa.
+- [ ] **T11.2 Abrir y continuar.** Guardar la posición (`Locator`) y `lastOpenedAt`; "Continuar leyendo" en el botón flotante y en el detalle. *Hecho cuando:* al reabrir, el libro vuelve a la misma página.
+- [ ] **T11.3 PDF.** Visualización de PDF con PdfRenderer o el adaptador de Readium, con posición guardada. *Hecho cuando:* un PDF se lee y recuerda la página.
+- [ ] **T11.4 Overlay de controles.** Toque al centro: barra superior (atrás, capítulo, marcador, menú) e inferior (barra de progreso con capítulo, Índice, Aa, Voz, IA, Grabar). *Hecho cuando:* aparece y desaparece en 180 ms.
+- [ ] **T11.5 Zonas de toque y gestos.** Izquierda, centro y derecha; deslizar; pellizcar para el tamaño; borde para el brillo; doble toque para día/noche. *Hecho cuando:* cada gesto funciona.
+- [ ] **T11.6 Índice y marcadores.** Entidad `Bookmark`. *Hecho cuando:* se salta a un capítulo y a un marcador.
+- [ ] **T11.7 Ajustes "Aa".** Temas Día, Sepia, Gris papel, Noche, AMOLED y Personalizado; fuentes (Literata, Merriweather, Source Serif, Lora, Atkinson, OpenDyslexic, Inter; todas OFL); tamaño, interlineado, márgenes y alineación; independientes del tema de la app. *Hecho cuando:* los cambios se ven al instante y persisten.
+- [ ] **T11.8 Efecto de página.** Deslizar, desvanecer, desplazamiento continuo o ninguno. *Hecho cuando:* se elige y se aplica.
+- [ ] **T11.9 Indicadores discretos.** Hora, batería y página/total; mantener la pantalla encendida. *Hecho cuando:* son activables.
+- [ ] **T11.10 Selección de texto.** Barra contextual: Explicar, Resaltar, Nota, Voz, Ficha y Más (copiar, buscar, compartir). *Hecho cuando:* aparece al seleccionar en un EPUB.
+- [ ] **T11.11 Explicador como hoja inferior.** Reutiliza `ExplainText` y los bloques de `ui/explanation`; al cerrar vuelve al punto de lectura. *Hecho cuando:* se explica una selección sin salir del lector.
+- [ ] **T11.12 Resaltados.** Entidad `Highlight` en 4 colores (decoraciones de Readium), visibles en el detalle. *Hecho cuando:* persisten al reabrir.
+- [ ] **T11.13 Notas ancladas.** `Note` guarda la posición (locator) y se puede saltar desde la nota al texto. *Hecho cuando:* tocar la nota abre el lector en ese punto.
+- [ ] **T11.14 Explicar en PDF.** Si el PDF no tiene capa de texto seleccionable, recorte de la zona + OCR con el `TextRecognizer` existente. *Hecho cuando:* se explica un párrafo de un PDF.
+- [ ] **T11.15 Lectura en voz alta.** TextToSpeech de Android o TTS de Readium: reproducir/pausar, velocidad, voz, temporizador y resaltado de la frase. *Hecho cuando:* lee el capítulo resaltando.
+- [ ] **T11.16 Portada → lector.** Transición de elemento compartido. *Hecho cuando:* la portada se expande a la página.
+
+### Fase 12 — Explicador y captura ampliados
+- [ ] **T12.1 Más simple y otro ejemplo.** Operaciones nuevas en `AiProvider` con el contexto de la explicación anterior. *Hecho cuando:* cada botón devuelve una versión nueva.
+- [ ] **T12.2 Nivel e idioma.** Simple, Intermedio o Técnico, e idioma de las explicaciones, en Ajustes; el prompt lo usa. *Hecho cuando:* cambia el tono.
+- [ ] **T12.3 Guardar para después.** Sin conexión: cola `PendingExplanation` y WorkManager con restricción de red, más una notificación cuando la explicación está lista. *Hecho cuando:* la explicación llega sola al reconectar.
+- [ ] **T12.4 OCR dudoso.** Usar la confianza de ML Kit para mostrar el aviso "No estoy seguro de haber leído bien" y marcar las líneas dudosas. *Hecho cuando:* una foto borrosa muestra el aviso.
+- [ ] **T12.5 Recorte y párrafo.** Esquinas editables y "Seleccionar párrafo" (bloques de ML Kit). *Hecho cuando:* se explica solo el párrafo elegido.
+- [ ] **T12.6 Asociar captura.** Selector de libro (o "sin libro", lo que requiere migrar `Note.bookId` a nullable) y número de página. *Hecho cuando:* la nota queda en el libro y página elegidos.
+- [ ] **T12.7 Citas.** Tipo de nota CITA ("Guardar como cita"). *Hecho cuando:* se guarda y se distingue en la lista.
+
+### Fase 13 — Notas de voz (B3)
+- [ ] **T13.1 Permiso y grabación.** Pantalla explicativa del micrófono y grabación con MediaRecorder en almacenamiento interno. *Hecho cuando:* se graba y se reproduce.
+- [ ] **T13.2 Transcripción.** Archivo de audio enviado a Gemini con `AiProvider.transcribe` (ver decisión 2). *Hecho cuando:* la nota muestra el texto editable.
+- [ ] **T13.3 Interfaz de grabación.** Hoja con onda, temporizador y etiquetas Idea, Duda, Cita y Tarea; se asocia al libro y la posición; snackbar con Deshacer. *Hecho cuando:* coincide con la lámina 1i.
+- [ ] **T13.4 Grabar sin mirar.** Notificación persistente "Grabar/Detener" con un servicio en primer plano de tipo micrófono. *Hecho cuando:* graba con la pantalla apagada.
+- [ ] **T13.5 Nota de voz en listas.** Reproductor y transcripción en el detalle y en Todas las notas. *Hecho cuando:* se reproduce desde la lista.
+
+### Fase 14 — Fichas y repaso (B4, B5)
+- [ ] **T14.1 Entidad Flashcard.** Frente, reverso, fuente (libro y página), próxima revisión, facilidad e intervalo. *Hecho cuando:* compila con su migración.
+- [ ] **T14.2 Crear ficha.** Manual, y desde nota, explicación, cita o selección; la IA propone frente y reverso (`AiProvider.makeFlashcard`). *Hecho cuando:* se crea desde cada origen.
+- [ ] **T14.3 Pestaña Repasar.** Hoy, Por libro y Por etiqueta; punto de aviso cuando hay pendientes; estado vacío "Sin fichas por repasar". *Hecho cuando:* muestra las fichas pendientes.
+- [ ] **T14.4 Sesión de repaso.** Volteo 3D y 4 botones con el intervalo debajo; algoritmo SM-2 simplificado con pruebas unitarias. *Hecho cuando:* las fechas de repaso se recalculan bien.
+- [ ] **T14.5 Resumen de sesión.** Repasadas, aciertos y próxima revisión, con "Ponme a prueba" opcional. *Hecho cuando:* aparece al terminar.
+- [ ] **T14.6 Recordatorio diario.** Notificación de repaso con WorkManager y permiso de notificaciones. *Hecho cuando:* llega a la hora elegida.
+
+### Fase 15 — Comprensión y quiz (B6, B7)
+- [ ] **T15.1 Ahora tú.** El usuario escribe su interpretación y `AiProvider.analyzeInterpretation` devuelve qué está bien, incompleto o confuso, con referencia al texto. *Hecho cuando:* coincide con la lámina 1i.
+- [ ] **T15.2 Generar quiz.** `AiProvider.generateQuiz` con 3, 5 o 10 preguntas de 4 opciones, en JSON con esquema; el contexto es el capítulo (lector) o las notas y capturas (libro físico). *Hecho cuando:* devuelve un quiz válido.
+- [ ] **T15.3 Pantalla de quiz.** Opción elegida, correcta o incorrecta, explicación, enlace a la página y salir con diálogo. *Hecho cuando:* coincide con la lámina 1h.
+- [ ] **T15.4 Resultado.** Puntaje, temas fuertes y débiles, y "Crear fichas de lo que falló". *Hecho cuando:* crea las fichas.
+- [ ] **T15.5 Sugerencia al terminar un capítulo.** Discreta y descartable, nunca modal. *Hecho cuando:* aparece una vez por capítulo.
+
+### Fase 16 — Progreso y metas (B10)
+- [ ] **T16.1 Sesiones de lectura.** Entidad `ReadingSession`, registrada sola desde el lector; en libros físicos, al actualizar el progreso. *Hecho cuando:* se registran las sesiones.
+- [ ] **T16.2 Pestaña Progreso.** Anillo de meta diaria, racha, gráfica semanal y libros terminados del año. *Hecho cuando:* coincide con la lámina 1i.
+- [ ] **T16.3 Meta y recordatorio.** Meta diaria en minutos o páginas, con recordatorio de lectura. *Hecho cuando:* el anillo usa la meta.
+- [ ] **T16.4 Detalle con pestañas.** Resumen, Notas y resaltados, Fichas y Sesiones; páginas restantes y tiempo estimado para terminar. *Hecho cuando:* cada pestaña muestra sus datos.
+- [ ] **T16.5 Racha animada.** La llama se anima una vez al cumplir la meta. *Hecho cuando:* se anima solo al cumplir.
+
+### Fase 17 — Ajustes, respaldo y accesibilidad (B8)
+- [ ] **T17.1 Ajustes completos.** Apariencia (tema claro, oscuro o del sistema; vista por defecto; libros por estante), lectura por defecto, voz, IA (activar o desactivar funciones) y notificaciones. *Hecho cuando:* cada ajuste persiste y se aplica.
+- [ ] **T17.2 Exportar respaldo.** ZIP con los datos en JSON, archivos de libros y audios, guardado con SAF. Nunca incluye la clave de API. *Hecho cuando:* se genera el archivo.
+- [ ] **T17.3 Importar respaldo.** Con confirmación y validación de versión. *Hecho cuando:* restaura en una instalación limpia.
+- [ ] **T17.4 Todas las notas.** Lista global con búsqueda y filtro por tipo. *Hecho cuando:* encuentra una nota por texto.
+- [ ] **T17.5 Accesibilidad.** Revisión con TalkBack, texto al 200 %, reducir animaciones y háptica en volteo, selección y fin de grabación. *Hecho cuando:* pasa la checklist del diseño (4 §9 y §13).
+- [ ] **T17.6 Widget y accesos directos.** Widget con Glance (Continuar o Grabar nota) y accesos directos del ícono (Continuar, Captura, Nota de voz). *Hecho cuando:* abren el destino correcto.
+
+### Fase 18 — Nube, Pro y cupo gratuito (requiere decisiones; ver riesgos)
+- [ ] **T18.1 Sincronización con Google Drive.** Carpeta de datos de la app (appDataFolder) con inicio de sesión de Google, estados (Sincronizado, Pendiente, Error con Reintentar) y resolución de conflictos. Cambia la decisión "sin cuentas" del spec. *Hecho cuando:* dos dispositivos ven los mismos datos.
+- [ ] **T18.2 Dropbox.** Mismo contrato que T18.1. *Hecho cuando:* sincroniza.
+- [ ] **T18.3 Free/Pro.** Límites por plan y pantalla Pro; el método de pago está por decidir, porque sin Play Store no hay Play Billing. *Hecho cuando:* los límites se aplican según el plan.
+- [ ] **T18.4 Cupo gratuito (B9).** Función intermediaria serverless con tope diario global y límite por dispositivo, como un segundo `AiProvider`. Play Integrity exige publicar en Play Store. *Hecho cuando:* la app explica sin clave propia dentro del cupo.
 
 ## 10. Riesgos técnicos (en orden)
 
@@ -219,6 +311,16 @@ Cada tarea debe poder completarse en una sesión corta.
 3. Costo, límites y latencia de la IA.
 
 ---
+
+### Riesgos de las fases 8 a 18
+
+1. **Lector:** los navegadores de Readium están basados en Fragments; integrarlos en Compose es el mayor riesgo técnico, y por eso T11.1 es una prueba técnica antes de seguir.
+2. **Transcripción de voz:** `SpeechRecognizer` transcribe en vivo, no archivos, y no se puede grabar el audio al mismo tiempo de forma fiable. Por eso T13.2 propone transcribir con Gemini, lo que gasta cuota.
+3. **Selección de texto en PDF:** PdfRenderer no da capa de texto; la alternativa es OCR de la zona (T11.14).
+4. **Formatos:** MOBI/AZW3 (propietarios), FB2, DOCX, CBR y RAR (licencia de unrar) no tienen soporte gratuito sencillo en Readium. El plan cubre EPUB, PDF, TXT y CBZ; el resto se decide aparte.
+5. **Cuota de IA:** muchas funciones nuevas usan Gemini (quiz, fichas, transcripción, análisis), y la capa gratuita tiene límites por modelo. Se puede ampliar el respaldo de modelos ante `QuotaExhausted` y cachear respuestas.
+6. **Fase 18:** contradice "sin cuentas ni sincronización" y "APK fuera de Play Store" (Play Billing y Play Integrity dependen de Play Store). Se decide antes de empezarla.
+7. **Efecto "curl" de página:** Readium no lo trae; se ofrecen deslizar, desvanecer, continuo o ninguno.
 
 ## 11. Pendientes por decidir
 
@@ -232,9 +334,9 @@ Cada tarea debe poder completarse en una sesión corta.
 
 - **Repositorio:** público en GitHub, `Fabiann1809/reader`, rama principal `main`.
 - **Autoría:** todos los commits van solo a nombre de `Fabiann1809 <leiderfabian538@gmail.com>`. Sin `Co-Authored-By` ni firmas de herramientas de IA.
-- **Commits:** uno por tarea o fix, con [Conventional Commits](https://www.conventionalcommits.org/) en inglés: `type(scope): imperative summary (Txx)`.
+- **Commits:** uno por tarea o fix, con [Conventional Commits](https://www.conventionalcommits.org/) en inglés: `type(scope): imperative summary`.
   - Tipos: `feat`, `fix`, `refactor`, `test`, `docs`, `build`, `chore`, `style`.
-  - Scopes: `data`, `library`, `notes`, `ai`, `ocr`, `camera`, `ui`, `build`.
+  - Scopes: `data`, `library`, `notes`, `ai`, `ocr`, `camera`, `ui`, `build`, `reader`, `voice`, `review`, `quiz`, `progress`, `backup`, `sync`.
   - Resumen de 72 caracteres como máximo, en imperativo y sin punto final.
   - La casilla `[x]` de la tarea se marca en este documento en el mismo commit.
 - **Idioma:** código, identificadores, comentarios, commits y documentación técnica en **inglés**. El texto que ve el usuario va en **español**, siempre en `res/values/strings.xml` (nunca escrito directamente en Compose).
