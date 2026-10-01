@@ -75,11 +75,7 @@ fun BookCover(
     val pressed by interactionSource.collectIsPressedAsState()
     val progress = book.progressFraction()
     val coverImage = rememberCoverImage(book.coverPath)
-    val baseDescription = if (progress == null) {
-        stringResource(R.string.book_cover_description, book.title, book.author)
-    } else {
-        stringResource(R.string.book_cover_description_progress, book.title, book.author, (progress * 100).roundToInt())
-    }
+    val baseDescription = coverDescription(book, progress)
     // The badges are drawn inside the cleared semantics below, so screen readers hear them here.
     val badges = listOfNotNull(
         stringResource(R.string.book_badge_new).takeIf { showBadges && book.isNew() },
@@ -187,6 +183,21 @@ fun BookCover(
 private fun coverColor(title: String): Color {
     val palette = ReaderTheme.colors.covers
     return palette[Math.floorMod(title.hashCode(), palette.size)]
+}
+
+/** Title, author and progress for screen readers; books imported without metadata have no author. */
+@Composable
+private fun coverDescription(book: Book, progress: Float?): String {
+    val hasAuthor = book.author.isNotBlank()
+    if (progress == null) {
+        return if (hasAuthor) stringResource(R.string.book_cover_description, book.title, book.author) else book.title
+    }
+    val percent = (progress * 100).roundToInt()
+    return if (hasAuthor) {
+        stringResource(R.string.book_cover_description_progress, book.title, book.author, percent)
+    } else {
+        stringResource(R.string.book_cover_description_progress_no_author, book.title, percent)
+    }
 }
 
 /** "Nuevo" pill and "Físico" hand in the top corner (design 6.4). They are visual only: the cover's description covers them. */

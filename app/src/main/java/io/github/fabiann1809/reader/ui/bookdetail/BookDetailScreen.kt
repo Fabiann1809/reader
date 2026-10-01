@@ -313,8 +313,10 @@ private fun BookHeader(book: Book, modifier: Modifier = Modifier) {
         BookCover(book = book, titleSize = 18.sp, modifier = Modifier.width(COVER_WIDTH))
         Spacer(Modifier.height(4.dp))
         Text(text = book.title, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
+        val status = stringResource(book.status.labelRes())
         Text(
-            text = stringResource(R.string.book_meta, book.author, stringResource(book.status.labelRes())),
+            // Books imported without metadata have no author: show only the status.
+            text = if (book.author.isBlank()) status else stringResource(R.string.book_meta, book.author, status),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

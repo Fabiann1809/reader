@@ -4,9 +4,11 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -72,6 +74,15 @@ class LibraryContentTest {
             composeRule.activity.getString(R.string.book_cover_description_progress, "Cosmos", "Carl Sagan", 30),
             substring = true,
         ).assertIsDisplayed()
+    }
+
+    @Test
+    fun coverWithoutAuthorIsDescribedByItsTitle() {
+        setContent(LibraryUiState(books = listOf(Book(id = 1, title = "cuento de navidad", author = "")), isLoading = false))
+
+        composeRule.onNodeWithContentDescription("cuento de navidad", substring = true).assertIsDisplayed()
+        // No dangling "de" when there is no author to name.
+        composeRule.onAllNodesWithContentDescription(", de ", substring = true).assertCountEquals(0)
     }
 
     @Test

@@ -9,9 +9,11 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteType
+import io.github.fabiann1809.reader.ui.components.labelRes
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -30,6 +32,7 @@ class BookDetailContentTest {
 
     private fun setContent(
         notes: List<Note>,
+        book: Book = this.book,
         onCapturePage: () -> Unit = {},
         onDeleteBook: () -> Unit = {},
         collections: List<Collection> = emptyList(),
@@ -75,6 +78,13 @@ class BookDetailContentTest {
         composeRule.onNodeWithText("Idea central").assertIsDisplayed()
         composeRule.onNodeWithText(composeRule.activity.getString(R.string.note_type_explanation))
             .assertIsDisplayed()
+    }
+
+    @Test
+    fun bookWithoutAuthorShowsOnlyItsStatus() {
+        setContent(notes = emptyList(), book = Book(id = 1, title = "cuento de navidad", author = ""))
+
+        composeRule.onNodeWithText(string(BookStatus.TO_READ.labelRes())).assertIsDisplayed()
     }
 
     private fun string(id: Int) = composeRule.activity.getString(id)
