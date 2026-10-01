@@ -152,4 +152,14 @@
     <string name="privacy_local_body">Tus libros, tu progreso y tus notas se guardan solo en este teléfono. El texto de las fotos se reconoce en el propio teléfono, y cada foto se guarda de forma temporal y se borra al tomar la siguiente.</string>
     <string name="privacy_key_title">Tu clave de API</string>
     <string name="privacy_key_body">Se guarda cifrada en este teléfono, solo se envía a Google al pedir una explicación y nunca aparece en registros. Puedes borrarla cuando quieras desde Configuración.</string>
+
+    <!-- Bottom navigation -->
+    <string name="tab_library">Biblioteca</string>
+    <string name="tab_review">Repasar</string>
+    <string name="tab_progress">Progreso</string>
+    <string name="tab_more">Más</string>
+    <string name="review_empty_title">Sin fichas por repasar</string>
+    <string name="review_empty_message">Crea fichas desde tus notas y explicaciones.</string>
+    <string name="progress_empty_title">Empieza tu primera sesión</string>
+    <string name="progress_empty_message">Tu progreso aparecerá aquí.</string>
 </resources>

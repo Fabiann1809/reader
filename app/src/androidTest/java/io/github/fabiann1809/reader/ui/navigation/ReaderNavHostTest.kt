@@ -32,7 +32,7 @@ class ReaderNavHostTest {
 
     @Test
     fun startsOnLibrary() {
-        composeRule.onNodeWithText(string(R.string.library_title)).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(string(R.string.settings_title)).assertIsDisplayed()
     }
 
     @Test
@@ -41,7 +41,7 @@ class ReaderNavHostTest {
         composeRule.onNodeWithText(string(R.string.settings_guide_title)).assertIsDisplayed()
 
         composeRule.onNodeWithContentDescription(string(R.string.navigate_up)).performClick()
-        composeRule.onNodeWithText(string(R.string.library_title)).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(string(R.string.settings_title)).assertIsDisplayed()
     }
 
     @Test
@@ -50,5 +50,39 @@ class ReaderNavHostTest {
         composeRule.onNodeWithText(string(R.string.settings_privacy)).performScrollTo().performClick()
 
         composeRule.onNodeWithText(string(R.string.privacy_sent_title)).assertIsDisplayed()
+    }
+
+    private fun pressBack() {
+        composeRule.runOnUiThread { composeRule.activity.onBackPressedDispatcher.onBackPressed() }
+    }
+
+    @Test
+    fun bottomBarSwitchesBetweenTabs() {
+        composeRule.onNodeWithText(string(R.string.tab_review)).performClick()
+        composeRule.onNodeWithText(string(R.string.review_empty_title)).assertIsDisplayed()
+
+        composeRule.onNodeWithText(string(R.string.tab_progress)).performClick()
+        composeRule.onNodeWithText(string(R.string.progress_empty_title)).assertIsDisplayed()
+
+        composeRule.onNodeWithText(string(R.string.tab_more)).performClick()
+        composeRule.onNodeWithText(string(R.string.settings_title)).assertIsDisplayed()
+    }
+
+    @Test
+    fun backFromAnyTabReturnsToLibrary() {
+        composeRule.onNodeWithText(string(R.string.tab_review)).performClick()
+        composeRule.onNodeWithText(string(R.string.tab_progress)).performClick()
+
+        pressBack()
+
+        composeRule.onNodeWithContentDescription(string(R.string.settings_title)).assertIsDisplayed()
+    }
+
+    @Test
+    fun bottomBarIsHiddenOnInnerScreens() {
+        composeRule.onNodeWithText(string(R.string.tab_more)).performClick()
+        composeRule.onNodeWithText(string(R.string.settings_title)).performClick()
+
+        composeRule.onNodeWithText(string(R.string.tab_review)).assertDoesNotExist()
     }
 }

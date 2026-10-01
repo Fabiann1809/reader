@@ -5,8 +5,18 @@ import kotlinx.serialization.Serializable
 
 // Type-safe navigation destinations. Screens that need arguments use data classes.
 
+// Top-level destinations, reached from the bottom bar.
 @Serializable
 data object LibraryRoute
+
+@Serializable
+data object ReviewRoute
+
+@Serializable
+data object ProgressRoute
+
+@Serializable
+data object MoreRoute
 
 @Serializable
 data object AddBookRoute

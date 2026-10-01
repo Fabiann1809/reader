@@ -1,10 +1,20 @@
 package io.github.fabiann1809.reader.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import io.github.fabiann1809.reader.ui.addbook.AddBookScreen
@@ -13,8 +23,11 @@ import io.github.fabiann1809.reader.ui.capture.CaptureScreen
 import io.github.fabiann1809.reader.ui.explanation.ExplanationScreen
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextScreen
 import io.github.fabiann1809.reader.ui.library.LibraryScreen
+import io.github.fabiann1809.reader.ui.more.MoreScreen
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorScreen
 import io.github.fabiann1809.reader.ui.privacy.PrivacyScreen
+import io.github.fabiann1809.reader.ui.progress.ProgressScreen
+import io.github.fabiann1809.reader.ui.review.ReviewScreen
 import io.github.fabiann1809.reader.ui.settings.SettingsScreen
 
 @Composable
@@ -22,10 +35,52 @@ fun ReaderNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    // The bottom bar only shows on the four top-level screens; everything else is full screen.
+    val currentTab = TopLevelTab.of(backStackEntry?.destination)
+
+    Scaffold(
+        modifier = modifier,
+        // Each screen handles its own system bar insets.
+        contentWindowInsets = WindowInsets(0),
+        bottomBar = {
+            if (currentTab != null) {
+                ReaderBottomBar(selected = currentTab, onSelect = { tab -> navController.navigateToTab(tab) })
+            }
+        },
+    ) { innerPadding ->
+        ReaderNavGraph(
+            navController = navController,
+            modifier = Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding),
+        )
+    }
+}
+
+/**
+ * Switching tabs keeps a single copy of each tab and remembers its state; going back from any
+ * tab returns to the library (design 03 §6), and back from the library leaves the app.
+ */
+private fun NavHostController.navigateToTab(tab: TopLevelTab) {
+    navigate(tab.route) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
+
+@Composable
+private fun ReaderNavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(
         navController = navController,
         startDestination = LibraryRoute,
         modifier = modifier,
+        // Cross-fade between screens (design motion: short, no sideways slide).
+        enterTransition = { fadeIn(tween(FADE_MILLIS)) },
+        exitTransition = { fadeOut(tween(FADE_MILLIS)) },
+        popEnterTransition = { fadeIn(tween(FADE_MILLIS)) },
+        popExitTransition = { fadeOut(tween(FADE_MILLIS)) },
     ) {
         composable<LibraryRoute> {
             LibraryScreen(
@@ -33,6 +88,15 @@ fun ReaderNavHost(
                 onAddBook = { navController.navigate(AddBookRoute) },
                 onOpenSettings = { navController.navigate(SettingsRoute) },
             )
+        }
+        composable<ReviewRoute> {
+            ReviewScreen()
+        }
+        composable<ProgressRoute> {
+            ProgressScreen()
+        }
+        composable<MoreRoute> {
+            MoreScreen(onOpenSettings = { navController.navigate(SettingsRoute) })
         }
         composable<AddBookRoute> {
             AddBookScreen(onNavigateUp = { navController.navigateUp() })
@@ -82,3 +146,5 @@ fun ReaderNavHost(
         }
     }
 }
+
+private const val FADE_MILLIS = 200
