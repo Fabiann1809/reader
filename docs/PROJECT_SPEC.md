@@ -222,27 +222,27 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 
 ### Fase 9 — Biblioteca completa
 - [x] **T9.1 Colecciones.** Entidades `Collection` + `BookCollectionCrossRef`. Colecciones por defecto: Todos, Mis favoritos, Leyendo ahora, Terminados y Quiero leer (estas tres últimas derivadas del estado). *Hecho cuando:* se crean y se listan.
-- [ ] **T9.2 Selector de colección.** Título de la barra con ▾; cambiar de colección filtra los estantes, y una colección vacía muestra "Nada aquí todavía". *Hecho cuando:* se cambia de colección.
-- [ ] **T9.3 Añadir a colección.** Desde el detalle del libro. *Hecho cuando:* el libro aparece en la colección.
-- [ ] **T9.4 Búsqueda.** Por título y autor. *Hecho cuando:* filtra mientras se escribe.
-- [ ] **T9.5 Ordenar y filtrar.** Hoja inferior: ordenar por último leído, título, autor, fecha o progreso; filtrar por estado, formato y digital/físico. *Hecho cuando:* los estantes respetan la selección y esta persiste.
-- [ ] **T9.6 Vistas.** Estantes, Cuadrícula y Lista; libros por estante de 2 a 4. *Hecho cuando:* la vista elegida persiste.
-- [ ] **T9.7 Menú de portada.** Mantener pulsado: Abrir, Detalle, Colección, Marcar como leído, Eliminar. Insignias "Nuevo" y "Físico". *Hecho cuando:* cada opción funciona.
-- [ ] **T9.8 Selección múltiple.** Marcar varios libros (check y atenuado) para mover a colección o eliminar. *Hecho cuando:* se aplica a todos los marcados.
-- [ ] **T9.9 Movimiento.** Los libros aparecen con una leve subida escalonada; se respeta "reducir animaciones". *Hecho cuando:* se ve la animación y se desactiva con el ajuste del sistema.
+- [x] **T9.2 Selector de colección.** Título de la barra con ▾; cambiar de colección filtra los estantes, y una colección vacía muestra "Nada aquí todavía". *Hecho cuando:* se cambia de colección.
+- [x] **T9.3 Añadir a colección.** Desde el detalle del libro. *Hecho cuando:* el libro aparece en la colección.
+- [x] **T9.4 Búsqueda.** Por título y autor. *Hecho cuando:* filtra mientras se escribe.
+- [x] **T9.5 Ordenar y filtrar.** Hoja inferior: ordenar por último leído, título, autor, fecha o progreso; filtrar por estado, formato y digital/físico. *Hecho cuando:* los estantes respetan la selección y esta persiste.
+- [x] **T9.6 Vistas.** Estantes, Cuadrícula y Lista; libros por estante de 2 a 4. *Hecho cuando:* la vista elegida persiste.
+- [x] **T9.7 Menú de portada.** Mantener pulsado: Abrir, Detalle, Colección, Marcar como leído, Eliminar. Insignias "Nuevo" y "Físico". *Hecho cuando:* cada opción funciona.
+- [x] **T9.8 Selección múltiple.** Marcar varios libros (check y atenuado) para mover a colección o eliminar. *Hecho cuando:* se aplica a todos los marcados.
+- [x] **T9.9 Movimiento.** Los libros aparecen con una leve subida escalonada; se respeta "reducir animaciones". *Hecho cuando:* se ve la animación y se desactiva con el ajuste del sistema.
 
 ### Fase 10 — Importar libros (B1)
-- [ ] **T10.1 Importar archivo.** Selector del sistema (SAF; incluye Drive y Dropbox si están instalados), copia a almacenamiento interno y lectura de metadatos (título y autor) con Readium para EPUB y PDF. *Hecho cuando:* un EPUB y un PDF aparecen en el estante con sus datos.
-- [ ] **T10.2 Portadas reales.** Portada del EPUB y primera página del PDF (PdfRenderer) guardadas en el almacenamiento interno; `BookCover` usa la imagen si existe. *Hecho cuando:* se ven las portadas.
-- [ ] **T10.3 Estados de importación.** "Importando 3 de 7…", error con Reintentar o Descartar (lámina 1f). *Hecho cuando:* se ven al importar varios archivos y uno dañado.
+- [x] **T10.1 Importar archivo.** Selector del sistema (SAF; incluye Drive y Dropbox si están instalados), copia a almacenamiento interno y lectura de metadatos (título y autor) con Readium para EPUB y PDF. *Hecho cuando:* un EPUB y un PDF aparecen en el estante con sus datos.
+- [x] **T10.2 Portadas reales.** Portada del EPUB y primera página del PDF (PdfRenderer) guardadas en el almacenamiento interno; `BookCover` usa la imagen si existe. *Hecho cuando:* se ven las portadas.
+- [x] **T10.3 Estados de importación.** "Importando 3 de 7…", error con Reintentar o Descartar (lámina 1f). *Hecho cuando:* se ven al importar varios archivos y uno dañado.
 - [ ] **T10.4 TXT y CBZ.** Formatos simples que Readium o el propio código soportan. *Hecho cuando:* se abren.
-- [ ] **T10.5 Compartir hacia Reader.** Intent filter para recibir archivos desde otras apps. *Hecho cuando:* "Compartir → Reader" importa el libro.
-- [ ] **T10.6 Carpeta vigilada.** Carpeta elegida con permiso persistente, revisada con WorkManager. *Hecho cuando:* un archivo nuevo en la carpeta aparece en la biblioteca.
+- [x] **T10.5 Compartir hacia Reader.** Intent filter para recibir archivos desde otras apps. *Hecho cuando:* "Compartir → Reader" importa el libro.
+- [x] **T10.6 Carpeta vigilada.** Carpeta elegida con permiso persistente, revisada con WorkManager. *Hecho cuando:* un archivo nuevo en la carpeta aparece en la biblioteca.
 - [ ] **T10.7 Libro físico con portada e ISBN.** Foto de portada y escaneo de ISBN (ML Kit Barcode + Open Library, gratis), con edición manual. *Hecho cuando:* el ISBN autocompleta título y autor.
 
 ### Fase 11 — Lector (B2)
-- [ ] **T11.1 Prueba técnica de Readium.** Navegador de EPUB dentro de Compose, embebido como Fragment en Compose (los navegadores de Readium están hechos con Fragments). *Hecho cuando:* un EPUB se pagina en pantalla completa.
-- [ ] **T11.2 Abrir y continuar.** Guardar la posición (`Locator`) y `lastOpenedAt`; "Continuar leyendo" en el botón flotante y en el detalle. *Hecho cuando:* al reabrir, el libro vuelve a la misma página.
+- [x] **T11.1 Prueba técnica de Readium.** Navegador de EPUB dentro de Compose, embebido como Fragment en Compose (los navegadores de Readium están hechos con Fragments). *Hecho cuando:* un EPUB se pagina en pantalla completa.
+- [x] **T11.2 Abrir y continuar.** Guardar la posición (`Locator`) y `lastOpenedAt`; "Continuar leyendo" en el botón flotante y en el detalle. *Hecho cuando:* al reabrir, el libro vuelve a la misma página.
 - [ ] **T11.3 PDF.** Visualización de PDF con PdfRenderer o el adaptador de Readium, con posición guardada. *Hecho cuando:* un PDF se lee y recuerda la página.
 - [ ] **T11.4 Overlay de controles.** Toque al centro: barra superior (atrás, capítulo, marcador, menú) e inferior (barra de progreso con capítulo, Índice, Aa, Voz, IA, Grabar). *Hecho cuando:* aparece y desaparece en 180 ms.
 - [ ] **T11.5 Zonas de toque y gestos.** Izquierda, centro y derecha; deslizar; pellizcar para el tamaño; borde para el brillo; doble toque para día/noche. *Hecho cuando:* cada gesto funciona.
@@ -295,6 +295,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [ ] **T16.3 Meta y recordatorio.** Meta diaria en minutos o páginas, con recordatorio de lectura. *Hecho cuando:* el anillo usa la meta.
 - [ ] **T16.4 Detalle con pestañas.** Resumen, Notas y resaltados, Fichas y Sesiones; páginas restantes y tiempo estimado para terminar. *Hecho cuando:* cada pestaña muestra sus datos.
 - [ ] **T16.5 Racha animada.** La llama se anima una vez al cumplir la meta. *Hecho cuando:* se anima solo al cumplir.
+- [ ] **T16.6 Progreso de libros digitales.** Calcular porcentaje y página/total desde la posición guardada (`Locator`) y mostrarlos en el detalle, la lista y la portada, en lugar de "Página 0". *Hecho cuando:* un EPUB a medio leer muestra su progreso real.
 
 ### Fase 17 — Ajustes, respaldo y accesibilidad (B8)
 - [ ] **T17.1 Ajustes completos.** Apariencia (tema claro, oscuro o del sistema; vista por defecto; libros por estante), lectura por defecto, voz, IA (activar o desactivar funciones) y notificaciones. *Hecho cuando:* cada ajuste persiste y se aplica.
