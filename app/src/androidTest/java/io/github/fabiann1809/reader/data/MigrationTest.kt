@@ -4,11 +4,13 @@ import androidx.room.Room
 import androidx.room.testing.MigrationTestHelper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.note.NoteType
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -51,6 +53,13 @@ class MigrationTest {
             assertEquals(120, book.currentPage)
             assertEquals(400, book.totalPages)
             assertEquals(BookStatus.READING, book.status)
+            // Added in version 2: books typed in by hand become physical books with no file.
+            assertEquals(BookKind.PHYSICAL, book.kind)
+            assertNull(book.format)
+            assertNull(book.filePath)
+            assertNull(book.coverPath)
+            assertNull(book.language)
+            assertNull(book.lastOpenedAt)
 
             val note = database.noteDao().observeByBook(1).first().single()
             assertEquals("Idea central", note.content)

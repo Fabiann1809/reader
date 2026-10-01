@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.data.book
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -15,4 +16,17 @@ data class Book(
     val status: BookStatus = BookStatus.TO_READ,
     // Epoch milliseconds.
     val createdAt: Long = System.currentTimeMillis(),
+    // Books added before version 2 were typed in by hand, so they are physical.
+    @ColumnInfo(defaultValue = "PHYSICAL")
+    val kind: BookKind = BookKind.PHYSICAL,
+    // Null for physical books.
+    val format: BookFormat? = null,
+    // Copy of the book file in the app's internal storage; null for physical books.
+    val filePath: String? = null,
+    // Cover image in internal storage; null shows a generated cover.
+    val coverPath: String? = null,
+    // BCP 47 tag (e.g. "es"), when the file declares it.
+    val language: String? = null,
+    // Epoch milliseconds of the last time the book was opened in the reader.
+    val lastOpenedAt: Long? = null,
 )

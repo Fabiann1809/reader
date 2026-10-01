@@ -88,6 +88,7 @@ Más adelante se añadirán operaciones como `generateQuiz(...)`. La app debe ma
 
 **Book**
 - `id` (PK), `title`, `author`, `currentPage` (Int), `totalPages` (Int?, opcional), `status` (POR_LEER / LEYENDO / TERMINADO), `createdAt`
+- Desde la versión 2 (T8.2): `kind` (DIGITAL / FISICO; los libros anteriores son físicos), `format` (EPUB / PDF / TXT / CBZ, opcional), `filePath`, `coverPath`, `language`, `lastOpenedAt` (todos opcionales)
 
 **Note**
 - `id` (PK), `bookId` (FK → Book, borrado en cascada), `page` (Int?), `sourceText` (texto original capturado, opcional), `content` (nota o explicación), `type` (MANUAL / EXPLICACION), `createdAt`
@@ -209,7 +210,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 
 ### Fase 8 — Bases para crecer
 - [x] **T8.1 Migraciones.** Configurar migraciones de Room y `MigrationTestHelper`. *Hecho cuando:* una migración de prueba 1→2 pasa su test sin perder datos.
-- [ ] **T8.2 Libro ampliado.** Agregar a `Book`: `kind` (DIGITAL/FISICO), `format`, `filePath`, `coverPath`, `language`, `lastOpenedAt`. *Hecho cuando:* los libros existentes migran y se ven igual.
+- [x] **T8.2 Libro ampliado.** Agregar a `Book`: `kind` (DIGITAL/FISICO), `format`, `filePath`, `coverPath`, `language`, `lastOpenedAt`. *Hecho cuando:* los libros existentes migran y se ven igual.
 - [ ] **T8.3 Barra inferior.** Cuatro destinos (Biblioteca, Repasar, Progreso, Más) con pill activa, cambio de pestaña con fundido y "Atrás" según el diseño (3 §6). Repasar y Progreso empiezan con su estado vacío. *Hecho cuando:* se navega entre pestañas y "Atrás" vuelve a Biblioteca.
 - [ ] **T8.4 Pantalla Más.** Entradas a Todas las notas, Respaldo, Ajustes, Privacidad y Acerca de. *Hecho cuando:* cada entrada abre su pantalla o su estado vacío.
 - [ ] **T8.5 Onboarding.** Tres pasos saltables; se muestra solo la primera vez (DataStore). *Hecho cuando:* aparece en la primera apertura y no vuelve a aparecer.

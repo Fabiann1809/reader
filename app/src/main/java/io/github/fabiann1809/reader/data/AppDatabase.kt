@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.data
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -9,7 +10,15 @@ import io.github.fabiann1809.reader.data.book.BookDao
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteDao
 
-@Database(entities = [Book::class, Note::class], version = 1, exportSchema = true)
+@Database(
+    entities = [Book::class, Note::class],
+    version = 2,
+    exportSchema = true,
+    autoMigrations = [
+        // 1 → 2: new optional Book columns (kind, format, filePath, coverPath, language, lastOpenedAt).
+        AutoMigration(from = 1, to = 2),
+    ],
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun bookDao(): BookDao

@@ -3,8 +3,9 @@ package io.github.fabiann1809.reader.data
 import androidx.room.migration.Migration
 
 /**
- * Every schema change since version 1, in order. The database already holds the user's books and notes,
- * so a new version must never be destructive.
+ * Manual schema migrations, in order. Simple additions use `AutoMigration` in [AppDatabase] instead
+ * (1 → 2 is automatic). The database already holds the user's books and notes, so a new version
+ * must never be destructive.
  *
  * To change the schema:
  * 1. Bump `version` in [AppDatabase] and build: Room exports the new schema to `app/schemas`.
