@@ -16,7 +16,7 @@ object ExplainerPrompt {
         - mainIdea: la idea central en una sola frase, sin jerga (máximo 25 palabras).
         - simpleExplanation: explícalo como si hablaras con alguien sin conocimientos previos (60 a 120 palabras).
         - analogy: una comparación con algo de la vida diaria (1 a 3 frases).
-        - keyTerms: de 2 a 5 términos difíciles del texto, cada uno con una definición de una línea.
+        - keyTerms: de 2 a 5 términos difíciles del texto, cada uno con una definición de una línea. Escribe cada término tal como aparece en el fragmento, con sus tildes.
         - caveat: si el fragmento es ambiguo, está incompleto o parece mal leído, explícalo brevemente; si no, déjalo vacío.
 
         Reglas:

@@ -20,6 +20,7 @@ class ExplainerPromptTest {
         assertTrue(prompt.contains("ambiguo, está incompleto"))
         assertTrue(prompt.contains("sin formato Markdown"))
         assertTrue(prompt.contains("con todas las tildes"))
+        assertTrue(prompt.contains("tal como aparece en el fragmento"))
     }
 
     @Test
