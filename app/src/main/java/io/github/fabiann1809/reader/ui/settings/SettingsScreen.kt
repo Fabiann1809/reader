@@ -1,5 +1,8 @@
 package io.github.fabiann1809.reader.ui.settings
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,15 +14,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -34,9 +34,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -52,8 +55,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
+import io.github.fabiann1809.reader.ui.components.AiButton
+import io.github.fabiann1809.reader.ui.components.OutlineButton
+import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.components.aiErrorMessageRes
+import io.github.fabiann1809.reader.ui.components.readerTextFieldColors
+import io.github.fabiann1809.reader.ui.components.readerTextFieldShape
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 private const val API_KEY_URL = "https://aistudio.google.com/apikey"
@@ -118,31 +126,33 @@ fun SettingsContent(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(stringResource(R.string.settings_ai_section), style = MaterialTheme.typography.titleLarge)
-            Text(
-                text = stringResource(
-                    if (uiState.hasApiKey) R.string.settings_key_status_set else R.string.settings_key_status_missing,
-                ),
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (uiState.hasApiKey) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-            )
+            Text(stringResource(R.string.settings_ai_section), style = MaterialTheme.typography.titleMedium)
+            KeyStatus(hasApiKey = uiState.hasApiKey)
             ApiKeyField(value = uiState.keyInput, onValueChange = onKeyInputChange)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onSaveKey, enabled = uiState.canSaveKey, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.settings_save_key))
-                }
-                OutlinedButton(onClick = onClearKey, enabled = uiState.hasApiKey, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.settings_clear_key))
-                }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                PrimaryButton(
+                    text = stringResource(R.string.settings_save_key),
+                    onClick = onSaveKey,
+                    enabled = uiState.canSaveKey,
+                    modifier = Modifier.weight(1f),
+                )
+                OutlineButton(
+                    text = stringResource(R.string.settings_clear_key),
+                    onClick = onClearKey,
+                    enabled = uiState.hasApiKey,
+                    modifier = Modifier.weight(1f),
+                )
             }
-            FilledTonalButton(onClick = onTestKey, enabled = uiState.canTestKey, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.settings_test_key))
-            }
+            // Testing the key calls the AI, so it uses the AI style.
+            AiButton(
+                text = stringResource(R.string.settings_test_key),
+                onClick = onTestKey,
+                enabled = uiState.canTestKey,
+                modifier = Modifier.fillMaxWidth(),
+            )
             KeyTestResult(uiState.keyTest)
             ApiKeyGuide()
-            TextButton(onClick = onOpenPrivacy, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.settings_privacy))
-            }
+            PrivacyLink(onClick = onOpenPrivacy)
         }
     }
 }
@@ -153,6 +163,8 @@ private fun ApiKeyField(value: String, onValueChange: (String) -> Unit) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
+        shape = readerTextFieldShape,
+        colors = readerTextFieldColors(),
         label = { Text(stringResource(R.string.settings_key_field)) },
         singleLine = true,
         visualTransformation = if (isVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -171,6 +183,24 @@ private fun ApiKeyField(value: String, onValueChange: (String) -> Unit) {
     )
 }
 
+/** Whether a key is stored, with an icon so the state never depends on color alone. */
+@Composable
+private fun KeyStatus(hasApiKey: Boolean) {
+    val color = if (hasApiKey) ReaderTheme.colors.success else ReaderTheme.colors.warning
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
+        Icon(
+            painter = painterResource(if (hasApiKey) R.drawable.ic_check_circle else R.drawable.ic_warning_circle),
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(22.dp),
+        )
+        Text(
+            text = stringResource(if (hasApiKey) R.string.settings_key_status_set else R.string.settings_key_status_missing),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+}
+
 @Composable
 private fun KeyTestResult(state: KeyTestState) {
     when (state) {
@@ -179,31 +209,79 @@ private fun KeyTestResult(state: KeyTestState) {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-            Text(stringResource(R.string.settings_testing_key))
+            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = ReaderTheme.colors.ai)
+            Text(stringResource(R.string.settings_testing_key), style = MaterialTheme.typography.bodyMedium)
         }
-        is KeyTestState.Success -> Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = stringResource(R.string.settings_test_success),
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.titleSmall,
-            )
-            Text(
-                text = state.sampleResponse,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        is KeyTestState.Failure -> Text(
-            text = stringResource(aiErrorMessageRes(state.error)),
+        is KeyTestState.Success -> ResultBanner(
+            icon = R.drawable.ic_check_circle,
+            color = ReaderTheme.colors.success,
+            title = stringResource(R.string.settings_test_success),
+            message = state.sampleResponse,
+        )
+        is KeyTestState.Failure -> ResultBanner(
+            icon = R.drawable.ic_warning_circle,
             color = MaterialTheme.colorScheme.error,
+            title = stringResource(aiErrorMessageRes(state.error)),
+        )
+    }
+}
+
+@Composable
+private fun ResultBanner(@DrawableRes icon: Int, color: Color, title: String, message: String? = null) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color.copy(alpha = 0.12f), MaterialTheme.shapes.medium)
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(painterResource(icon), contentDescription = null, tint = color, modifier = Modifier.size(22.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(text = title, style = MaterialTheme.typography.titleSmall)
+            message?.let {
+                Text(text = it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PrivacyLink(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.medium)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(vertical = 12.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_shield_check),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            text = stringResource(R.string.settings_privacy),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f),
+        )
+        Icon(
+            painter = painterResource(R.drawable.ic_caret_right),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp),
         )
     }
 }
 
 @Composable
 private fun ApiKeyGuide() {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.settings_guide_title), style = MaterialTheme.typography.titleMedium)
             val linkColor = MaterialTheme.colorScheme.primary

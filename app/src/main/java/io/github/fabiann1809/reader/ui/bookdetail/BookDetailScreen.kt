@@ -49,8 +49,10 @@ import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteType
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.BookCover
+import io.github.fabiann1809.reader.ui.components.OutlineButton
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
+import io.github.fabiann1809.reader.ui.components.StatusMessage
 import io.github.fabiann1809.reader.ui.components.TonalButton
 import io.github.fabiann1809.reader.ui.components.bookProgressText
 import io.github.fabiann1809.reader.ui.components.labelRes
@@ -120,8 +122,15 @@ fun BookDetailContent(
             BookDetailUiState.Loading -> Box(contentModifier, contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-            BookDetailUiState.NotFound -> Box(contentModifier.padding(32.dp), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.book_not_found))
+            BookDetailUiState.NotFound -> Box(contentModifier, contentAlignment = Alignment.Center) {
+                StatusMessage(
+                    icon = R.drawable.ic_book,
+                    title = stringResource(R.string.book_not_found),
+                    message = stringResource(R.string.book_not_found_message),
+                    action = {
+                        OutlineButton(text = stringResource(R.string.book_back_to_library), onClick = onNavigateUp)
+                    },
+                )
             }
             is BookDetailUiState.Success -> BookDetailBody(
                 book = uiState.book,
@@ -323,26 +332,11 @@ private fun BookActions(onCapturePage: () -> Unit, onUpdateProgressClick: () -> 
 
 @Composable
 private fun EmptyNotes() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_note_pencil),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(32.dp),
-        )
-        Text(
-            text = stringResource(R.string.notes_empty),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-    }
+    StatusMessage(
+        icon = R.drawable.ic_note_pencil,
+        title = stringResource(R.string.notes_empty),
+        message = stringResource(R.string.notes_empty_message),
+    )
 }
 
 private val COVER_WIDTH = 132.dp

@@ -89,4 +89,26 @@ class BookDetailContentTest {
         composeRule.onNodeWithText(string(R.string.action_delete)).performClick()
         assertTrue(deleted)
     }
+
+    @Test
+    fun missingBookOffersAWayBack() {
+        var wentBack = false
+        composeRule.setContent {
+            ReaderTheme {
+                BookDetailContent(
+                    uiState = BookDetailUiState.NotFound,
+                    onNavigateUp = { wentBack = true },
+                    onUpdateProgress = { _, _ -> },
+                    onDeleteBook = {},
+                    onAddNote = {},
+                    onNoteClick = {},
+                    onCapturePage = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(string(R.string.book_not_found)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.book_back_to_library)).performClick()
+        assertTrue(wentBack)
+    }
 }

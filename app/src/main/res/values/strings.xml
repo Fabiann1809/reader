@@ -26,7 +26,9 @@
     <string name="book_pages_invalid">Debe ser un número mayor que 0</string>
 
     <!-- Book detail -->
-    <string name="book_not_found">Este libro ya no existe.</string>
+    <string name="book_not_found">Este libro ya no está en tu biblioteca</string>
+    <string name="book_not_found_message">Puede que lo hayas eliminado. Tus otros libros siguen en sus estantes.</string>
+    <string name="book_back_to_library">Volver a la biblioteca</string>
     <string name="book_added_on">Agregado el %1$s</string>
     <string name="update_progress_title">Actualizar progreso</string>
     <string name="update_progress_short">Progreso</string>
@@ -42,7 +44,8 @@
 
     <!-- Notes -->
     <string name="notes_title">Notas</string>
-    <string name="notes_empty">Aún no tienes notas. Fotografía una página o escribe una nota.</string>
+    <string name="notes_empty">Aún no tienes notas</string>
+    <string name="notes_empty_message">Fotografía una página o escribe una nota.</string>
     <string name="note_page">Pág. %1$d</string>
     <string name="note_type_explanation">Explicación IA</string>
     <string name="note_new_title">Nueva nota</string>
@@ -100,7 +103,7 @@
     <!-- Settings -->
     <string name="settings_title">Configuración</string>
     <string name="settings_ai_section">Inteligencia artificial (Google Gemini)</string>
-    <string name="settings_key_status_set">Clave de API configurada ✓</string>
+    <string name="settings_key_status_set">Clave de API configurada. Ya puedes pedir explicaciones.</string>
     <string name="settings_key_status_missing">No hay clave de API configurada. Sin ella no se pueden generar explicaciones.</string>
     <string name="settings_key_field">Clave de API</string>
     <string name="settings_show_key">Mostrar clave</string>
@@ -111,7 +114,7 @@
     <string name="settings_key_cleared">Clave eliminada</string>
     <string name="settings_test_key">Probar clave</string>
     <string name="settings_testing_key">Probando la clave…</string>
-    <string name="settings_test_success">¡La clave funciona! Respuesta de prueba:</string>
+    <string name="settings_test_success">¡La clave funciona!</string>
     <string name="settings_guide_title">Cómo obtener tu clave gratuita</string>
     <string name="settings_guide_step1">1. Abre</string>
     <string name="settings_guide_step2">2. Inicia sesión con tu cuenta de Google.</string>
