@@ -7,7 +7,6 @@ import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.book.arrangedBy
 import io.github.fabiann1809.reader.data.book.importing.BookImporter
-import io.github.fabiann1809.reader.data.book.importing.ImportResult
 import io.github.fabiann1809.reader.data.book.markedAsRead
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
@@ -18,7 +17,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -48,16 +46,6 @@ data class LibraryUiState(
 ) {
     val isSelecting: Boolean
         get() = selectedIds.isNotEmpty()
-}
-
-/** Progress of a file import started from "Añadir libro". */
-sealed interface ImportStatus {
-    data object Idle : ImportStatus
-
-    data object Importing : ImportStatus
-
-    /** Shown once, then cleared with [LibraryViewModel.dismissImportError]. */
-    data class Error(val isUnsupportedFile: Boolean) : ImportStatus
 }
 
 /** The book whose "Colección" sheet is open, with the user collections that already hold it. */
@@ -127,24 +115,15 @@ class LibraryViewModel(
         viewModelScope.launch { preferences.setLibraryArrangement(arrangement) }
     }
 
-    private val _importStatus = MutableStateFlow<ImportStatus>(ImportStatus.Idle)
-    val importStatus: StateFlow<ImportStatus> = _importStatus.asStateFlow()
+    private val importQueue = ImportQueue(bookImporter, viewModelScope)
+    val importStatus: StateFlow<ImportStatus> = importQueue.status
 
-    /** [uri] is the document picked in the system file picker. The new book appears on the shelf by itself. */
-    fun importBook(uri: String) {
-        _importStatus.value = ImportStatus.Importing
-        viewModelScope.launch {
-            _importStatus.value = when (bookImporter.import(uri)) {
-                is ImportResult.Imported -> ImportStatus.Idle
-                ImportResult.Unsupported -> ImportStatus.Error(isUnsupportedFile = true)
-                ImportResult.Failed -> ImportStatus.Error(isUnsupportedFile = false)
-            }
-        }
-    }
+    /** [uris] are the documents picked in the system file picker. New books appear on the shelves by themselves. */
+    fun importBooks(uris: List<String>) = importQueue.add(uris)
 
-    fun dismissImportError() {
-        _importStatus.value = ImportStatus.Idle
-    }
+    fun retryFailedImports() = importQueue.retry()
+
+    fun dismissFailedImports() = importQueue.dismiss()
 
     private val collectionsBookId = MutableStateFlow<Long?>(null)
 

@@ -106,7 +106,7 @@ class BookImporterTest {
 
     @Test
     fun aFileThatIsNotABookIsRejectedAndNotKept() = runTest {
-        assertEquals(ImportResult.Unsupported, importer.import(picked("no_es_un_libro.bin").toString()))
+        assertEquals(ImportResult.Unsupported("no_es_un_libro.bin"), importer.import(picked("no_es_un_libro.bin").toString()))
         assertTrue(storedFiles().isEmpty())
     }
 
@@ -114,7 +114,7 @@ class BookImporterTest {
     fun aFileThatCannotBeOpenedFails() = runTest {
         val missing = Uri.fromFile(File(workDir, "missing.epub"))
 
-        assertEquals(ImportResult.Failed, importer.import(missing.toString()))
+        assertEquals(ImportResult.Failed("missing.epub"), importer.import(missing.toString()))
         assertTrue(storedFiles().isEmpty())
     }
 

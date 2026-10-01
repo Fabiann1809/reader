@@ -14,8 +14,20 @@
     <string name="add_book_from_file_hint">EPUB o PDF del teléfono, Google Drive o Dropbox</string>
     <string name="add_book_physical">Libro físico</string>
     <string name="add_book_physical_hint">Un libro en papel que registras a mano</string>
-    <string name="import_unsupported">Ese archivo no es un EPUB o PDF que Reader pueda abrir.</string>
-    <string name="import_failed">No se pudo copiar el archivo. Inténtalo de nuevo.</string>
+    <plurals name="import_progress">
+        <item quantity="one">Importando %1$d libro… %2$d de %1$d</item>
+        <item quantity="other">Importando %1$d libros… %2$d de %1$d</item>
+    </plurals>
+    <plurals name="import_error_title">
+        <item quantity="one">No pudimos importar %1$d archivo</item>
+        <item quantity="other">No pudimos importar %1$d archivos</item>
+    </plurals>
+    <string name="import_error_unsupported">Formato no compatible o archivo dañado.</string>
+    <string name="import_error_copy">Formato no compatible, archivo dañado o no disponible sin conexión.</string>
+    <string name="import_error_rest_imported">El resto ya está en tus estantes.</string>
+    <string name="import_error_unknown_file">Archivo sin nombre</string>
+    <string name="import_error_dismiss">Descartar</string>
+    <string name="import_error_retry">Reintentar</string>
     <string name="library_search">Buscar</string>
     <string name="library_search_hint">Buscar por título o autor</string>
     <string name="library_search_close">Cerrar búsqueda</string>

@@ -465,23 +465,50 @@ class LibraryContentTest {
     }
 
     @Test
-    fun importErrorIsShownOnceAndDismissed() {
-        var dismissed = false
+    fun importProgressShowsTheCount() {
         composeRule.setContent {
             ReaderTheme {
                 LibraryContent(
                     uiState = LibraryUiState(isLoading = false, libraryIsEmpty = true),
                     onBookClick = {},
                     onAddPhysicalBook = {},
-                    importStatus = ImportStatus.Error(isUnsupportedFile = true),
-                    onDismissImportError = { dismissed = true },
+                    importStatus = ImportStatus.Importing(done = 2, total = 7),
                 )
             }
         }
 
-        composeRule.onNodeWithText(string(R.string.import_unsupported)).assertIsDisplayed()
-        composeRule.waitUntil(SNACKBAR_TIMEOUT_MILLIS) { dismissed }
+        composeRule.onNodeWithText(composeRule.activity.resources.getQuantityString(R.plurals.import_progress, 7, 7, 3))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun importErrorCardListsTheFilesAndOffersRetryAndDiscard() {
+        var retried = false
+        var dismissed = false
+        val failures = listOf(
+            FailedImport("content://1", "apuntes-cap3.rar", isUnsupported = true),
+            FailedImport("content://2", "manual.djvu", isUnsupported = true),
+        )
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(books = listOf(Book(id = 1, title = "Dune", author = "F. Herbert")), isLoading = false),
+                    onBookClick = {},
+                    onAddPhysicalBook = {},
+                    importStatus = ImportStatus.Failed(failures, importedCount = 5),
+                    onRetryImports = { retried = true },
+                    onDismissImportErrors = { dismissed = true },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(composeRule.activity.resources.getQuantityString(R.plurals.import_error_title, 2, 2))
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("apuntes-cap3.rar · manual.djvu").assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.import_error_rest_imported), substring = true).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.import_error_retry)).performClick()
+        composeRule.onNodeWithText(string(R.string.import_error_dismiss)).performClick()
+        assertTrue(retried)
+        assertTrue(dismissed)
     }
 }
-
-private const val SNACKBAR_TIMEOUT_MILLIS = 10_000L

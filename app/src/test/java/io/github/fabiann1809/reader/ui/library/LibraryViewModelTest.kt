@@ -303,29 +303,35 @@ class LibraryViewModelTest {
     }
 
     @Test
-    fun importedBookAppearsOnTheShelf() = runTest {
+    fun importedBooksAppearOnTheShelf() = runTest {
         val viewModel = viewModel()
 
-        viewModel.importBook("content://picker/Neuromante")
+        viewModel.importBooks(listOf("content://picker/Neuromante", "content://picker/Solaris"))
 
         assertEquals(ImportStatus.Idle, viewModel.importStatus.value)
-        assertTrue("Neuromante" in viewModel.titles())
+        assertTrue(viewModel.titles().containsAll(listOf("Neuromante", "Solaris")))
     }
 
     @Test
-    fun importErrorsAreShownUntilDismissed() = runTest {
+    fun failedImportsAreShownUntilDiscarded() = runTest {
         val viewModel = viewModel()
 
-        importOutcome = ImportResult.Unsupported
-        viewModel.importBook("content://picker/foto.jpg")
-        assertEquals(ImportStatus.Error(isUnsupportedFile = true), viewModel.importStatus.value)
+        importOutcome = ImportResult.Unsupported(fileName = "foto.jpg")
+        viewModel.importBooks(listOf("content://picker/foto.jpg"))
+        assertEquals(
+            ImportStatus.Failed(listOf(FailedImport("content://picker/foto.jpg", "foto.jpg", isUnsupported = true)), 0),
+            viewModel.importStatus.value,
+        )
 
-        importOutcome = ImportResult.Failed
-        viewModel.importBook("content://picker/roto.epub")
-        assertEquals(ImportStatus.Error(isUnsupportedFile = false), viewModel.importStatus.value)
-
-        viewModel.dismissImportError()
+        // Retrying after fixing the problem imports it.
+        importOutcome = null
+        viewModel.retryFailedImports()
         assertEquals(ImportStatus.Idle, viewModel.importStatus.value)
-        assertEquals(listOf("Cosmos", "Dune"), viewModel.titles())
+        assertTrue("foto.jpg" in viewModel.titles())
+
+        importOutcome = ImportResult.Failed(fileName = null)
+        viewModel.importBooks(listOf("content://picker/roto.epub"))
+        viewModel.dismissFailedImports()
+        assertEquals(ImportStatus.Idle, viewModel.importStatus.value)
     }
 }

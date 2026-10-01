@@ -26,16 +26,12 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,7 +51,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
@@ -85,8 +80,8 @@ fun LibraryScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val importStatus by viewModel.importStatus.collectAsStateWithLifecycle()
     // The system picker (SAF) shows local files plus providers like Google Drive and Dropbox.
-    val pickBookFile = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) viewModel.importBook(uri.toString())
+    val pickBookFiles = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        viewModel.importBooks(uris.map { it.toString() })
     }
     val bookCollections by viewModel.bookCollections.collectAsStateWithLifecycle()
     LightStatusBarIcons()
@@ -112,9 +107,10 @@ fun LibraryScreen(
         ),
         onBookClick = onBookClick,
         onAddPhysicalBook = onAddPhysicalBook,
-        onImportFile = { pickBookFile.launch(BOOK_MIME_TYPES) },
+        onImportFile = { pickBookFiles.launch(BOOK_MIME_TYPES) },
         importStatus = importStatus,
-        onDismissImportError = viewModel::dismissImportError,
+        onRetryImports = viewModel::retryFailedImports,
+        onDismissImportErrors = viewModel::dismissFailedImports,
         onSelectFilter = viewModel::selectFilter,
         onSearch = viewModel::search,
         onArrangementChange = viewModel::setArrangement,
@@ -133,7 +129,8 @@ fun LibraryContent(
     modifier: Modifier = Modifier,
     onImportFile: () -> Unit = {},
     importStatus: ImportStatus = ImportStatus.Idle,
-    onDismissImportError: () -> Unit = {},
+    onRetryImports: () -> Unit = {},
+    onDismissImportErrors: () -> Unit = {},
     onSelectFilter: (LibraryFilter) -> Unit = {},
     onSearch: (String) -> Unit = {},
     onArrangementChange: (LibraryArrangement) -> Unit = {},
@@ -145,20 +142,12 @@ fun LibraryContent(
     bookActions: LibraryBookActions = LibraryBookActions(),
     selectionActions: LibrarySelectionActions = LibrarySelectionActions(),
 ) {
-    val showFab = !uiState.isLoading && uiState.books.isNotEmpty() && !uiState.isSelecting
+    // While importing, the progress pill takes the bottom of the screen.
+    val showFab = !uiState.isLoading && uiState.books.isNotEmpty() && !uiState.isSelecting &&
+        importStatus !is ImportStatus.Importing
     var dialog by rememberSaveable { mutableStateOf(LibraryDialog.NONE) }
     var isSearchOpen by rememberSaveable { mutableStateOf(false) }
     var showAddBookSheet by rememberSaveable { mutableStateOf(false) }
-    val snackbarHostState = remember { SnackbarHostState() }
-    val importErrorMessage = (importStatus as? ImportStatus.Error)?.let {
-        stringResource(if (it.isUnsupportedFile) R.string.import_unsupported else R.string.import_failed)
-    }
-    LaunchedEffect(importErrorMessage) {
-        if (importErrorMessage != null) {
-            snackbarHostState.showSnackbar(importErrorMessage)
-            onDismissImportError()
-        }
-    }
     // Cover menu: the book whose menu is open, and the one waiting for delete confirmation.
     var menuBookId by rememberSaveable { mutableStateOf<Long?>(null) }
     var deleteBookId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -263,62 +252,77 @@ fun LibraryContent(
                 }
             }
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
         val empty = emptyState(uiState, { showAddBookSheet = true }, onSearch, onArrangementChange, onSelectFilter)
-        if (importStatus == ImportStatus.Importing) {
-            // Under the bar, over the shelves: the new book appears by itself when done.
-            LinearProgressIndicator(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = innerPadding.calculateTopPadding())
-                    .zIndex(1f),
-            )
-        }
-        when {
-            uiState.isLoading && isShelves -> Bookcase(innerPadding, columns, itemCount = PLACEHOLDER_COUNT) { _, width ->
-                PlaceholderCover(width)
-            }
-            uiState.isLoading -> Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-            empty != null && isShelves -> EmptyShelf(innerPadding, empty)
-            empty != null -> Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                StatusMessage(
-                    icon = empty.icon,
-                    title = empty.title,
-                    message = empty.message,
-                    action = { PrimaryButton(text = empty.action, onClick = empty.onAction, icon = empty.actionIcon) },
-                )
-            }
-            else -> when (uiState.layout.view) {
-                LibraryView.SHELVES -> Bookcase(
-                    innerPadding,
-                    columns,
-                    itemCount = uiState.books.size,
-                    bottomSpace = FAB_SPACE,
-                ) { index, width ->
-                    val book = uiState.books[index]
-                    bookFrame(book, Modifier) {
-                        BookCover(
-                            book = book,
-                            onClick = { onCoverClick(book.id) },
-                            onLongClick = { onBookLongClick(book.id) },
-                            showBadges = true,
-                            modifier = Modifier.width(width),
-                        )
-                    }
+        Box(Modifier.fillMaxSize()) {
+            when {
+                uiState.isLoading && isShelves -> Bookcase(innerPadding, columns, itemCount = PLACEHOLDER_COUNT) { _, width ->
+                    PlaceholderCover(width)
                 }
-                LibraryView.GRID -> BookGrid(
-                    uiState.books,
-                    columns,
-                    innerPadding,
-                    FAB_SPACE,
-                    onCoverClick,
-                    onBookLongClick,
-                    bookFrame,
+                uiState.isLoading -> Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+                empty != null && isShelves -> EmptyShelf(innerPadding, empty)
+                empty != null -> Box(Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                    StatusMessage(
+                        icon = empty.icon,
+                        title = empty.title,
+                        message = empty.message,
+                        action = { PrimaryButton(text = empty.action, onClick = empty.onAction, icon = empty.actionIcon) },
+                    )
+                }
+                else -> when (uiState.layout.view) {
+                    LibraryView.SHELVES -> Bookcase(
+                        innerPadding,
+                        columns,
+                        itemCount = uiState.books.size,
+                        bottomSpace = FAB_SPACE,
+                    ) { index, width ->
+                        val book = uiState.books[index]
+                        bookFrame(book, Modifier) {
+                            BookCover(
+                                book = book,
+                                onClick = { onCoverClick(book.id) },
+                                onLongClick = { onBookLongClick(book.id) },
+                                showBadges = true,
+                                modifier = Modifier.width(width),
+                            )
+                        }
+                    }
+                    LibraryView.GRID -> BookGrid(
+                        uiState.books,
+                        columns,
+                        innerPadding,
+                        FAB_SPACE,
+                        onCoverClick,
+                        onBookLongClick,
+                        bookFrame,
+                    )
+                    LibraryView.LIST -> BookList(uiState.books, innerPadding, FAB_SPACE, onCoverClick, onBookLongClick, bookFrame)
+                }
+            }
+            // Import feedback floats over the books (design 1f); new books appear on the shelves by themselves.
+            when (importStatus) {
+                ImportStatus.Idle -> Unit
+                is ImportStatus.Importing -> {
+                    ImportProgressBar(importStatus, Modifier.padding(top = innerPadding.calculateTopPadding()))
+                    ImportProgressPill(
+                        importStatus,
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(innerPadding)
+                            .padding(16.dp),
+                    )
+                }
+                is ImportStatus.Failed -> ImportErrorCard(
+                    status = importStatus,
+                    onRetry = onRetryImports,
+                    onDismiss = onDismissImportErrors,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(innerPadding)
+                        .padding(16.dp),
                 )
-                LibraryView.LIST -> BookList(uiState.books, innerPadding, FAB_SPACE, onCoverClick, onBookLongClick, bookFrame)
             }
         }
     }

@@ -16,11 +16,11 @@ import java.io.IOException
 sealed interface ImportResult {
     data class Imported(val bookId: Long) : ImportResult
 
-    /** The file is not an EPUB or PDF the app can read (or it is damaged). */
-    data object Unsupported : ImportResult
+    /** The file is not an EPUB or PDF the app can read (or it is damaged). [fileName] is null if unknown. */
+    data class Unsupported(val fileName: String?) : ImportResult
 
     /** The file could not be copied (e.g. a cloud file that failed to download). */
-    data object Failed : ImportResult
+    data class Failed(val fileName: String?) : ImportResult
 }
 
 /** Adds a digital book from a file the user picked with the system file picker. */
@@ -47,13 +47,14 @@ class DefaultBookImporter(
     }
 
     private suspend fun importFrom(uri: Uri): ImportResult {
+        val fileName = displayName(uri)
         val copy = bookFiles.newFile(extension = PARTIAL_EXTENSION)
         try {
-            if (!copyTo(uri, copy)) return ImportResult.Failed.also { copy.delete() }
-            val info = readSafely(copy) ?: return ImportResult.Unsupported.also { copy.delete() }
+            if (!copyTo(uri, copy)) return ImportResult.Failed(fileName).also { copy.delete() }
+            val info = readSafely(copy) ?: return ImportResult.Unsupported(fileName).also { copy.delete() }
             val stored = copy.withExtension(info.format.name.lowercase())
             val book = Book(
-                title = info.title ?: titleFromFileName(displayName(uri)).ifEmpty { untitled },
+                title = info.title ?: titleFromFileName(fileName).ifEmpty { untitled },
                 author = info.author.orEmpty(),
                 kind = BookKind.DIGITAL,
                 format = info.format,
@@ -90,10 +91,16 @@ class DefaultBookImporter(
         null
     }
 
-    private fun displayName(uri: Uri): String? =
+    // file:// URIs (used in tests) have no provider to ask, so their name comes from the path.
+    private fun displayName(uri: Uri): String? = try {
         contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
             if (cursor.moveToFirst()) cursor.getString(0) else null
-        }
+        } ?: uri.lastPathSegment
+    } catch (e: SecurityException) {
+        null
+    } catch (e: IllegalArgumentException) {
+        null
+    }
 
     private fun File.withExtension(extension: String): File {
         val target = File(parentFile, "$nameWithoutExtension.$extension")
