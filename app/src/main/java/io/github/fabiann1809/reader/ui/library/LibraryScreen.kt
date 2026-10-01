@@ -144,8 +144,13 @@ fun LibraryContent(
         onDelete = { deleteBookId = it },
         onSelect = selectionActions.onToggle,
     )
+    val appearance = rememberBookAppearance(hasBooks = !uiState.isLoading && uiState.books.isNotEmpty())
+    val positions = remember(uiState.books) { uiState.books.withIndex().associate { (index, book) -> book.id to index } }
     val bookFrame: BookFrame = { book, frameModifier, content ->
-        SelectionFrame(isSelected = if (uiState.isSelecting) book.id in uiState.selectedIds else null, modifier = frameModifier) {
+        SelectionFrame(
+            isSelected = if (uiState.isSelecting) book.id in uiState.selectedIds else null,
+            modifier = frameModifier.bookAppearance(appearance, positions[book.id] ?: 0),
+        ) {
             content()
             BookMenu(book, expanded = menuBookId == book.id, onDismiss = { menuBookId = null }, actions = menuActions)
         }

@@ -62,20 +62,22 @@ fun BookGrid(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(books, key = { it.id }) { book ->
-            // Card style from the design (7.10), with a tighter padding so the cover keeps its size.
-            Card(
-                shape = MaterialTheme.shapes.large,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-            ) {
-                // The cover already shows title, author and progress, and carries the description.
-                bookFrame(book, Modifier.padding(8.dp)) {
+            bookFrame(book, Modifier) {
+                // Card style from the design (7.10), with a tighter padding so the cover keeps its size.
+                Card(
+                    shape = MaterialTheme.shapes.large,
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                ) {
+                    // The cover already shows title, author and progress, and carries the description.
                     BookCover(
                         book = book,
                         onClick = { onBookClick(book.id) },
                         onLongClick = { onBookLongClick(book.id) },
                         showBadges = true,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
                     )
                 }
             }
