@@ -295,7 +295,6 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [ ] **T17.2 Exportar respaldo.** ZIP con los datos en JSON, archivos de libros y audios, guardado con SAF. Nunca incluye la clave de API. *Hecho cuando:* se genera el archivo.
 - [ ] **T17.3 Importar respaldo.** Con confirmación y validación de versión. *Hecho cuando:* restaura en una instalación limpia.
 - [ ] **T17.4 Todas las notas.** Lista global con búsqueda y filtro por tipo. *Hecho cuando:* encuentra una nota por texto.
-- [ ] **T17.5 Accesibilidad.** Revisión con TalkBack, texto al 200 %, reducir animaciones y háptica en volteo, selección y fin de grabación. *Hecho cuando:* pasa la checklist del diseño (4 §9 y §13).
 - [ ] **T17.6 Widget y accesos directos.** Widget con Glance (Continuar o Grabar nota) y accesos directos del ícono (Continuar, Captura, Nota de voz). *Hecho cuando:* abren el destino correcto.
 
 ### Fase 18 — Nube (requiere decisiones; ver riesgos)
@@ -326,6 +325,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - ~~Primer proveedor de IA~~ → decidido: **Google Gemini** (`gemini-flash-latest`, clave gratuita de Google AI Studio).
 - Idioma de las explicaciones (por defecto, el idioma del texto o español).
 - **Modelo Free/Pro:** límites por plan y pantalla Pro. Falta decidir el método de pago (sin Play Store no hay Play Billing).
+- **Revisión de accesibilidad (opcional):** prueba con TalkBack, texto al 200 %, reducir animaciones y háptica, según la checklist del diseño (4 §9 y §13). Se hará solo si es posible al final.
 - **Cupo gratuito (B9):** función intermediaria serverless con tope diario global y límite por dispositivo, como un segundo `AiProvider`. Play Integrity exige publicar en Play Store.
 
 ---
