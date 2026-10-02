@@ -50,7 +50,13 @@ class EpubReaderFragment : NavigatorHostFragment() {
         super.onViewCreated(view, savedInstanceState)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                session.readingSettings.collect(::applyPreferences)
+                launch { session.readingSettings.collect(::applyPreferences) }
+                // Readium redraws only what changed in the group (T11.12).
+                launch {
+                    session.highlights.collect { highlights ->
+                        (navigator as? EpubNavigatorFragment)?.applyDecorations(highlights.mapNotNull { it.toDecoration() }, HIGHLIGHTS_GROUP)
+                    }
+                }
             }
         }
     }
@@ -89,7 +95,7 @@ class EpubReaderFragment : NavigatorHostFragment() {
             val selection = navigator.currentSelection() ?: return@launch
             val text = selection.locator.text.highlight?.takeIf { it.isNotBlank() } ?: return@launch
             val bounds = selection.rect?.let { SelectionBounds(it.left, it.top, it.right, it.bottom) }
-            onSelection(TextSelection(text, bounds))
+            onSelection(TextSelection(text, bounds, selection.locator.toJSON().toString()))
         }
     }
 

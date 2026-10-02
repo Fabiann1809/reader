@@ -8,6 +8,8 @@ import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
+import io.github.fabiann1809.reader.data.highlight.Highlight
+import io.github.fabiann1809.reader.data.highlight.HighlightRepository
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +30,8 @@ sealed interface BookDetailUiState {
         val collections: List<Collection> = emptyList(),
         /** Ids of the user collections that already contain the book. */
         val collectionIds: Set<Long> = emptySet(),
+        /** Highlights made in the reader, in reading order (T11.12). */
+        val highlights: List<Highlight> = emptyList(),
     ) : BookDetailUiState
 
     // The book no longer exists (e.g. it was deleted).
@@ -39,6 +43,7 @@ class BookDetailViewModel(
     private val bookRepository: BookRepository,
     noteRepository: NoteRepository,
     collectionRepository: CollectionRepository,
+    highlightRepository: HighlightRepository,
     private val organizer: BookOrganizer,
 ) : ViewModel() {
 
@@ -49,11 +54,12 @@ class BookDetailViewModel(
             noteRepository.observeNotes(bookId),
             collectionRepository.observeCollections(),
             collectionRepository.observeCollectionIdsOf(bookId),
-        ) { book, notes, collections, collectionIds ->
+            highlightRepository.observeHighlights(bookId),
+        ) { book, notes, collections, collectionIds, highlights ->
             if (book == null) {
                 BookDetailUiState.NotFound
             } else {
-                BookDetailUiState.Success(book, notes, collections, collectionIds.toSet())
+                BookDetailUiState.Success(book, notes, collections, collectionIds.toSet(), highlights)
             }
         }
         .stateIn(

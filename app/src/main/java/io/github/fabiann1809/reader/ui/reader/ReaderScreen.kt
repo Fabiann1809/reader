@@ -81,6 +81,7 @@ fun ReaderScreen(
                         selection,
                         darkPage = state.readingSettings.theme.colors().isDark,
                         onExplain = viewModel::explainSelection,
+                        onHighlight = viewModel::highlightSelection,
                         onEnd = { epubFragment?.clearSelection() },
                         modifier = pageModifier,
                     )

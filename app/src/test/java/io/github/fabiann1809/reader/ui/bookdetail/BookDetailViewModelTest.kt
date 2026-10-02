@@ -1,6 +1,8 @@
 package io.github.fabiann1809.reader.ui.bookdetail
 
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.highlight.Highlight
+import io.github.fabiann1809.reader.data.highlight.HighlightColor
 import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
@@ -8,6 +10,7 @@ import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.FakeCollectionRepository
+import io.github.fabiann1809.reader.testing.FakeHighlightRepository
 import io.github.fabiann1809.reader.testing.FakeNoteRepository
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.collect
@@ -32,6 +35,7 @@ class BookDetailViewModelTest {
     private val bookRepository = FakeBookRepository(listOf(book))
     private val noteRepository = FakeNoteRepository()
     private val collectionRepository = FakeCollectionRepository(bookRepository)
+    private val highlightRepository = FakeHighlightRepository()
     // Lazy so it is built after MainDispatcherRule swaps Dispatchers.Main (viewModelScope needs it).
     private val viewModel by lazy {
         BookDetailViewModel(
@@ -39,6 +43,7 @@ class BookDetailViewModelTest {
             bookRepository = bookRepository,
             noteRepository = noteRepository,
             collectionRepository = collectionRepository,
+            highlightRepository = highlightRepository,
             organizer = BookOrganizer(bookRepository, collectionRepository),
         )
     }
@@ -69,6 +74,19 @@ class BookDetailViewModelTest {
 
         val state = viewModel.uiState.value as BookDetailUiState.Success
         assertEquals(listOf("New", "Old"), state.notes.map { it.content })
+    }
+
+    @Test
+    fun emitsThisBooksHighlightsInReadingOrder() = runTest {
+        highlightRepository.addHighlight(Highlight(bookId = 1, location = "{}", text = "Final", progression = 0.9))
+        highlightRepository.addHighlight(Highlight(bookId = 1, location = "{}", text = "Inicio", progression = 0.1, color = HighlightColor.PINK))
+        highlightRepository.addHighlight(Highlight(bookId = 2, location = "{}", text = "Otro libro"))
+        collectUiState()
+
+        val highlights = (viewModel.uiState.value as BookDetailUiState.Success).highlights
+
+        assertEquals(listOf("Inicio", "Final"), highlights.map { it.text })
+        assertEquals(HighlightColor.PINK, highlights.first().color)
     }
 
     @Test

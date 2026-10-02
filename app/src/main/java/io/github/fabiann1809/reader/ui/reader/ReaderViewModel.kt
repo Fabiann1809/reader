@@ -7,6 +7,9 @@ import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.bookmark.Bookmark
 import io.github.fabiann1809.reader.data.bookmark.BookmarkRepository
+import io.github.fabiann1809.reader.data.highlight.Highlight
+import io.github.fabiann1809.reader.data.highlight.HighlightColor
+import io.github.fabiann1809.reader.data.highlight.HighlightRepository
 import io.github.fabiann1809.reader.data.prefs.ReadingPreferences
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import io.github.fabiann1809.reader.data.reader.OpenProblem
@@ -26,6 +29,7 @@ class ReaderViewModel(
     private val bookId: Long,
     private val bookRepository: BookRepository,
     private val bookmarkRepository: BookmarkRepository,
+    private val highlightRepository: HighlightRepository,
     private val readingPreferences: ReadingPreferences,
     private val session: ReaderSession,
     // Injected so tests control time.
@@ -39,8 +43,11 @@ class ReaderViewModel(
         viewModelScope.launch {
             val book = bookRepository.getBook(bookId)
             _uiState.value = if (book == null) ReaderUiState.CannotOpen(OpenProblem.NO_FILE) else open(book)
-            // Only once Ready, so the first list is not lost on the way.
-            if (_uiState.value is ReaderUiState.Ready) followBookmarks()
+            // Only once Ready, so the first lists are not lost on the way.
+            if (_uiState.value is ReaderUiState.Ready) {
+                launch { followBookmarks() }
+                launch { followHighlights() }
+            }
         }
         viewModelScope.launch {
             // drop(1): the first settings were applied before the book opened.
@@ -125,6 +132,10 @@ class ReaderViewModel(
 
     private fun leaveContentsForThePage() = updateReady { it.copy(contentsVisible = false, controlsVisible = false) }
 
+    private suspend fun followHighlights() {
+        highlightRepository.observeHighlights(bookId).collect(session::showHighlights)
+    }
+
     private suspend fun followBookmarks() {
         bookmarkRepository.observeBookmarks(bookId).collect { list -> updateReady { it.copy(bookmarks = list) } }
     }
@@ -132,6 +143,25 @@ class ReaderViewModel(
     /** The page's selected text, or null when it ends; the capsule replaces the controls meanwhile. */
     fun setSelection(selection: TextSelection?) = updateReady {
         it.copy(selection = selection, controlsVisible = if (selection != null) false else it.controlsVisible)
+    }
+
+    /** "Resaltar" in the capsule: saves the selection highlighted in [color]; the page draws it at once. */
+    fun highlightSelection(color: HighlightColor) {
+        val state = _uiState.value as? ReaderUiState.Ready ?: return
+        val selection = state.selection?.takeIf { it.location.isNotBlank() } ?: return
+        updateReady { it.copy(selection = null) }
+        viewModelScope.launch {
+            highlightRepository.addHighlight(
+                Highlight(
+                    bookId = bookId,
+                    location = selection.location,
+                    text = selection.text,
+                    color = color,
+                    progression = state.progression?.toDouble(),
+                    createdAt = now(),
+                ),
+            )
+        }
     }
 
     /** "Explicar" in the capsule: explains the selected text in a sheet over the page (T11.11). */

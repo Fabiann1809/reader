@@ -4,6 +4,8 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.bookmark.Bookmark
+import io.github.fabiann1809.reader.data.highlight.Highlight
+import io.github.fabiann1809.reader.data.highlight.HighlightColor
 import io.github.fabiann1809.reader.data.prefs.ReadingFont
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import io.github.fabiann1809.reader.data.prefs.ReadingTheme
@@ -14,6 +16,7 @@ import io.github.fabiann1809.reader.data.reader.ReadingLocation
 import io.github.fabiann1809.reader.data.reader.ReadingPosition
 import io.github.fabiann1809.reader.data.reader.TocEntry
 import io.github.fabiann1809.reader.testing.FakeBookmarkRepository
+import io.github.fabiann1809.reader.testing.FakeHighlightRepository
 import io.github.fabiann1809.reader.testing.FakeReadingPreferences
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
@@ -60,6 +63,12 @@ class ReaderViewModelTest {
             readingSettings.value = settings
         }
 
+        override val highlights = MutableStateFlow<List<Highlight>>(emptyList())
+
+        override fun showHighlights(highlights: List<Highlight>) {
+            this.highlights.value = highlights
+        }
+
         override suspend fun open(book: Book): OpenProblem? = problem.also { if (it == null) opened += book.id }
 
         override fun publication(bookId: Long): Publication? = null
@@ -90,12 +99,14 @@ class ReaderViewModelTest {
     }
 
     private val bookmarks = FakeBookmarkRepository()
+    private val highlights = FakeHighlightRepository()
     private val readingPreferences = FakeReadingPreferences(ReadingSettings(theme = ReadingTheme.SEPIA))
 
     private fun viewModel(bookId: Long, session: ReaderSession) = ReaderViewModel(
         bookId = bookId,
         bookRepository = books,
         bookmarkRepository = bookmarks,
+        highlightRepository = highlights,
         readingPreferences = readingPreferences,
         session = session,
         now = { 5_000L },
@@ -319,6 +330,32 @@ class ReaderViewModelTest {
         viewModel.explainSelection()
 
         assertNull(ready(viewModel).explaining)
+    }
+
+    @Test
+    fun highlightingSavesTheSelectionAndThePageDrawsIt() = runTest {
+        val session = FakeSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        viewModel.setSelection(TextSelection("lo esencial", bounds = null, location = "{\"href\":\"c1.xhtml\"}"))
+
+        viewModel.highlightSelection(HighlightColor.GREEN)
+
+        val saved = highlights.currentHighlights.single()
+        assertEquals("lo esencial", saved.text)
+        assertEquals(HighlightColor.GREEN, saved.color)
+        assertEquals("{\"href\":\"c1.xhtml\"}", saved.location)
+        assertEquals(listOf(saved), session.highlights.value)
+        assertNull(ready(viewModel).selection)
+    }
+
+    @Test
+    fun aSelectionWithoutLocationCannotBeHighlighted() = runTest {
+        val viewModel = viewModel(bookId = 1, session = FakeSession())
+        viewModel.setSelection(TextSelection("sin lugar", bounds = null))
+
+        viewModel.highlightSelection(HighlightColor.YELLOW)
+
+        assertTrue(highlights.currentHighlights.isEmpty())
     }
 
     private fun ready(viewModel: ReaderViewModel) = viewModel.uiState.value as ReaderUiState.Ready

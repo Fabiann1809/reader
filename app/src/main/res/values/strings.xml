@@ -93,6 +93,11 @@
     <string name="selection_explain">Explicar</string>
     <string name="selection_highlight">Resaltar</string>
     <string name="selection_note">Nota</string>
+    <string name="highlights_title">Resaltados</string>
+    <string name="highlight_yellow">Resaltar en amarillo</string>
+    <string name="highlight_green">Resaltar en verde</string>
+    <string name="highlight_blue">Resaltar en azul</string>
+    <string name="highlight_pink">Resaltar en rosa</string>
     <string name="selection_voice_note">Nota de voz</string>
     <string name="selection_card">Crear ficha</string>
     <string name="selection_more">Más</string>

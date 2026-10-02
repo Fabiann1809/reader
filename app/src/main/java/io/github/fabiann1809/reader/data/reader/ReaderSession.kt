@@ -4,6 +4,7 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.ReadiumToolkit
+import io.github.fabiann1809.reader.data.highlight.Highlight
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
@@ -109,6 +110,11 @@ interface ReaderSession {
 
     fun applyReadingSettings(settings: ReadingSettings)
 
+    /** The open book's highlights, which the navigator draws; the reader's ViewModel keeps them up to date. */
+    val highlights: StateFlow<List<Highlight>>
+
+    fun showHighlights(highlights: List<Highlight>)
+
     fun close(bookId: Long)
 }
 
@@ -140,6 +146,13 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
 
     override fun applyReadingSettings(settings: ReadingSettings) {
         _readingSettings.value = settings
+    }
+
+    private val _highlights = MutableStateFlow<List<Highlight>>(emptyList())
+    override val highlights: StateFlow<List<Highlight>> = _highlights.asStateFlow()
+
+    override fun showHighlights(highlights: List<Highlight>) {
+        _highlights.value = highlights
     }
 
     override suspend fun open(book: Book): OpenProblem? {
@@ -207,6 +220,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
 
     private fun closeCurrent() {
         _position.value = null
+        _highlights.value = emptyList()
         adjustments = ReadingAdjustments()
         openPublication?.close()
         openPublication = null

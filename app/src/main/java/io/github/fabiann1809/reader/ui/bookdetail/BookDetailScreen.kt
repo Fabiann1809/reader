@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.highlight.Highlight
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteType
@@ -149,6 +150,7 @@ fun BookDetailContent(
             is BookDetailUiState.Success -> BookDetailBody(
                 book = uiState.book,
                 notes = uiState.notes,
+                highlights = uiState.highlights,
                 onUpdateProgressClick = { showProgressDialog = true },
                 onCapturePage = onCapturePage,
                 onRead = onRead,
@@ -259,6 +261,7 @@ private fun MoreMenu(onAddToCollectionClick: () -> Unit, onDeleteClick: () -> Un
 private fun BookDetailBody(
     book: Book,
     notes: List<Note>,
+    highlights: List<Highlight>,
     onUpdateProgressClick: () -> Unit,
     onCapturePage: () -> Unit,
     onRead: () -> Unit,
@@ -299,6 +302,7 @@ private fun BookDetailBody(
                 NoteItem(note = note, onClick = { onNoteClick(note.id) })
             }
         }
+        highlightsSection(highlights)
     }
 }
 

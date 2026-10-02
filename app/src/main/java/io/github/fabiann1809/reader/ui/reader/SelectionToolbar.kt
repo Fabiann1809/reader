@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.ui.reader
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -29,9 +30,12 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.data.highlight.HighlightColor
 import io.github.fabiann1809.reader.ui.theme.Ai80
 import io.github.fabiann1809.reader.ui.theme.DarkSurfaceContainerHigh
 import io.github.fabiann1809.reader.ui.theme.Ink900
@@ -43,7 +47,7 @@ private val Gap = 8.dp
 /** What each button of the capsule does; the ones without a feature yet are connected in their task. */
 class SelectionActions(
     val onExplain: () -> Unit = {},
-    val onHighlight: () -> Unit = {},
+    val onHighlight: (HighlightColor) -> Unit = {},
     val onNote: () -> Unit = {},
     val onVoiceNote: () -> Unit = {},
     val onCard: () -> Unit = {},
@@ -53,16 +57,17 @@ class SelectionActions(
 )
 
 /**
- * The capsule for a selection in the reader: "Explicar" opens the explainer ([onExplain]) and
- * "Más" copies, searches or shares the text; each one then ends the selection with [onEnd]. The
- * other actions get their feature in their own task: highlight (T11.12), note (T11.13), voice
- * note (phase 13) and card (phase 14).
+ * The capsule for a selection in the reader: "Explicar" opens the explainer ([onExplain]),
+ * "Resaltar" saves it in a color ([onHighlight]) and "Más" copies, searches or shares the text;
+ * each one then ends the selection with [onEnd]. The other actions get their feature in their own
+ * task: note (T11.13), voice note (phase 13) and card (phase 14).
  */
 @Composable
 fun ReaderSelection(
     selection: TextSelection,
     darkPage: Boolean,
     onExplain: () -> Unit,
+    onHighlight: (HighlightColor) -> Unit,
     onEnd: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -70,6 +75,10 @@ fun ReaderSelection(
     val actions = SelectionActions(
         onExplain = {
             onExplain()
+            onEnd()
+        },
+        onHighlight = { color ->
+            onHighlight(color)
             onEnd()
         },
         onCopy = {
@@ -124,20 +133,51 @@ fun SelectionToolbar(selection: TextSelection, darkPage: Boolean, actions: Selec
 private fun Capsule(darkPage: Boolean, actions: SelectionActions) {
     // ink-900 on light pages, surface-container-high on dark ones, where ink-900 would vanish.
     val background = if (darkPage) DarkSurfaceContainerHigh else Ink900
+    // "Resaltar" swaps the actions for the four colors (design 01 §4.4: "Resaltar (4 colores)").
+    var pickingColor by remember { mutableStateOf(false) }
     Surface(color = background, contentColor = Color.White, shape = CircleShape, shadowElevation = 8.dp) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 4.dp)) {
-            TextButton(onClick = actions.onExplain) {
-                Icon(painterResource(R.drawable.ic_sparkle), contentDescription = null, tint = Ai80, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.selection_explain), color = Ai80)
-            }
-            Divider()
-            CapsuleIcon(R.drawable.ic_highlighter, R.string.selection_highlight, actions.onHighlight)
-            CapsuleIcon(R.drawable.ic_note_pencil, R.string.selection_note, actions.onNote)
-            CapsuleIcon(R.drawable.ic_microphone, R.string.selection_voice_note, actions.onVoiceNote)
-            CapsuleIcon(R.drawable.ic_cards_three, R.string.selection_card, actions.onCard)
-            MoreMenu(actions)
+        if (pickingColor) {
+            ColorChoices(actions.onHighlight)
+        } else {
+            Actions(actions, onHighlight = { pickingColor = true })
         }
+    }
+}
+
+@Composable
+private fun ColorChoices(onPick: (HighlightColor) -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+    ) {
+        HighlightColor.entries.forEach { color ->
+            val name = stringResource(color.label)
+            IconButton(onClick = { onPick(color) }, modifier = Modifier.semantics { contentDescription = name }) {
+                Box(
+                    Modifier
+                        .size(28.dp)
+                        .background(Color(color.argb()), CircleShape),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun Actions(actions: SelectionActions, onHighlight: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 4.dp)) {
+        TextButton(onClick = actions.onExplain) {
+            Icon(painterResource(R.drawable.ic_sparkle), contentDescription = null, tint = Ai80, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(stringResource(R.string.selection_explain), color = Ai80)
+        }
+        Divider()
+        CapsuleIcon(R.drawable.ic_highlighter, R.string.selection_highlight, onHighlight)
+        CapsuleIcon(R.drawable.ic_note_pencil, R.string.selection_note, actions.onNote)
+        CapsuleIcon(R.drawable.ic_microphone, R.string.selection_voice_note, actions.onVoiceNote)
+        CapsuleIcon(R.drawable.ic_cards_three, R.string.selection_card, actions.onCard)
+        MoreMenu(actions)
     }
 }
 
@@ -182,3 +222,11 @@ private fun MoreItem(@StringRes label: Int, action: () -> Unit, close: () -> Uni
         },
     )
 }
+
+private val HighlightColor.label: Int
+    get() = when (this) {
+        HighlightColor.YELLOW -> R.string.highlight_yellow
+        HighlightColor.GREEN -> R.string.highlight_green
+        HighlightColor.BLUE -> R.string.highlight_blue
+        HighlightColor.PINK -> R.string.highlight_pink
+    }
