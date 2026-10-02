@@ -43,7 +43,8 @@ class WatchedFolderSync(
         for (uri in files.filterNot { it in handled }) {
             when (importer.import(uri)) {
                 is ImportResult.Imported -> imported++
-                is ImportResult.Unsupported -> Unit
+                // A file of the folder that was also imported by hand: not added twice, and no need to say so.
+                is ImportResult.Unsupported, is ImportResult.AlreadyInLibrary -> Unit
                 is ImportResult.Failed -> {
                     failed++
                     continue

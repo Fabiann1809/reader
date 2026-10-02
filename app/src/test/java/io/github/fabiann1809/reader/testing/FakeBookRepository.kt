@@ -21,6 +21,8 @@ class FakeBookRepository(initialBooks: List<Book> = emptyList()) : BookRepositor
 
     override suspend fun getBook(id: Long): Book? = books.value.find { it.id == id }
 
+    override suspend fun findByFileHash(hash: String): Book? = books.value.find { it.fileHash == hash }
+
     override suspend fun addBook(book: Book): Long {
         val id = nextId++
         books.update { it + book.copy(id = id) }

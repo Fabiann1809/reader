@@ -11,7 +11,8 @@ import org.junit.Test
 
 class ImportQueueTest {
 
-    // Each file name decides the result: "bad…" is not a book, "lost…" cannot be copied.
+    // Each file name decides the result: "bad…" is not a book, "lost…" cannot be copied, "dup…" is
+    // already in the library.
     private val imported = mutableListOf<String>()
     private val gate = mutableMapOf<String, CompletableDeferred<Unit>>()
     private val importer = BookImporter { uri ->
@@ -19,6 +20,7 @@ class ImportQueueTest {
         when {
             uri.startsWith("bad") -> ImportResult.Unsupported(fileName = "$uri.rar")
             uri.startsWith("lost") -> ImportResult.Failed(fileName = null)
+            uri.startsWith("dup") -> ImportResult.AlreadyInLibrary(title = "Libro de $uri")
             else -> ImportResult.Imported(bookId = 1).also { imported += uri }
         }
     }
@@ -56,6 +58,32 @@ class ImportQueueTest {
         gate.getValue("a").complete(Unit)
         runCurrent()
         assertEquals(listOf("a", "b", "c"), imported)
+    }
+
+    @Test
+    fun aBookAlreadyInTheLibraryIsReportedAndDismissed() = runTest {
+        val queue = queue()
+
+        queue.add(listOf("a", "dup1", "dup1"))
+        runCurrent()
+
+        assertEquals(ImportStatus.AlreadyInLibrary(titles = listOf("Libro de dup1")), queue.status.value)
+        assertEquals(listOf("a"), imported)
+        queue.dismiss()
+        assertEquals(ImportStatus.Idle, queue.status.value)
+    }
+
+    @Test
+    fun failuresWinOverRepeatedBooks() = runTest {
+        val queue = queue()
+
+        queue.add(listOf("dup1", "lost1"))
+        runCurrent()
+
+        assertEquals(
+            ImportStatus.Failed(failures = listOf(FailedImport("lost1", null, isUnsupported = false)), importedCount = 0),
+            queue.status.value,
+        )
     }
 
     @Test

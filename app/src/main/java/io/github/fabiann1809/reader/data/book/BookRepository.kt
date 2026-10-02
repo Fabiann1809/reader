@@ -12,6 +12,9 @@ interface BookRepository {
 
     suspend fun getBook(id: Long): Book?
 
+    /** The book whose file has this SHA-256, or null: the file is already in the library. */
+    suspend fun findByFileHash(hash: String): Book?
+
     /** Returns the id of the new book. */
     suspend fun addBook(book: Book): Long
 
@@ -27,6 +30,8 @@ class DefaultBookRepository(private val bookDao: BookDao, private val bookFiles:
     override fun observeBook(id: Long): Flow<Book?> = bookDao.observeById(id)
 
     override suspend fun getBook(id: Long): Book? = bookDao.getById(id)
+
+    override suspend fun findByFileHash(hash: String): Book? = bookDao.findByFileHash(hash)
 
     override suspend fun addBook(book: Book): Long = bookDao.insert(book)
 

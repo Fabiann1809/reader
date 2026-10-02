@@ -56,6 +56,14 @@ fun BoxScope.ImportFeedback(
                     .padding(16.dp),
             )
         }
+        is ImportStatus.AlreadyInLibrary -> AlreadyInLibraryCard(
+            status = status,
+            onDismiss = onDismiss,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(contentPadding)
+                .padding(16.dp),
+        )
         is ImportStatus.Failed -> ImportErrorCard(
             status = status,
             onRetry = onRetry,
@@ -108,6 +116,56 @@ fun ImportProgressPill(status: ImportStatus.Importing, modifier: Modifier = Modi
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.inverseOnSurface,
         )
+    }
+}
+
+/**
+ * "Ya tenías este libro": the picked file was already on the shelves, so it wasn't added twice.
+ * Same card as the import errors (design 1f), with an info icon and only "Entendido".
+ */
+@Composable
+fun AlreadyInLibraryCard(status: ImportStatus.AlreadyInLibrary, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+    val count = status.titles.size
+    Card(
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics { liveRegion = LiveRegionMode.Polite },
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_info),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = pluralStringResource(R.plurals.import_duplicate_title, count, count),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = pluralStringResource(R.plurals.import_duplicate_message, count),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Text(
+                text = status.titles.joinToString(" · ") { "«$it»" },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.medium)
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                PrimaryButton(text = stringResource(R.string.import_duplicate_ok), onClick = onDismiss)
+            }
+        }
     }
 }
 

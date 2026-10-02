@@ -20,6 +20,9 @@ interface BookDao {
     @Query("SELECT * FROM books WHERE id = :id")
     suspend fun getById(id: Long): Book?
 
+    @Query("SELECT * FROM books WHERE fileHash = :hash LIMIT 1")
+    suspend fun findByFileHash(hash: String): Book?
+
     /** Returns the generated id of the new book. */
     @Insert
     suspend fun insert(book: Book): Long

@@ -21,6 +21,9 @@ sealed interface ImportStatus {
 
     /** Shown until the user retries or discards. [importedCount] books of the same batch did make it. */
     data class Failed(val failures: List<FailedImport>, val importedCount: Int) : ImportStatus
+
+    /** Nothing failed, but these books (by title) were already in the library; shown until dismissed. */
+    data class AlreadyInLibrary(val titles: List<String>) : ImportStatus
 }
 
 /**
@@ -45,6 +48,7 @@ class ImportQueue(
 
     private val pending = ArrayDeque<String>()
     private val failures = mutableListOf<FailedImport>()
+    private val alreadyInLibrary = mutableListOf<String>()
     private var done = 0
     private var total = 0
     private var imported = 0
@@ -86,8 +90,12 @@ class ImportQueue(
         add(failed.map { it.uri })
     }
 
-    /** "Descartar": forgets the failed files. */
+    /** "Descartar": forgets the failed files; "Entendido" closes the notice of repeated books. */
     fun dismiss() {
+        if (_status.value is ImportStatus.AlreadyInLibrary) {
+            _status.value = ImportStatus.Idle
+            return
+        }
         val failed = (_status.value as? ImportStatus.Failed)?.failures ?: return
         failed.forEach { fileAccess.release(it.uri) }
         _status.value = ImportStatus.Idle
@@ -105,17 +113,27 @@ class ImportQueue(
                 }
                 is ImportResult.Unsupported -> failures += FailedImport(uri, result.fileName, isUnsupported = true)
                 is ImportResult.Failed -> failures += FailedImport(uri, result.fileName, isUnsupported = false)
+                is ImportResult.AlreadyInLibrary -> {
+                    alreadyInLibrary += result.title
+                    fileAccess.release(uri)
+                }
             }
             done++
             _status.value = ImportStatus.Importing(done, total)
         }
         store.save(failures.toList())
         // When everything worked there is nothing to say: the new books are already on the shelves.
-        _status.value = if (failures.isEmpty()) ImportStatus.Idle else ImportStatus.Failed(failures.toList(), imported)
+        // Failures come first (they can be retried); a repeated book is only worth a notice.
+        _status.value = when {
+            failures.isNotEmpty() -> ImportStatus.Failed(failures.toList(), imported)
+            alreadyInLibrary.isNotEmpty() -> ImportStatus.AlreadyInLibrary(alreadyInLibrary.distinct())
+            else -> ImportStatus.Idle
+        }
     }
 
     private fun resetBatch() {
         failures.clear()
+        alreadyInLibrary.clear()
         done = 0
         total = 0
         imported = 0

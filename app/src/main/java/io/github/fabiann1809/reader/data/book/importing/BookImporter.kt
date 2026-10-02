@@ -8,6 +8,7 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.BookRepository
+import io.github.fabiann1809.reader.data.book.sha256
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -22,6 +23,9 @@ sealed interface ImportResult {
 
     /** The file could not be copied (e.g. a cloud file that failed to download). */
     data class Failed(val fileName: String?) : ImportResult
+
+    /** The same file is already in the library as [title]; nothing was added. */
+    data class AlreadyInLibrary(val title: String) : ImportResult
 }
 
 /** Adds a digital book from a file the user picked with the system file picker. */
@@ -52,6 +56,12 @@ class DefaultBookImporter(
         val copy = bookFiles.newFile(extension = PARTIAL_EXTENSION)
         try {
             if (!copyTo(uri, copy)) return ImportResult.Failed(fileName).also { copy.delete() }
+            // Same bytes as a book already on the shelves: keep that one instead of a twin.
+            val hash = copy.sha256()
+            bookRepository.findByFileHash(hash)?.let { existing ->
+                copy.delete()
+                return ImportResult.AlreadyInLibrary(existing.title)
+            }
             val info = readSafely(copy, fileName) ?: return ImportResult.Unsupported(fileName).also { copy.delete() }
             val stored = copy.withExtension(info.format.name.lowercase())
             val book = Book(
@@ -63,6 +73,7 @@ class DefaultBookImporter(
                 language = info.language,
                 // A book without a cover image keeps the generated cover.
                 coverPath = info.cover?.let(bookFiles::saveCover),
+                fileHash = hash,
             )
             return ImportResult.Imported(bookRepository.addBook(book))
         } catch (e: CancellationException) {

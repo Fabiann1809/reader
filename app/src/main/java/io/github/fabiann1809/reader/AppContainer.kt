@@ -12,6 +12,7 @@ import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
+import io.github.fabiann1809.reader.data.book.FileHashBackfill
 import io.github.fabiann1809.reader.data.book.ReadiumToolkit
 import io.github.fabiann1809.reader.data.book.folder.DataStoreWatchedFolderStore
 import io.github.fabiann1809.reader.data.book.folder.DocumentFolderLister
@@ -94,6 +95,9 @@ class AppContainer(context: Context) {
     // The watched folder (T10.6): its store and lister are shared by the background check and the screen.
     private val watchedFolderStore: WatchedFolderStore by lazy { DataStoreWatchedFolderStore(appContext) }
     private val folderLister: FolderLister by lazy { DocumentFolderLister(appContext) }
+
+    /** Gives books imported before version 8 their file hash, so a repeated import is noticed. */
+    val fileHashBackfill: FileHashBackfill by lazy { FileHashBackfill(bookRepository, bookFiles) }
 
     val watchedFolderSync: WatchedFolderSync by lazy { WatchedFolderSync(watchedFolderStore, folderLister, bookImporter) }
 

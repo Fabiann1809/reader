@@ -31,6 +31,9 @@ data class Book(
     val lastOpenedAt: Long? = null,
     // Where the reader left off: Readium's Locator as JSON. Null until the book is first read.
     val readingLocation: String? = null,
+    // SHA-256 of the book's file, to notice when the same file is imported again. Null for paper
+    // books, and for files imported before version 8 until the app fills it in (FileHashBackfill).
+    val fileHash: String? = null,
     // "Mis favoritos" is this flag (a smart collection), not a stored collection.
     @ColumnInfo(defaultValue = "0")
     val isFavorite: Boolean = false,

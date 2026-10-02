@@ -27,6 +27,7 @@ class MainActivity : FragmentActivity() {
         if (savedInstanceState == null) {
             receiveBooks(intent)
             lifecycleScope.launch { container.watchedFolderManager.checkOnAppStart() }
+            lifecycleScope.launch { container.fileHashBackfill.run() }
         }
         setContent {
             ReaderTheme {

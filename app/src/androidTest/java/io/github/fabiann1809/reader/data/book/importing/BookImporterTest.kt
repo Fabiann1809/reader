@@ -15,10 +15,13 @@ import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
+import io.github.fabiann1809.reader.data.book.FileHashBackfill
 import io.github.fabiann1809.reader.data.book.ReadiumToolkit
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -73,6 +76,29 @@ class BookImporterTest {
     }
 
     private fun storedFiles(): List<String> = File(workDir, "files/books").list()?.toList().orEmpty()
+
+    @Test
+    fun theSameFileTwiceIsNotAddedAgain() = runTest {
+        val first = importedBook("principito.epub")
+        assertNotNull(first.fileHash)
+
+        val again = importer.import(picked("principito.epub").toString())
+
+        assertEquals(ImportResult.AlreadyInLibrary(title = "El principito"), again)
+        assertEquals(1, books.observeBooks().first().size)
+        // The second copy is not left behind in the app's storage.
+        assertEquals(1, storedFiles().size)
+    }
+
+    @Test
+    fun booksImportedBeforeTheHashGetIt() = runTest {
+        val book = importedBook("cosmos.pdf")
+        books.updateBook(book.copy(fileHash = null))
+
+        FileHashBackfill(books, bookFiles).run()
+
+        assertEquals(book.fileHash, books.getBook(book.id)?.fileHash)
+    }
 
     @Test
     fun epubIsImportedWithItsMetadata() = runTest {
