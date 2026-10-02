@@ -60,8 +60,11 @@ data class ReadingPosition(
 
 /** Opens a book for reading, keeps it while it is read and reports where the reader is. */
 interface ReaderSession {
-    /** Null when the book is open and ready, otherwise why it is not. */
-    suspend fun open(book: Book): OpenProblem?
+    /**
+     * Null when the book is open and ready, otherwise why it is not. [startAt] (a Locator as JSON,
+     * e.g. a note's place) opens it there instead of where the reader left off.
+     */
+    suspend fun open(book: Book, startAt: String? = null): OpenProblem?
 
     /** The open publication of [bookId], or null if it is not open (e.g. after the app process was killed). */
     fun publication(bookId: Long): Publication?
@@ -155,7 +158,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         _highlights.value = highlights
     }
 
-    override suspend fun open(book: Book): OpenProblem? {
+    override suspend fun open(book: Book, startAt: String?): OpenProblem? {
         if (book.id == openBookId && openPublication != null) return null
         val path = book.filePath ?: return OpenProblem.NO_FILE
         if (book.format !in READABLE_FORMATS) return OpenProblem.NOT_SUPPORTED_YET
@@ -167,7 +170,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         closeCurrent()
         openBookId = book.id
         openPublication = publication
-        lastLocator = book.readingLocation?.let(::parseLocator)
+        lastLocator = startAt?.let(::parseLocator) ?: book.readingLocation?.let(::parseLocator)
         toc = flattenToc(publication.tableOfContents)
         positionCount = withContext(Dispatchers.IO) { publication.positions().size }.takeIf { it > 0 }
         return null

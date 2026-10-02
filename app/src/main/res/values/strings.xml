@@ -94,6 +94,8 @@
     <string name="selection_highlight">Resaltar</string>
     <string name="selection_note">Nota</string>
     <string name="highlights_title">Resaltados</string>
+    <string name="note_in_book">En el libro</string>
+    <string name="note_edit">Editar nota</string>
     <string name="highlight_yellow">Resaltar en amarillo</string>
     <string name="highlight_green">Resaltar en verde</string>
     <string name="highlight_blue">Resaltar en azul</string>

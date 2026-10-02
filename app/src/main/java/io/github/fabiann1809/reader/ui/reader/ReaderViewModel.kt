@@ -32,6 +32,8 @@ class ReaderViewModel(
     private val highlightRepository: HighlightRepository,
     private val readingPreferences: ReadingPreferences,
     private val session: ReaderSession,
+    // A place to open the book at (e.g. a note's), instead of where the reader left off.
+    private val startAt: String? = null,
     // Injected so tests control time.
     private val now: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
@@ -192,7 +194,7 @@ class ReaderViewModel(
         // Before the book opens, so its first page already has the reader's look.
         val settings = readingPreferences.settings.first()
         session.applyReadingSettings(settings)
-        val problem = session.open(book)
+        val problem = session.open(book, startAt)
         // The session only opens books with a readable format, so a null format here is a book without a file.
         val format = book.format
         if (problem != null || format == null) return ReaderUiState.CannotOpen(problem ?: OpenProblem.NO_FILE)

@@ -34,6 +34,38 @@ class NoteEditorViewModelTest {
         NoteEditorViewModel(bookId = 7, noteId = noteId, noteRepository = repository)
 
     @Test
+    fun aNoteOnAPassageKeepsItsTextAndPlace() {
+        val viewModel = NoteEditorViewModel(
+            bookId = 7,
+            noteId = NEW_NOTE_ID,
+            noteRepository = repository,
+            sourceText = "Lo esencial es invisible a los ojos.",
+            location = "{\"href\":\"c1.xhtml\"}",
+        )
+        assertEquals("Lo esencial es invisible a los ojos.", viewModel.uiState.value.quote)
+
+        viewModel.onContentChange("Me recuerda a mi abuelo")
+        viewModel.save()
+
+        // The repository already holds another note; the new one is the last.
+        val note = repository.currentNotes.last()
+        assertEquals("Lo esencial es invisible a los ojos.", note.sourceText)
+        assertEquals("{\"href\":\"c1.xhtml\"}", note.location)
+        assertEquals("Me recuerda a mi abuelo", note.content)
+    }
+
+    @Test
+    fun aNoteNotFromTheReaderHasNoQuoteNorPlace() {
+        val viewModel = newNoteViewModel()
+        assertNull(viewModel.uiState.value.quote)
+
+        viewModel.onContentChange("Idea")
+        viewModel.save()
+
+        assertNull(repository.currentNotes.last().location)
+    }
+
+    @Test
     fun cannotSaveBlankNote() {
         val viewModel = newNoteViewModel()
         assertFalse(viewModel.uiState.value.canSave)

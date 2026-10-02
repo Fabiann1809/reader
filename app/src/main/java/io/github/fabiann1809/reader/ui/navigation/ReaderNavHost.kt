@@ -168,6 +168,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
             AllNotesScreen(
                 onNavigateUp = { navController.navigateUp() },
                 onNoteClick = { note -> navController.navigate(NoteEditorRoute(note.bookId, note.id)) },
+                onOpenNoteInBook = { note -> navController.navigate(ReaderRoute(note.bookId, note.location)) },
             )
         }
         composable<BackupRoute> {
@@ -180,8 +181,14 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
             AddBookScreen(onNavigateUp = { navController.navigateUp() })
         }
         // Route arguments reach each ViewModel through its SavedStateHandle (see AppViewModelProvider).
-        composable<ReaderRoute> {
-            ReaderScreen(onNavigateUp = { navController.navigateUp() })
+        composable<ReaderRoute> { entry ->
+            val bookId = entry.toRoute<ReaderRoute>().bookId
+            ReaderScreen(
+                onNavigateUp = { navController.navigateUp() },
+                onWriteNote = { text, location ->
+                    navController.navigate(NoteEditorRoute(bookId, sourceText = text, location = location))
+                },
+            )
         }
         composable<BookDetailRoute> { entry ->
             val bookId = entry.toRoute<BookDetailRoute>().bookId
@@ -189,6 +196,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onNavigateUp = { navController.navigateUp() },
                 onAddNote = { navController.navigate(NoteEditorRoute(bookId)) },
                 onNoteClick = { noteId -> navController.navigate(NoteEditorRoute(bookId, noteId)) },
+                onOpenNoteInBook = { note -> navController.navigate(ReaderRoute(bookId, note.location)) },
                 onCapturePage = { navController.navigate(CaptureRoute(bookId)) },
                 onRead = { navController.navigate(ReaderRoute(bookId)) },
             )

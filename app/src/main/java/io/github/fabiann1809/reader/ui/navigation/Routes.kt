@@ -28,12 +28,19 @@ data object AddBookRoute
 @Serializable
 data class BookDetailRoute(val bookId: Long)
 
-// Full-screen reading of a digital book.
+// Full-screen reading of a digital book. location (a Locator as JSON, e.g. a note's place) opens it
+// there; null opens it where the reader left off.
 @Serializable
-data class ReaderRoute(val bookId: Long)
+data class ReaderRoute(val bookId: Long, val location: String? = null)
 
+// sourceText and location come with a note written on a passage in the reader (T11.13).
 @Serializable
-data class NoteEditorRoute(val bookId: Long, val noteId: Long = NEW_NOTE_ID)
+data class NoteEditorRoute(
+    val bookId: Long,
+    val noteId: Long = NEW_NOTE_ID,
+    val sourceText: String? = null,
+    val location: String? = null,
+)
 
 @Serializable
 data class CaptureRoute(val bookId: Long)

@@ -77,6 +77,8 @@ class MigrationTest {
             assertEquals("Texto original", note.sourceText)
             assertEquals(12, note.page)
             assertEquals(NoteType.EXPLANATION, note.type)
+            // Added in version 7: the note isn't tied to a place in the book.
+            assertNull(note.location)
         } finally {
             database.close()
         }

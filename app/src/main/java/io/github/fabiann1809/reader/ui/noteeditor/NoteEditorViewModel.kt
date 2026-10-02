@@ -24,6 +24,8 @@ data class NoteEditorUiState(
     // Either flag closes the editor.
     val isSaved: Boolean = false,
     val isDeleted: Boolean = false,
+    // The passage a note from the reader is about (T11.13), shown above the note.
+    val quote: String? = null,
 ) {
     val isPageValid: Boolean
         get() = page.isEmpty() || (page.toIntOrNull() ?: 0) > 0
@@ -36,10 +38,17 @@ class NoteEditorViewModel(
     private val bookId: Long,
     private val noteId: Long,
     private val noteRepository: NoteRepository,
+    // A new note written on a passage in the reader: its text and place (T11.13).
+    private val sourceText: String? = null,
+    private val location: String? = null,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
-        NoteEditorUiState(isEditing = noteId != NEW_NOTE_ID, isLoading = noteId != NEW_NOTE_ID),
+        NoteEditorUiState(
+            isEditing = noteId != NEW_NOTE_ID,
+            isLoading = noteId != NEW_NOTE_ID,
+            quote = sourceText.takeIf { location != null },
+        ),
     )
     val uiState: StateFlow<NoteEditorUiState> = _uiState.asStateFlow()
 
@@ -60,7 +69,12 @@ class NoteEditorViewModel(
             }
             originalNote = note
             _uiState.update {
-                it.copy(isLoading = false, content = note.content, page = note.page?.toString().orEmpty())
+                it.copy(
+                    isLoading = false,
+                    content = note.content,
+                    page = note.page?.toString().orEmpty(),
+                    quote = note.sourceText.takeIf { note.location != null },
+                )
             }
         }
     }
@@ -82,7 +96,16 @@ class NoteEditorViewModel(
             val page = state.page.toIntOrNull()
             val original = originalNote
             if (original == null) {
-                noteRepository.addNote(Note(bookId = bookId, page = page, content = content, type = NoteType.MANUAL))
+                noteRepository.addNote(
+                    Note(
+                        bookId = bookId,
+                        page = page,
+                        sourceText = sourceText,
+                        content = content,
+                        type = NoteType.MANUAL,
+                        location = location,
+                    ),
+                )
             } else {
                 noteRepository.updateNote(original.copy(content = content, page = page))
             }

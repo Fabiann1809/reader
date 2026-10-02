@@ -156,6 +156,7 @@ private fun NoteForm(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        uiState.quote?.let { Quote(it) }
         OutlinedTextField(
             shape = readerTextFieldShape,
             colors = readerTextFieldColors(),

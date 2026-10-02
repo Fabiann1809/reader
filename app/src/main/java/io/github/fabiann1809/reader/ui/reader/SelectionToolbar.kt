@@ -58,9 +58,9 @@ class SelectionActions(
 
 /**
  * The capsule for a selection in the reader: "Explicar" opens the explainer ([onExplain]),
- * "Resaltar" saves it in a color ([onHighlight]) and "Más" copies, searches or shares the text;
- * each one then ends the selection with [onEnd]. The other actions get their feature in their own
- * task: note (T11.13), voice note (phase 13) and card (phase 14).
+ * "Resaltar" saves it in a color ([onHighlight]), "Nota" writes a note on it ([onNote]) and "Más"
+ * copies, searches or shares the text; each one then ends the selection with [onEnd]. The other
+ * actions get their feature in their own task: voice note (phase 13) and card (phase 14).
  */
 @Composable
 fun ReaderSelection(
@@ -68,6 +68,7 @@ fun ReaderSelection(
     darkPage: Boolean,
     onExplain: () -> Unit,
     onHighlight: (HighlightColor) -> Unit,
+    onNote: () -> Unit,
     onEnd: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -79,6 +80,10 @@ fun ReaderSelection(
         },
         onHighlight = { color ->
             onHighlight(color)
+            onEnd()
+        },
+        onNote = {
+            onNote()
             onEnd()
         },
         onCopy = {

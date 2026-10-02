@@ -67,6 +67,8 @@ fun BookDetailScreen(
     onNavigateUp: () -> Unit,
     onAddNote: () -> Unit,
     onNoteClick: (Long) -> Unit,
+    // A note written on a passage opens the book there (T11.13).
+    onOpenNoteInBook: (Note) -> Unit = {},
     onCapturePage: () -> Unit,
     onRead: () -> Unit = {},
     viewModel: BookDetailViewModel = viewModel(factory = AppViewModelProvider.Factory),
@@ -88,6 +90,7 @@ fun BookDetailScreen(
         onCreateCollection = viewModel::createCollectionWithBook,
         onAddNote = onAddNote,
         onNoteClick = onNoteClick,
+        onOpenNoteInBook = onOpenNoteInBook,
         onCapturePage = onCapturePage,
         onRead = onRead,
     )
@@ -104,6 +107,8 @@ fun BookDetailContent(
     onCreateCollection: (String) -> Unit,
     onAddNote: () -> Unit,
     onNoteClick: (Long) -> Unit,
+    // A note written on a passage opens the book there (T11.13).
+    onOpenNoteInBook: (Note) -> Unit = {},
     onCapturePage: () -> Unit,
     modifier: Modifier = Modifier,
     onRead: () -> Unit = {},
@@ -156,6 +161,7 @@ fun BookDetailContent(
                 onRead = onRead,
                 onAddNote = onAddNote,
                 onNoteClick = onNoteClick,
+                onOpenNoteInBook = onOpenNoteInBook,
                 modifier = contentModifier,
             )
         }
@@ -267,6 +273,8 @@ private fun BookDetailBody(
     onRead: () -> Unit,
     onAddNote: () -> Unit,
     onNoteClick: (Long) -> Unit,
+    // A note written on a passage opens the book there (T11.13).
+    onOpenNoteInBook: (Note) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -299,7 +307,7 @@ private fun BookDetailBody(
             }
         } else {
             items(notes, key = { it.id }) { note ->
-                NoteItem(note = note, onClick = { onNoteClick(note.id) })
+                NoteItem(note = note, onClick = { onNoteClick(note.id) }, onOpenInBook = { onOpenNoteInBook(note) })
             }
         }
         highlightsSection(highlights)

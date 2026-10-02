@@ -69,7 +69,14 @@ class ReaderViewModelTest {
             this.highlights.value = highlights
         }
 
-        override suspend fun open(book: Book): OpenProblem? = problem.also { if (it == null) opened += book.id }
+        var openedAt: String? = null
+
+        override suspend fun open(book: Book, startAt: String?): OpenProblem? = problem.also {
+            if (it == null) {
+                opened += book.id
+                openedAt = startAt
+            }
+        }
 
         override fun publication(bookId: Long): Publication? = null
 
@@ -102,13 +109,14 @@ class ReaderViewModelTest {
     private val highlights = FakeHighlightRepository()
     private val readingPreferences = FakeReadingPreferences(ReadingSettings(theme = ReadingTheme.SEPIA))
 
-    private fun viewModel(bookId: Long, session: ReaderSession) = ReaderViewModel(
+    private fun viewModel(bookId: Long, session: ReaderSession, startAt: String? = null) = ReaderViewModel(
         bookId = bookId,
         bookRepository = books,
         bookmarkRepository = bookmarks,
         highlightRepository = highlights,
         readingPreferences = readingPreferences,
         session = session,
+        startAt = startAt,
         now = { 5_000L },
     )
 
@@ -356,6 +364,15 @@ class ReaderViewModelTest {
         viewModel.highlightSelection(HighlightColor.YELLOW)
 
         assertTrue(highlights.currentHighlights.isEmpty())
+    }
+
+    @Test
+    fun aNotesPlaceOpensTheBookThere() {
+        val session = FakeSession()
+
+        viewModel(bookId = 1, session = session, startAt = "{\"href\":\"c3.xhtml\"}")
+
+        assertEquals("{\"href\":\"c3.xhtml\"}", session.openedAt)
     }
 
     private fun ready(viewModel: ReaderViewModel) = viewModel.uiState.value as ReaderUiState.Ready

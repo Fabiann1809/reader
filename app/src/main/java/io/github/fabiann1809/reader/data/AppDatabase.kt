@@ -19,7 +19,7 @@ import io.github.fabiann1809.reader.data.note.NoteDao
 
 @Database(
     entities = [Book::class, Note::class, Collection::class, BookCollectionCrossRef::class, Bookmark::class, Highlight::class],
-    version = 6,
+    version = 7,
     exportSchema = true,
     autoMigrations = [
         // 1 → 2: new optional Book columns (kind, format, filePath, coverPath, language, lastOpenedAt).
@@ -32,6 +32,8 @@ import io.github.fabiann1809.reader.data.note.NoteDao
         AutoMigration(from = 4, to = 5),
         // 5 → 6: the highlights table.
         AutoMigration(from = 5, to = 6),
+        // 6 → 7: Note.location, a note's place in the book.
+        AutoMigration(from = 6, to = 7),
     ],
 )
 abstract class AppDatabase : RoomDatabase() {

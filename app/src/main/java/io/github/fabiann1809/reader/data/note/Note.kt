@@ -30,6 +30,9 @@ data class Note(
     // The note itself or the AI explanation.
     val content: String,
     val type: NoteType = NoteType.MANUAL,
+    // Readium's Locator as JSON when the note was written on a passage in the reader (T11.13):
+    // tapping the note opens the book there. Null for notes not tied to a place.
+    val location: String? = null,
     // Epoch milliseconds.
     val createdAt: Long = System.currentTimeMillis(),
 )

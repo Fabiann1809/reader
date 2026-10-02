@@ -61,8 +61,10 @@ object AppViewModelProvider {
             )
         }
         initializer {
+            val route = createSavedStateHandle().toRoute<ReaderRoute>()
             ReaderViewModel(
-                bookId = createSavedStateHandle().toRoute<ReaderRoute>().bookId,
+                bookId = route.bookId,
+                startAt = route.location,
                 bookRepository = readerApplication().container.bookRepository,
                 bookmarkRepository = readerApplication().container.bookmarkRepository,
                 highlightRepository = readerApplication().container.highlightRepository,
@@ -76,6 +78,8 @@ object AppViewModelProvider {
                 bookId = route.bookId,
                 noteId = route.noteId,
                 noteRepository = readerApplication().container.noteRepository,
+                sourceText = route.sourceText,
+                location = route.location,
             )
         }
         initializer {

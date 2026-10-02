@@ -37,6 +37,8 @@ import io.github.fabiann1809.reader.ui.components.StatusMessage
 @Composable
 fun ReaderScreen(
     onNavigateUp: () -> Unit,
+    // "Nota" on a selection: writes a note on that passage, anchored to its place (T11.13).
+    onWriteNote: (sourceText: String, location: String) -> Unit,
     viewModel: ReaderViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -82,6 +84,7 @@ fun ReaderScreen(
                         darkPage = state.readingSettings.theme.colors().isDark,
                         onExplain = viewModel::explainSelection,
                         onHighlight = viewModel::highlightSelection,
+                        onNote = { onWriteNote(selection.text, selection.location) },
                         onEnd = { epubFragment?.clearSelection() },
                         modifier = pageModifier,
                     )

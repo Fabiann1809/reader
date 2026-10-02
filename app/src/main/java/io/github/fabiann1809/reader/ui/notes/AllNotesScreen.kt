@@ -28,10 +28,12 @@ import io.github.fabiann1809.reader.ui.components.StatusMessage
 fun AllNotesScreen(
     onNavigateUp: () -> Unit,
     onNoteClick: (Note) -> Unit,
+    // A note written on a passage opens the book there (T11.13).
+    onOpenNoteInBook: (Note) -> Unit = {},
     viewModel: AllNotesViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    AllNotesContent(uiState = uiState, onNavigateUp = onNavigateUp, onNoteClick = onNoteClick)
+    AllNotesContent(uiState = uiState, onNavigateUp = onNavigateUp, onNoteClick = onNoteClick, onOpenNoteInBook = onOpenNoteInBook)
 }
 
 @Composable
@@ -39,6 +41,8 @@ fun AllNotesContent(
     uiState: AllNotesUiState,
     onNavigateUp: () -> Unit,
     onNoteClick: (Note) -> Unit,
+    // A note written on a passage opens the book there (T11.13).
+    onOpenNoteInBook: (Note) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -65,7 +69,12 @@ fun AllNotesContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(uiState.notes, key = { it.note.id }) { item ->
-                    NoteItem(note = item.note, bookTitle = item.bookTitle, onClick = { onNoteClick(item.note) })
+                    NoteItem(
+                        note = item.note,
+                        bookTitle = item.bookTitle,
+                        onClick = { onNoteClick(item.note) },
+                        onOpenInBook = { onOpenNoteInBook(item.note) },
+                    )
                 }
             }
         }
