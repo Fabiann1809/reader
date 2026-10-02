@@ -42,6 +42,7 @@ class ReadingPreferencesTest {
                 lineHeight = 2.2,
                 margins = 0.1,
                 alignment = ReadingAlignment.JUSTIFY,
+                pageEffect = PageEffect.NONE,
                 showClock = false,
                 showBattery = false,
                 showPage = true,
@@ -58,6 +59,7 @@ class ReadingPreferencesTest {
         assertEquals(2.2, read.lineHeight, 0.0001)
         assertEquals(ReadingSettings.MarginsRange.start, read.margins, 0.0001)
         assertEquals(ReadingAlignment.JUSTIFY, read.alignment)
+        assertEquals(PageEffect.NONE, read.pageEffect)
         assertEquals(listOf(false, false, true, true), listOf(read.showClock, read.showBattery, read.showPage, read.keepScreenOn))
         assertEquals(0xFFE6F5EC, read.customBackground)
         assertEquals(0xFF22533D, read.customText)

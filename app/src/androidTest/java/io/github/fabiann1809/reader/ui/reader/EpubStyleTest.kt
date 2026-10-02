@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.ui.reader
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import io.github.fabiann1809.reader.data.prefs.PageEffect
 import io.github.fabiann1809.reader.data.prefs.ReadingAlignment
 import io.github.fabiann1809.reader.data.prefs.ReadingFont
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
@@ -58,6 +59,13 @@ class EpubStyleTest {
         assertEquals(0xFF4A403A.toInt(), light.toEpubPreferences(null).textColor?.int)
         assertEquals(Theme.LIGHT, light.toEpubPreferences(null).theme)
         assertEquals(Theme.DARK, dark.toEpubPreferences(null).theme)
+    }
+
+    @Test
+    fun onlyContinuousScrollsInsteadOfTurningPages() {
+        assertEquals(true, ReadingSettings(pageEffect = PageEffect.SCROLL).toEpubPreferences(null).scroll)
+        assertEquals(false, ReadingSettings(pageEffect = PageEffect.SLIDE).toEpubPreferences(null).scroll)
+        assertEquals(false, ReadingSettings(pageEffect = PageEffect.NONE).toEpubPreferences(null).scroll)
     }
 
     @Test

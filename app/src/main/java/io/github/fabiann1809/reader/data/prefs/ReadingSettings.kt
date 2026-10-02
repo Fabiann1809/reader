@@ -11,6 +11,9 @@ enum class ReadingFont { LITERATA, MERRIWEATHER, SOURCE_SERIF, LORA, ATKINSON, O
 
 enum class ReadingAlignment { START, JUSTIFY }
 
+/** How EPUB pages change (T11.8): slide between pages, scroll continuously, or turn with no animation. */
+enum class PageEffect { SLIDE, SCROLL, NONE }
+
 /**
  * The "Aa" settings, saved for every book. [fontSize] is a multiplier of the book's own size,
  * [lineHeight] a multiple of the font size and [margins] Readium's page margin factor. The
@@ -23,6 +26,7 @@ data class ReadingSettings(
     val lineHeight: Double = DEFAULT_LINE_HEIGHT,
     val margins: Double = DEFAULT_MARGINS,
     val alignment: ReadingAlignment = ReadingAlignment.START,
+    val pageEffect: PageEffect = PageEffect.SLIDE,
     val showClock: Boolean = true,
     val showBattery: Boolean = true,
     val showPage: Boolean = true,

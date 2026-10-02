@@ -48,6 +48,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.data.prefs.PageEffect
 import io.github.fabiann1809.reader.data.prefs.ReadingAlignment
 import io.github.fabiann1809.reader.data.prefs.ReadingFont
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
@@ -80,7 +81,11 @@ fun ReadingSettingsSheet(
             } else {
                 TextSettings(settings, onChange)
             }
-            Section(R.string.reading_settings_page) { PageSettings(settings, onChange) }
+            Section(R.string.reading_settings_page) {
+                // The PDF view turns its pages its own way.
+                if (!isPdf) PageEffectChoice(settings.pageEffect) { effect -> onChange { it.copy(pageEffect = effect) } }
+                PageSettings(settings, onChange)
+            }
         }
     }
 }
@@ -264,6 +269,26 @@ private fun SettingSlider(
             .fillMaxWidth()
             .semantics { contentDescription = label },
     )
+}
+
+/** Deslizar, Continuo o Ninguno (T11.8). */
+@Composable
+private fun PageEffectChoice(selected: PageEffect, onSelect: (PageEffect) -> Unit) {
+    val options = listOf(
+        PageEffect.SLIDE to R.string.page_effect_slide,
+        PageEffect.SCROLL to R.string.page_effect_scroll,
+        PageEffect.NONE to R.string.page_effect_none,
+    )
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        options.forEachIndexed { index, (effect, label) ->
+            SegmentedButton(
+                selected = effect == selected,
+                onClick = { onSelect(effect) },
+                shape = SegmentedButtonDefaults.itemShape(index, options.size),
+                label = { Text(stringResource(label)) },
+            )
+        }
+    }
 }
 
 @Composable

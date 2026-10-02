@@ -51,6 +51,7 @@ abstract class NavigatorHostFragment : Fragment() {
     var onCenterTap: () -> Unit = {}
 
     private var brightness: ReaderBrightness? = null
+    private var pageTurns: DirectionalNavigationAdapter? = null
 
     /** The navigator, once it was added (null after the process was killed, until the book reopens). */
     protected val navigator: VisualNavigator?
@@ -87,10 +88,8 @@ abstract class NavigatorHostFragment : Fragment() {
         val navigator = navigator ?: return
         // Order matters: the first listener that handles a tap wins.
         navigator.addInputListener(CenterTapListener(view))
-        (navigator as? OverflowableNavigator)?.let {
-            // Taps on the left or right 30 % turn the page, in the book's reading direction (design 03 §4).
-            navigator.addInputListener(DirectionalNavigationAdapter(it, animatedTransition = !isReduceMotionOn(view.context)))
-        }
+        // Taps on the left or right 30 % turn the page, in the book's reading direction (design 03 §4).
+        animatePageTurns(true)
         val brightness = ReaderBrightness(requireActivity().window).also { brightness = it }
         brightness.show(session.adjustments.brightness)
         (view as ReaderGestureLayout).apply {
@@ -106,6 +105,19 @@ abstract class NavigatorHostFragment : Fragment() {
         }
     }
 
+    /**
+     * Whether a tap on the side slides to the next page or shows it at once (T11.8). Reduce
+     * Motion always shows it at once.
+     */
+    protected fun animatePageTurns(animated: Boolean) {
+        val navigator = navigator ?: return
+        val overflowable = navigator as? OverflowableNavigator ?: return
+        pageTurns?.let(navigator::removeInputListener)
+        val adapter = DirectionalNavigationAdapter(overflowable, animatedTransition = animated && !isReduceMotionOn(requireContext()))
+        navigator.addInputListener(adapter)
+        pageTurns = adapter
+    }
+
     private fun adjustBrightness(brightness: ReaderBrightness, dragFraction: Float) {
         val value = brightness.afterDrag(session.adjustments.brightness, dragFraction)
         session.adjustments = session.adjustments.copy(brightness = value)
@@ -116,6 +128,7 @@ abstract class NavigatorHostFragment : Fragment() {
     // reader, so giving the system's back is ReaderScreen's job, when the reader is left.
     override fun onDestroyView() {
         brightness = null
+        pageTurns = null
         super.onDestroyView()
     }
 

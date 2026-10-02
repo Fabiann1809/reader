@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ui.reader
 
+import io.github.fabiann1809.reader.data.prefs.PageEffect
 import io.github.fabiann1809.reader.data.prefs.ReadingAlignment
 import io.github.fabiann1809.reader.data.prefs.ReadingFont
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
@@ -72,6 +73,8 @@ fun ReadingSettings.toEpubPreferences(fontSizeOverride: Double?): EpubPreference
         pageMargins = margins,
         textAlign = if (alignment == ReadingAlignment.JUSTIFY) TextAlign.JUSTIFY else TextAlign.START,
         publisherStyles = false,
+        // Continuous scrolling instead of pages (T11.8).
+        scroll = pageEffect == PageEffect.SCROLL,
     )
 }
 

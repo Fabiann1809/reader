@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import io.github.fabiann1809.reader.data.prefs.PageEffect
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
@@ -101,5 +102,7 @@ class EpubReaderFragment : NavigatorHostFragment() {
 
     private fun applyPreferences(settings: ReadingSettings) {
         (navigator as? EpubNavigatorFragment)?.submitPreferences(settings.toEpubPreferences(session.adjustments.fontSize))
+        // "Ninguno" turns pages at once; scrolling has no page turns to animate.
+        animatePageTurns(settings.pageEffect == PageEffect.SLIDE)
     }
 }

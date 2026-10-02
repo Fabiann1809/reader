@@ -116,6 +116,9 @@
     <string name="reading_settings_align_start">Izquierda</string>
     <string name="reading_settings_align_justify">Justificado</string>
     <string name="reading_settings_page">Página</string>
+    <string name="page_effect_slide">Deslizar</string>
+    <string name="page_effect_scroll">Continuo</string>
+    <string name="page_effect_none">Ninguno</string>
     <string name="reading_settings_show_clock">Mostrar la hora</string>
     <string name="reading_settings_show_battery">Mostrar la batería</string>
     <string name="reading_settings_show_page">Mostrar la página</string>
