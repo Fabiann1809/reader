@@ -6,7 +6,9 @@ import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.github.fabiann1809.reader.util.cropImage
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -52,6 +54,21 @@ class MlKitTextRecognizerTest {
         val recognized = recognizer.recognize(assetUri("test_page_blurry.jpg").toString()).getOrThrow()
 
         assertTrue(recognized.text, recognized.uncertainLines.isNotEmpty())
+    }
+
+    @Test
+    fun findsTheParagraphsTopToBottomAndReadsOnlyACroppedOne() = runTest {
+        val page = assetUri("test_page.jpg")
+        val paragraphs = recognizer.paragraphs(page.toString()).getOrThrow()
+        assertTrue(paragraphs.toString(), paragraphs.size >= 2)
+        assertTrue(paragraphs.zipWithNext().all { (above, below) -> above.top <= below.top })
+
+        // The first paragraph is the chapter's title: cropping to it leaves the body out.
+        val cropped = cropImage(appContext, page, paragraphs.first().grownBy(0.01f))!!
+        val text = recognizer.recognize(cropped.toString()).getOrThrow().text
+
+        assertTrue(text, text.contains("Capítulo 3"))
+        assertFalse(text, text.contains("entropía es una medida"))
     }
 
     @Test

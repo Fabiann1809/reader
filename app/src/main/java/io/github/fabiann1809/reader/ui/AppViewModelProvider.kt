@@ -10,6 +10,7 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ReaderApplication
 import io.github.fabiann1809.reader.ui.addbook.AddBookViewModel
 import io.github.fabiann1809.reader.ui.bookdetail.BookDetailViewModel
+import io.github.fabiann1809.reader.ui.capture.PhotoCropViewModel
 import io.github.fabiann1809.reader.ui.explanation.ExplanationLabels
 import io.github.fabiann1809.reader.ui.explanation.ExplanationViewModel
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextViewModel
@@ -117,6 +118,11 @@ object AppViewModelProvider {
                 aiProvider = readerApplication().container.aiProvider,
             )
         }
+    }
+
+    /** The crop of a photo that was just taken (T12.5), one per photo. */
+    fun photoCrop(imageUri: String) = viewModelFactory {
+        initializer { PhotoCropViewModel(imageUri, readerApplication().container.textRecognizer) }
     }
 
     /** The reader's explainer sheet (T11.11): its text comes from the page's selection, not from a route. */

@@ -41,7 +41,10 @@ import io.github.fabiann1809.reader.ui.components.OutlineButton
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
+import io.github.fabiann1809.reader.util.cropImage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun CaptureScreen(onNavigateUp: () -> Unit, onImageReady: (Uri) -> Unit) {
@@ -81,10 +84,17 @@ fun CaptureScreen(onNavigateUp: () -> Unit, onImageReady: (Uri) -> Unit) {
             CapturedImagePreview(
                 imageUri = uri,
                 onRetake = { capturedUri = null },
-                onUse = {
-                    // Coming back here (e.g. "take another photo") should show the live camera, not this photo.
-                    capturedUri = null
-                    onImageReady(uri)
+                onUse = { area ->
+                    scope.launch {
+                        val image = if (area.isWholeImage) uri else withContext(Dispatchers.IO) { cropImage(context, uri, area) }
+                        if (image == null) {
+                            snackbarHostState.showSnackbar(resources.getString(R.string.capture_crop_error))
+                        } else {
+                            // Coming back here (e.g. "take another photo") should show the live camera, not this photo.
+                            capturedUri = null
+                            onImageReady(image)
+                        }
+                    }
                 },
                 modifier = contentModifier,
             )

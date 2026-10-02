@@ -263,7 +263,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [ ] **T12.2 Nivel e idioma.** Simple, Intermedio o Técnico, e idioma de las explicaciones, en Ajustes; el prompt lo usa. *Hecho cuando:* cambia el tono. **Descartada** (decisión del usuario, 2026-10-02): el prompt del sistema ya fija el tono y no aporta lo suficiente.
 - [ ] **T12.3 Guardar para después.** Sin conexión: cola `PendingExplanation` y WorkManager con restricción de red, más una notificación cuando la explicación está lista. *Hecho cuando:* la explicación llega sola al reconectar. **Pospuesta** (decisión del usuario, 2026-10-02): por ahora basta el mensaje de error de conexión que ya existe.
 - [x] **T12.4 OCR dudoso.** Usar la confianza de ML Kit para mostrar el aviso "No estoy seguro de haber leído bien" y marcar las líneas dudosas. *Hecho cuando:* una foto borrosa muestra el aviso.
-- [ ] **T12.5 Recorte y párrafo.** Esquinas editables y "Seleccionar párrafo" (bloques de ML Kit). *Hecho cuando:* se explica solo el párrafo elegido.
+- [x] **T12.5 Recorte y párrafo.** Esquinas editables y "Seleccionar párrafo" (bloques de ML Kit). *Hecho cuando:* se explica solo el párrafo elegido.
 - [ ] **T12.6 Asociar captura.** Selector de libro (o "sin libro", lo que requiere migrar `Note.bookId` a nullable) y número de página. *Hecho cuando:* la nota queda en el libro y página elegidos.
 - [ ] **T12.7 Citas.** Tipo de nota CITA ("Guardar como cita"). *Hecho cuando:* se guarda y se distingue en la lista. **Descartada por ahora** (decisión del usuario, 2026-10-02): una frase para guardar se anota con "Crear ficha".
 

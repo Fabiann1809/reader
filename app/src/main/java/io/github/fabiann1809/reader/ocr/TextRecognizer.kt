@@ -10,6 +10,12 @@ interface TextRecognizer {
      * readable text).
      */
     suspend fun recognize(imageUri: String): Result<RecognizedText>
+
+    /**
+     * Where the paragraphs (blocks of text) are on the image, top to bottom, to pick one of them
+     * (T12.5). Empty when the image has no text.
+     */
+    suspend fun paragraphs(imageUri: String): Result<List<ImageArea>>
 }
 
 class NoTextFoundException : Exception("No text found in the image")

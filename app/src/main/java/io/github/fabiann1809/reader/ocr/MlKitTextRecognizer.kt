@@ -18,6 +18,28 @@ class MlKitTextRecognizer(context: Context) : TextRecognizer {
     private val appContext = context.applicationContext
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
+    override suspend fun paragraphs(imageUri: String): Result<List<ImageArea>> {
+        val image = try {
+            InputImage.fromFilePath(appContext, Uri.parse(imageUri))
+        } catch (e: IOException) {
+            return Result.failure(e)
+        }
+        return suspendCancellableCoroutine { continuation ->
+            recognizer.process(image)
+                .addOnSuccessListener { visionText ->
+                    // ML Kit's boxes are in pixels of the upright image; as fractions they fit any preview size.
+                    val width = image.width.toFloat()
+                    val height = image.height.toFloat()
+                    val areas = visionText.textBlocks.mapNotNull { block ->
+                        val box = block.boundingBox ?: return@mapNotNull null
+                        ImageArea(box.left / width, box.top / height, box.right / width, box.bottom / height)
+                    }.sortedBy { it.top }
+                    continuation.resume(Result.success(areas))
+                }
+                .addOnFailureListener { error -> continuation.resume(Result.failure(error)) }
+        }
+    }
+
     override suspend fun recognize(imageUri: String): Result<RecognizedText> {
         val image = try {
             // Reads the EXIF orientation, so rotated photos are recognized correctly.
