@@ -7,14 +7,18 @@ import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.bookmark.Bookmark
 import io.github.fabiann1809.reader.data.bookmark.BookmarkRepository
+import io.github.fabiann1809.reader.data.prefs.ReadingPreferences
+import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.data.reader.ReaderSession
 import io.github.fabiann1809.reader.data.reader.TocEntry
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -22,6 +26,7 @@ class ReaderViewModel(
     private val bookId: Long,
     private val bookRepository: BookRepository,
     private val bookmarkRepository: BookmarkRepository,
+    private val readingPreferences: ReadingPreferences,
     private val session: ReaderSession,
     // Injected so tests control time.
     private val now: () -> Long = System::currentTimeMillis,
@@ -36,6 +41,13 @@ class ReaderViewModel(
             _uiState.value = if (book == null) ReaderUiState.CannotOpen(OpenProblem.NO_FILE) else open(book)
             // Only once Ready, so the first list is not lost on the way.
             if (_uiState.value is ReaderUiState.Ready) followBookmarks()
+        }
+        viewModelScope.launch {
+            // drop(1): the first settings were applied before the book opened.
+            readingPreferences.settings.drop(1).collect { settings ->
+                session.applyReadingSettings(settings)
+                updateReady { it.copy(readingSettings = settings) }
+            }
         }
         viewModelScope.launch {
             session.locations.filter { it.bookId == bookId }.collect { location ->
@@ -117,13 +129,38 @@ class ReaderViewModel(
         bookmarkRepository.observeBookmarks(bookId).collect { list -> updateReady { it.copy(bookmarks = list) } }
     }
 
+    /** Opens the "Aa" sheet. */
+    fun showTextSettings() = updateReady { it.copy(textSettingsVisible = true) }
+
+    fun hideTextSettings() = updateReady { it.copy(textSettingsVisible = false) }
+
+    /** Saves a change from the "Aa" sheet; the page shows it at once. A new size replaces a pinch's. */
+    fun updateReadingSettings(change: (ReadingSettings) -> ReadingSettings) {
+        val state = _uiState.value as? ReaderUiState.Ready ?: return
+        val settings = change(state.readingSettings)
+        if (settings.fontSize != state.readingSettings.fontSize) {
+            session.adjustments = session.adjustments.copy(fontSize = null)
+        }
+        updateReady { it.copy(readingSettings = settings) }
+        viewModelScope.launch { readingPreferences.setSettings(settings) }
+    }
+
     private suspend fun open(book: Book): ReaderUiState {
+        // Before the book opens, so its first page already has the reader's look.
+        val settings = readingPreferences.settings.first()
+        session.applyReadingSettings(settings)
         val problem = session.open(book)
         // The session only opens books with a readable format, so a null format here is a book without a file.
         val format = book.format
         if (problem != null || format == null) return ReaderUiState.CannotOpen(problem ?: OpenProblem.NO_FILE)
         markOpened()
-        return ReaderUiState.Ready(bookId, format, book.title, tableOfContents = session.tableOfContents(bookId))
+        return ReaderUiState.Ready(
+            bookId,
+            format,
+            book.title,
+            tableOfContents = session.tableOfContents(bookId),
+            readingSettings = settings,
+        )
     }
 
     private fun updateReady(change: (ReaderUiState.Ready) -> ReaderUiState.Ready) =

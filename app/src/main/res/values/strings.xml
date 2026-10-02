@@ -90,6 +90,28 @@
     <string name="reader_bookmarks_empty_hint">Toca el marcador de la barra de arriba para guardar la página.</string>
     <string name="reader_toc_empty">Este libro no tiene índice.</string>
     <string name="reader_untitled_chapter">Sin título</string>
+    <string name="reading_settings_theme">Tema</string>
+    <string name="reading_settings_font">Fuente</string>
+    <string name="reading_settings_size">Tamaño</string>
+    <string name="reading_settings_sample_letter" translatable="false">A</string>
+    <string name="reading_settings_line_height">Interlineado</string>
+    <string name="reading_settings_margins">Márgenes</string>
+    <string name="reading_settings_alignment">Alineación</string>
+    <string name="reading_settings_align_start">Izquierda</string>
+    <string name="reading_settings_align_justify">Justificado</string>
+    <string name="reading_settings_pdf">Estos ajustes cambian los libros EPUB. Los PDF se muestran tal como son.</string>
+    <string name="reading_theme_day">Día</string>
+    <string name="reading_theme_sepia">Sepia</string>
+    <string name="reading_theme_paper_gray">Gris papel</string>
+    <string name="reading_theme_night">Noche</string>
+    <string name="reading_theme_amoled">AMOLED</string>
+    <string name="reading_font_literata" translatable="false">Literata</string>
+    <string name="reading_font_merriweather" translatable="false">Merriweather</string>
+    <string name="reading_font_source_serif" translatable="false">Source Serif</string>
+    <string name="reading_font_lora" translatable="false">Lora</string>
+    <string name="reading_font_atkinson" translatable="false">Atkinson Hyperlegible</string>
+    <string name="reading_font_open_dyslexic" translatable="false">OpenDyslexic</string>
+    <string name="reading_font_inter" translatable="false">Inter</string>
     <string name="reader_progress">Progreso de lectura</string>
     <string name="reader_progress_percent">%1$d %%</string>
     <string name="reader_index">Índice</string>
@@ -276,6 +298,12 @@
     <string name="about_licenses">Licencias de terceros</string>
     <string name="about_font_plus_jakarta">Fuente Plus Jakarta Sans</string>
     <string name="about_font_fraunces">Fuente Fraunces</string>
+    <string name="about_font_literata">Fuente Literata</string>
+    <string name="about_font_merriweather">Fuente Merriweather</string>
+    <string name="about_font_source_serif">Fuente Source Serif</string>
+    <string name="about_font_lora">Fuente Lora</string>
+    <string name="about_font_atkinson">Fuente Atkinson Hyperlegible</string>
+    <string name="about_font_inter">Fuente Inter</string>
     <string name="about_icons_phosphor">Iconos Phosphor</string>
     <string name="about_license_ofl">SIL Open Font License 1.1</string>
     <string name="about_license_mit">Licencia MIT</string>

@@ -4,6 +4,9 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.bookmark.Bookmark
+import io.github.fabiann1809.reader.data.prefs.ReadingFont
+import io.github.fabiann1809.reader.data.prefs.ReadingSettings
+import io.github.fabiann1809.reader.data.prefs.ReadingTheme
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.data.reader.ReaderSession
 import io.github.fabiann1809.reader.data.reader.ReadingAdjustments
@@ -11,6 +14,7 @@ import io.github.fabiann1809.reader.data.reader.ReadingLocation
 import io.github.fabiann1809.reader.data.reader.ReadingPosition
 import io.github.fabiann1809.reader.data.reader.TocEntry
 import io.github.fabiann1809.reader.testing.FakeBookmarkRepository
+import io.github.fabiann1809.reader.testing.FakeReadingPreferences
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -50,6 +54,11 @@ class ReaderViewModelTest {
         override val position = MutableStateFlow<ReadingPosition?>(null)
         override val jumps = MutableSharedFlow<Locator>()
         override var adjustments = ReadingAdjustments()
+        override val readingSettings = MutableStateFlow(ReadingSettings())
+
+        override fun applyReadingSettings(settings: ReadingSettings) {
+            readingSettings.value = settings
+        }
 
         override suspend fun open(book: Book): OpenProblem? = problem.also { if (it == null) opened += book.id }
 
@@ -79,9 +88,16 @@ class ReaderViewModelTest {
     }
 
     private val bookmarks = FakeBookmarkRepository()
+    private val readingPreferences = FakeReadingPreferences(ReadingSettings(theme = ReadingTheme.SEPIA))
 
-    private fun viewModel(bookId: Long, session: ReaderSession) =
-        ReaderViewModel(bookId = bookId, bookRepository = books, bookmarkRepository = bookmarks, session = session, now = { 5_000L })
+    private fun viewModel(bookId: Long, session: ReaderSession) = ReaderViewModel(
+        bookId = bookId,
+        bookRepository = books,
+        bookmarkRepository = bookmarks,
+        readingPreferences = readingPreferences,
+        session = session,
+        now = { 5_000L },
+    )
 
     @Test
     fun anOpenedBookIsReady() {
@@ -90,7 +106,13 @@ class ReaderViewModelTest {
         val viewModel = viewModel(bookId = 1, session = session)
 
         assertEquals(
-            ReaderUiState.Ready(bookId = 1, format = BookFormat.EPUB, title = "El principito", tableOfContents = session.toc),
+            ReaderUiState.Ready(
+                bookId = 1,
+                format = BookFormat.EPUB,
+                title = "El principito",
+                tableOfContents = session.toc,
+                readingSettings = ReadingSettings(theme = ReadingTheme.SEPIA),
+            ),
             viewModel.uiState.value,
         )
         assertEquals(listOf(1L), session.opened)
@@ -215,6 +237,46 @@ class ReaderViewModelTest {
         viewModel.deleteBookmark(ready(viewModel).bookmarks.single())
 
         assertTrue(ready(viewModel).bookmarks.isEmpty())
+    }
+
+    @Test
+    fun theSavedSettingsReachTheNavigatorBeforeTheBookOpens() {
+        val session = FakeSession()
+
+        viewModel(bookId = 1, session = session)
+
+        assertEquals(ReadingTheme.SEPIA, session.readingSettings.value.theme)
+    }
+
+    @Test
+    fun aChangeInTheSheetIsSavedShownAndSentToTheNavigator() = runTest {
+        val session = FakeSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        viewModel.showTextSettings()
+        assertTrue(ready(viewModel).textSettingsVisible)
+
+        viewModel.updateReadingSettings { it.copy(theme = ReadingTheme.NIGHT, font = ReadingFont.LORA) }
+
+        assertEquals(ReadingTheme.NIGHT, readingPreferences.settings.value.theme)
+        assertEquals(ReadingFont.LORA, ready(viewModel).readingSettings.font)
+        assertEquals(ReadingTheme.NIGHT, session.readingSettings.value.theme)
+        viewModel.hideTextSettings()
+        assertFalse(ready(viewModel).textSettingsVisible)
+    }
+
+    @Test
+    fun aNewSizeInTheSheetReplacesAPinch() {
+        val session = FakeSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        session.adjustments = ReadingAdjustments(fontSize = 2.5, brightness = 0.4f)
+
+        viewModel.updateReadingSettings { it.copy(lineHeight = 2.0) }
+        assertEquals(2.5, session.adjustments.fontSize!!, 0.0001)
+
+        viewModel.updateReadingSettings { it.copy(fontSize = 1.3) }
+        assertNull(session.adjustments.fontSize)
+        // The brightness is not a text setting: it stays.
+        assertEquals(0.4f, session.adjustments.brightness!!, 0.0001f)
     }
 
     private fun ready(viewModel: ReaderViewModel) = viewModel.uiState.value as ReaderUiState.Ready

@@ -34,6 +34,14 @@ import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 private enum class ThirdPartyLicense(@StringRes val title: Int, @StringRes val license: Int, val file: String) {
     PLUS_JAKARTA_SANS(R.string.about_font_plus_jakarta, R.string.about_license_ofl, "OFL-PlusJakartaSans.txt"),
     FRAUNCES(R.string.about_font_fraunces, R.string.about_license_ofl, "OFL-Fraunces.txt"),
+
+    // Reading fonts of the "Aa" settings (OpenDyslexic comes with Readium, with its license).
+    LITERATA(R.string.about_font_literata, R.string.about_license_ofl, "OFL-Literata.txt"),
+    MERRIWEATHER(R.string.about_font_merriweather, R.string.about_license_ofl, "OFL-Merriweather.txt"),
+    SOURCE_SERIF(R.string.about_font_source_serif, R.string.about_license_ofl, "OFL-SourceSerif4.txt"),
+    LORA(R.string.about_font_lora, R.string.about_license_ofl, "OFL-Lora.txt"),
+    ATKINSON(R.string.about_font_atkinson, R.string.about_license_ofl, "OFL-AtkinsonHyperlegible.txt"),
+    INTER(R.string.about_font_inter, R.string.about_license_ofl, "OFL-Inter.txt"),
     PHOSPHOR(R.string.about_icons_phosphor, R.string.about_license_mit, "MIT-PhosphorIcons.txt"),
 }
 

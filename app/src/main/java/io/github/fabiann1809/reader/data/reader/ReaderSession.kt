@@ -4,6 +4,7 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.ReadiumToolkit
+import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -36,11 +37,11 @@ enum class OpenProblem {
 data class ReadingLocation(val bookId: Long, val json: String)
 
 /**
- * Changes made while reading: the font size from a pinch (a multiplier, 1 = as published) and the
- * brightness from the left edge (0 to 1, null = the system's). They last until the book closes;
- * saving them comes with the "Aa" settings (T11.7).
+ * Changes made while reading, on top of the saved "Aa" settings: the font size from a pinch (a
+ * multiplier, 1 = as published; null = the "Aa" size) and the brightness from the left edge (0 to
+ * 1, null = the system's). They last until the book closes.
  */
-data class ReadingAdjustments(val fontSize: Double = 1.0, val brightness: Float? = null)
+data class ReadingAdjustments(val fontSize: Double? = null, val brightness: Float? = null)
 
 /**
  * What the reader's controls show: the chapter's title and how far into the book (0 to 1) the page
@@ -96,6 +97,11 @@ interface ReaderSession {
     /** The open book's [ReadingAdjustments]; kept here so they survive the reader being recreated. */
     var adjustments: ReadingAdjustments
 
+    /** The "Aa" settings the navigator shows; the reader's ViewModel keeps them up to date. */
+    val readingSettings: StateFlow<ReadingSettings>
+
+    fun applyReadingSettings(settings: ReadingSettings)
+
     fun close(bookId: Long)
 }
 
@@ -120,6 +126,13 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
     override val jumps: SharedFlow<Locator> = _jumps.asSharedFlow()
 
     override var adjustments = ReadingAdjustments()
+
+    private val _readingSettings = MutableStateFlow(ReadingSettings())
+    override val readingSettings: StateFlow<ReadingSettings> = _readingSettings.asStateFlow()
+
+    override fun applyReadingSettings(settings: ReadingSettings) {
+        _readingSettings.value = settings
+    }
 
     override suspend fun open(book: Book): OpenProblem? {
         if (book.id == openBookId && openPublication != null) return null

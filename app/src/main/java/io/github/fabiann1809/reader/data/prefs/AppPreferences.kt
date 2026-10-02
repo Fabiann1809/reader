@@ -108,7 +108,7 @@ class DataStoreAppPreferences(context: Context) : AppPreferences {
 }
 
 // Enums are stored by name; names unknown to this version (e.g. from a newer one) are dropped.
-private inline fun <reified E : Enum<E>> enumOrNull(name: String?): E? = enumValues<E>().firstOrNull { it.name == name }
+internal inline fun <reified E : Enum<E>> enumOrNull(name: String?): E? = enumValues<E>().firstOrNull { it.name == name }
 
 private inline fun <reified E : Enum<E>> Set<String>?.toEnumSet(): Set<E> =
     orEmpty().mapNotNull { enumOrNull<E>(it) }.toSet()

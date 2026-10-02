@@ -161,7 +161,7 @@ class ReaderSessionTest {
 
         // Reopening the open book (e.g. after a rotation) keeps them.
         assertNull(session.open(bookWith("principito.epub", BookFormat.EPUB)))
-        assertEquals(1.5, session.adjustments.fontSize, 0.0001)
+        assertEquals(1.5, session.adjustments.fontSize!!, 0.0001)
 
         session.close(1)
         assertEquals(ReadingAdjustments(), session.adjustments)

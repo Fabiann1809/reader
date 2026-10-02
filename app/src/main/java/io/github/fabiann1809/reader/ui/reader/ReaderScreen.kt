@@ -13,6 +13,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.core.os.bundleOf
@@ -37,7 +38,7 @@ fun ReaderScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface),
+            .background(pageBackground(uiState)),
         contentAlignment = Alignment.Center,
     ) {
         when (val state = uiState) {
@@ -54,7 +55,16 @@ fun ReaderScreen(
                     onSeek = viewModel::seekTo,
                     onBookmark = viewModel::toggleBookmark,
                     onIndex = viewModel::showContents,
+                    onTextSettings = viewModel::showTextSettings,
                 )
+                if (state.textSettingsVisible) {
+                    ReadingSettingsSheet(
+                        settings = state.readingSettings,
+                        isPdf = state.format == BookFormat.PDF,
+                        onChange = viewModel::updateReadingSettings,
+                        onDismiss = viewModel::hideTextSettings,
+                    )
+                }
                 if (state.contentsVisible) {
                     ContentsSheet(
                         state,
@@ -69,6 +79,15 @@ fun ReaderScreen(
         }
     }
 }
+
+/** Around an EPUB's page, its theme's color, so the edges match the page; the app's surface otherwise. */
+@Composable
+private fun pageBackground(state: ReaderUiState): Color =
+    if (state is ReaderUiState.Ready && state.format == BookFormat.EPUB) {
+        Color(state.readingSettings.theme.colors().background)
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
 
 /**
  * Gives the screen back the system's brightness when the reader is left (the edge drag changes it

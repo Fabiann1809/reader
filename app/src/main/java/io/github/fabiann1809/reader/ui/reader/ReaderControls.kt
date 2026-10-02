@@ -10,7 +10,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,15 +27,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -69,8 +64,8 @@ private val BarElevation = 6.dp
 /**
  * The reader's overlay (design 7.8): a top bar (back, title, bookmark, menu) and a bottom bar
  * (progress bar with the chapter, and the reading actions). They slide in and fade in 180 ms.
- * Actions without a feature yet get one in their own task: "Aa" (T11.7), voice (T11.15), AI
- * (T11.11), recording (phase 13) and the menu.
+ * Actions without a feature yet get one in their own task: voice (T11.15), AI (T11.11),
+ * recording (phase 13) and the menu.
  */
 @Composable
 fun ReaderControls(
@@ -191,46 +186,21 @@ private fun BottomBar(state: ReaderUiState.Ready, onSeek: (Float) -> Unit, actio
 }
 
 /** The draggable progress bar (design 7.9); it shows the chapter, or the percentage while dragging. */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProgressRow(chapter: String?, progression: Float?, onSeek: (Float) -> Unit) {
     var dragged by remember { mutableStateOf<Float?>(null) }
     val value = dragged ?: progression ?: 0f
     val percent = stringResource(R.string.reader_progress_percent, (value * 100).roundToInt())
     val progressDescription = stringResource(R.string.reader_progress)
-    val enabled = progression != null
-    val colors = SliderDefaults.colors(
-        activeTrackColor = ReaderTheme.colors.progress,
-        inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant,
-    )
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Slider(
+        ReaderSlider(
             value = value,
             onValueChange = { dragged = it },
             onValueChangeFinished = {
                 dragged?.let(onSeek)
                 dragged = null
             },
-            enabled = enabled,
-            colors = colors,
-            // Thin track and round thumb from the design, instead of Material's thick track and bar thumb.
-            thumb = {
-                Box(
-                    Modifier
-                        .size(20.dp)
-                        .background(MaterialTheme.colorScheme.primary, CircleShape),
-                )
-            },
-            track = { sliderState ->
-                SliderDefaults.Track(
-                    sliderState = sliderState,
-                    colors = colors,
-                    enabled = enabled,
-                    drawStopIndicator = null,
-                    thumbTrackGapSize = 0.dp,
-                    modifier = Modifier.height(4.dp),
-                )
-            },
+            enabled = progression != null,
             modifier = Modifier
                 .weight(1f)
                 .semantics { contentDescription = progressDescription },
