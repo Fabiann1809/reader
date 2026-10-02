@@ -134,6 +134,14 @@ class ReaderViewModel(
         it.copy(selection = selection, controlsVisible = if (selection != null) false else it.controlsVisible)
     }
 
+    /** "Explicar" in the capsule: explains the selected text in a sheet over the page (T11.11). */
+    fun explainSelection() = updateReady { state ->
+        state.selection?.let { state.copy(explaining = it.text, selection = null) } ?: state
+    }
+
+    /** Closing the explainer leaves the reader on the same page. */
+    fun closeExplanation() = updateReady { it.copy(explaining = null) }
+
     /** Opens the "Aa" sheet. */
     fun showTextSettings() = updateReady { it.copy(textSettingsVisible = true) }
 

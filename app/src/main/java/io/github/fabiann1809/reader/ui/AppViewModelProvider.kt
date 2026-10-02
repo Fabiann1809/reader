@@ -111,6 +111,19 @@ object AppViewModelProvider {
             )
         }
     }
+
+    /** The reader's explainer sheet (T11.11): its text comes from the page's selection, not from a route. */
+    fun explanationInReader(bookId: Long, sourceText: String) = viewModelFactory {
+        initializer {
+            ExplanationViewModel(
+                bookId = bookId,
+                sourceText = sourceText,
+                explainText = readerApplication().container.explainText,
+                noteRepository = readerApplication().container.noteRepository,
+                labels = ExplanationLabels.from(readerApplication()),
+            )
+        }
+    }
 }
 
 private fun CreationExtras.readerApplication(): ReaderApplication =

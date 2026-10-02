@@ -53,14 +53,25 @@ class SelectionActions(
 )
 
 /**
- * The capsule for a selection in the reader: "Más" copies, searches or shares the text and then
- * ends the selection with [onEnd]. The other actions get their feature in their own task:
- * explain (T11.11), highlight (T11.12), note (T11.13), voice note (phase 13) and card (phase 14).
+ * The capsule for a selection in the reader: "Explicar" opens the explainer ([onExplain]) and
+ * "Más" copies, searches or shares the text; each one then ends the selection with [onEnd]. The
+ * other actions get their feature in their own task: highlight (T11.12), note (T11.13), voice
+ * note (phase 13) and card (phase 14).
  */
 @Composable
-fun ReaderSelection(selection: TextSelection, darkPage: Boolean, onEnd: () -> Unit, modifier: Modifier = Modifier) {
+fun ReaderSelection(
+    selection: TextSelection,
+    darkPage: Boolean,
+    onExplain: () -> Unit,
+    onEnd: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     val actions = SelectionActions(
+        onExplain = {
+            onExplain()
+            onEnd()
+        },
         onCopy = {
             copyText(context, selection.text)
             onEnd()

@@ -15,7 +15,7 @@ sealed interface ReaderUiState {
      * The page's [chapter], [progression] (0 to 1), [href] and [position] are null until the navigator
      * reports its first page; [positionCount] is the book's total for the page indicator. [contentsVisible] is the index and bookmarks sheet, and
      * [textSettingsVisible] the "Aa" sheet for [readingSettings]. [selection] is the text selected on
-     * the page, which shows the selection capsule.
+     * the page, which shows the selection capsule, and [explaining] the text in the explainer sheet.
      */
     data class Ready(
         val bookId: Long,
@@ -33,6 +33,7 @@ sealed interface ReaderUiState {
         val readingSettings: ReadingSettings = ReadingSettings(),
         val textSettingsVisible: Boolean = false,
         val selection: TextSelection? = null,
+        val explaining: String? = null,
     ) : ReaderUiState {
         /** True when the open page has a bookmark: the top bar shows it filled. */
         val pageIsBookmarked: Boolean get() = bookmarks.atPosition(position).isNotEmpty()

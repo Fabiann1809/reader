@@ -80,6 +80,7 @@ fun ReaderScreen(
                     ReaderSelection(
                         selection,
                         darkPage = state.readingSettings.theme.colors().isDark,
+                        onExplain = viewModel::explainSelection,
                         onEnd = { epubFragment?.clearSelection() },
                         modifier = pageModifier,
                     )
@@ -99,6 +100,9 @@ fun ReaderScreen(
                         onChange = viewModel::updateReadingSettings,
                         onDismiss = viewModel::hideTextSettings,
                     )
+                }
+                state.explaining?.let { text ->
+                    ReaderExplanation(state.bookId, text, onDismiss = viewModel::closeExplanation)
                 }
                 if (state.contentsVisible) {
                     ContentsSheet(

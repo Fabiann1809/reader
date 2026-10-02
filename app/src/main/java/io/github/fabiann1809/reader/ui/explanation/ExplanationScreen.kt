@@ -89,27 +89,43 @@ fun ExplanationContent(
             )
         },
     ) { innerPadding ->
-        Column(
+        ExplanationBody(
+            uiState = uiState,
+            onRetry = onRetry,
+            onSaveAsNote = onSaveAsNote,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-        ) {
-            SourceText(uiState.sourceText)
-            when (val state = uiState.explanation) {
-                ExplanationState.Loading -> Loading()
-                is ExplanationState.Success -> ExplanationBlocks(state.explanation, uiState, onSaveAsNote)
-                is ExplanationState.Failed -> Failed(state.error, onRetry)
-            }
+        )
+    }
+}
+
+/**
+ * The explanation itself: the original text (collapsed), then loading, the blocks or the error.
+ * Shared by this screen and the reader's explainer sheet (T11.11); the caller makes it scroll.
+ */
+@Composable
+fun ExplanationBody(
+    uiState: ExplanationUiState,
+    onRetry: () -> Unit,
+    onSaveAsNote: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        SourceText(uiState.sourceText)
+        when (val state = uiState.explanation) {
+            ExplanationState.Loading -> Loading()
+            is ExplanationState.Success -> ExplanationBlocks(state.explanation, uiState, onSaveAsNote)
+            is ExplanationState.Failed -> Failed(state.error, onRetry)
         }
     }
 }
 
 /** Every piece of AI content carries this label (design rule: transparency). */
 @Composable
-private fun AiGeneratedChip(modifier: Modifier = Modifier) {
+fun AiGeneratedChip(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .background(ReaderTheme.colors.aiSoft, MaterialTheme.shapes.small)

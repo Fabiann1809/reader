@@ -297,6 +297,30 @@ class ReaderViewModelTest {
         assertFalse(ready(viewModel).controlsVisible)
     }
 
+    @Test
+    fun explainingTakesTheSelectionToTheSheetAndClosingKeepsThePage() {
+        val session = FakeSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        viewModel.setSelection(TextSelection("lo esencial", bounds = null))
+
+        viewModel.explainSelection()
+        assertEquals("lo esencial", ready(viewModel).explaining)
+        assertNull(ready(viewModel).selection)
+
+        viewModel.closeExplanation()
+        assertNull(ready(viewModel).explaining)
+        assertTrue(session.jumpedTo.isEmpty() && session.jumpedToLocations.isEmpty())
+    }
+
+    @Test
+    fun withoutASelectionThereIsNothingToExplain() {
+        val viewModel = viewModel(bookId = 1, session = FakeSession())
+
+        viewModel.explainSelection()
+
+        assertNull(ready(viewModel).explaining)
+    }
+
     private fun ready(viewModel: ReaderViewModel) = viewModel.uiState.value as ReaderUiState.Ready
 
     @Test

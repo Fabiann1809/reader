@@ -251,7 +251,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [ ] **T11.8 Efecto de página.** Deslizar, desvanecer, desplazamiento continuo o ninguno. *Hecho cuando:* se elige y se aplica.
 - [x] **T11.9 Indicadores discretos.** Hora, batería y página/total; mantener la pantalla encendida. *Hecho cuando:* son activables.
 - [x] **T11.10 Selección de texto.** Barra contextual: Explicar, Resaltar, Nota, Voz, Ficha y Más (copiar, buscar, compartir). *Hecho cuando:* aparece al seleccionar en un EPUB.
-- [ ] **T11.11 Explicador como hoja inferior.** Reutiliza `ExplainText` y los bloques de `ui/explanation`; al cerrar vuelve al punto de lectura. *Hecho cuando:* se explica una selección sin salir del lector.
+- [x] **T11.11 Explicador como hoja inferior.** Reutiliza `ExplainText` y los bloques de `ui/explanation`; al cerrar vuelve al punto de lectura. *Hecho cuando:* se explica una selección sin salir del lector.
 - [ ] **T11.12 Resaltados.** Entidad `Highlight` en 4 colores (decoraciones de Readium), visibles en el detalle. *Hecho cuando:* persisten al reabrir.
 - [ ] **T11.13 Notas ancladas.** `Note` guarda la posición (locator) y se puede saltar desde la nota al texto. *Hecho cuando:* tocar la nota abre el lector en ese punto.
 - [ ] **T11.14 Explicar en PDF.** Si el PDF no tiene capa de texto seleccionable, recorte de la zona + OCR con el `TextRecognizer` existente. *Hecho cuando:* se explica un párrafo de un PDF.
