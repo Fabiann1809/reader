@@ -265,7 +265,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [ ] **T12.4 OCR dudoso.** Usar la confianza de ML Kit para mostrar el aviso "No estoy seguro de haber leído bien" y marcar las líneas dudosas. *Hecho cuando:* una foto borrosa muestra el aviso.
 - [ ] **T12.5 Recorte y párrafo.** Esquinas editables y "Seleccionar párrafo" (bloques de ML Kit). *Hecho cuando:* se explica solo el párrafo elegido.
 - [ ] **T12.6 Asociar captura.** Selector de libro (o "sin libro", lo que requiere migrar `Note.bookId` a nullable) y número de página. *Hecho cuando:* la nota queda en el libro y página elegidos.
-- [ ] **T12.7 Citas.** Tipo de nota CITA ("Guardar como cita"). *Hecho cuando:* se guarda y se distingue en la lista.
+- [ ] **T12.7 Citas.** Tipo de nota CITA ("Guardar como cita"). *Hecho cuando:* se guarda y se distingue en la lista. **Descartada por ahora** (decisión del usuario, 2026-10-02): una frase para guardar se anota con "Crear ficha".
 
 ### Fase 13 — Notas de voz (B3)
 - [ ] **T13.1 Permiso y grabación.** Pantalla explicativa del micrófono y grabación con MediaRecorder en almacenamiento interno. *Hecho cuando:* se graba y se reproduce.
