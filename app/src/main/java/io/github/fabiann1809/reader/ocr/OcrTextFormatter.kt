@@ -7,6 +7,8 @@ data class OcrLine(
     val top: Int,
     val right: Int,
     val bottom: Int,
+    // ML Kit's confidence in the reading, 0 to 1; null when unknown.
+    val confidence: Float? = null,
 ) {
     val centerY: Int get() = (top + bottom) / 2
 }

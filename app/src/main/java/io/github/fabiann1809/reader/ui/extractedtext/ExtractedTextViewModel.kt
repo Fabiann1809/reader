@@ -13,9 +13,13 @@ import kotlinx.coroutines.launch
 sealed interface ExtractedTextUiState {
     data object Recognizing : ExtractedTextUiState
 
-    data class Editing(val text: String) : ExtractedTextUiState {
+    /** [uncertainLines] are the lines the OCR doubted (T12.4); the ones still in [text] get marked. */
+    data class Editing(val text: String, val uncertainLines: List<String> = emptyList()) : ExtractedTextUiState {
         val isTooLong: Boolean get() = text.length > MAX_TEXT_LENGTH
         val canContinue: Boolean get() = text.isNotBlank() && !isTooLong
+
+        /** Doubted lines the user hasn't corrected yet; the warning shows while there are any. */
+        val linesToCheck: List<String> get() = uncertainLines.filter { it.isNotBlank() && it in text }
     }
 
     data class Failed(val reason: OcrFailure) : ExtractedTextUiState
@@ -38,7 +42,7 @@ class ExtractedTextViewModel(
     private fun recognize() {
         viewModelScope.launch {
             _uiState.value = textRecognizer.recognize(imageUri).fold(
-                onSuccess = { ExtractedTextUiState.Editing(it) },
+                onSuccess = { ExtractedTextUiState.Editing(it.text, it.uncertainLines) },
                 onFailure = { error ->
                     val reason = if (error is NoTextFoundException) OcrFailure.NO_TEXT_FOUND else OcrFailure.UNREADABLE_IMAGE
                     ExtractedTextUiState.Failed(reason)
@@ -48,8 +52,7 @@ class ExtractedTextViewModel(
     }
 
     fun onTextChange(text: String) {
-        if (_uiState.value is ExtractedTextUiState.Editing) {
-            _uiState.value = ExtractedTextUiState.Editing(text)
-        }
+        val state = _uiState.value as? ExtractedTextUiState.Editing ?: return
+        _uiState.value = state.copy(text = text)
     }
 }

@@ -28,7 +28,8 @@ class MlKitTextRecognizerTest {
 
     @Test
     fun extractsTextFromTestPage() = runTest {
-        val text = recognizer.recognize(assetUri("test_page.jpg").toString()).getOrThrow()
+        val recognized = recognizer.recognize(assetUri("test_page.jpg").toString()).getOrThrow()
+        val text = recognized.text
 
         assertTrue(text, text.startsWith("Capítulo 3: El orden del universo\n\n"))
         // ML Kit returns part of this printed line as a separate block; the formatter must restore reading order.
@@ -36,6 +37,21 @@ class MlKitTextRecognizerTest {
         assertTrue(text, text.contains("segundo principio de la termodinámica"))
         // Lines of the same paragraph are joined, so the sentence isn't split by line breaks.
         assertTrue(text, text.contains("un vaso que se rompe no vuelve a unirse"))
+    }
+
+    @Test
+    fun aSharpPhotoLeavesNothingInDoubt() = runTest {
+        val recognized = recognizer.recognize(assetUri("test_page.jpg").toString()).getOrThrow()
+
+        assertTrue(recognized.uncertainLines.toString(), recognized.uncertainLines.isEmpty())
+    }
+
+    @Test
+    fun aBlurryPhotoHasLinesInDoubt() = runTest {
+        // The same page, blurred: ML Kit still reads it, but not all of it with confidence.
+        val recognized = recognizer.recognize(assetUri("test_page_blurry.jpg").toString()).getOrThrow()
+
+        assertTrue(recognized.text, recognized.uncertainLines.isNotEmpty())
     }
 
     @Test

@@ -5,10 +5,11 @@ interface TextRecognizer {
 
     /**
      * [imageUri] is the image's URI as a string (content:// or file://).
-     * Returns the recognized text with paragraphs separated by blank lines,
-     * or a failure ([NoTextFoundException] when the image contains no readable text).
+     * Returns the recognized text with paragraphs separated by blank lines and the lines read
+     * with low confidence, or a failure ([NoTextFoundException] when the image contains no
+     * readable text).
      */
-    suspend fun recognize(imageUri: String): Result<String>
+    suspend fun recognize(imageUri: String): Result<RecognizedText>
 }
 
 class NoTextFoundException : Exception("No text found in the image")

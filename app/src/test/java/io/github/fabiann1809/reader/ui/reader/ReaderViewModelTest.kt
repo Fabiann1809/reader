@@ -15,6 +15,7 @@ import io.github.fabiann1809.reader.data.reader.ReadingAdjustments
 import io.github.fabiann1809.reader.data.reader.ReadingLocation
 import io.github.fabiann1809.reader.data.reader.ReadingPosition
 import io.github.fabiann1809.reader.data.reader.TocEntry
+import io.github.fabiann1809.reader.ocr.RecognizedText
 import io.github.fabiann1809.reader.testing.FakeBookmarkRepository
 import io.github.fabiann1809.reader.testing.FakeHighlightRepository
 import io.github.fabiann1809.reader.testing.FakeReadingPreferences
@@ -108,7 +109,7 @@ class ReaderViewModelTest {
 
     private val bookmarks = FakeBookmarkRepository()
     private val highlights = FakeHighlightRepository()
-    private val ocr = FakeTextRecognizer(Result.success("Lo esencial es invisible a los ojos."))
+    private val ocr = FakeTextRecognizer(Result.success(RecognizedText("Lo esencial es invisible a los ojos.")))
     private val readingPreferences = FakeReadingPreferences(ReadingSettings(theme = ReadingTheme.SEPIA))
 
     private fun viewModel(bookId: Long, session: ReaderSession, startAt: String? = null) = ReaderViewModel(
@@ -395,7 +396,7 @@ class ReaderViewModelTest {
 
     @Test
     fun aZoneWithoutTextAsksToMarkItAgain() {
-        ocr.result = Result.success("  ")
+        ocr.result = Result.success(RecognizedText("  "))
         val viewModel = viewModel(bookId = 3, session = FakeSession())
         viewModel.startZonePicking()
 

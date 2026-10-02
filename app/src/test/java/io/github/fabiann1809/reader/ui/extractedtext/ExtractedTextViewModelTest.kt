@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader.ui.extractedtext
 
 import io.github.fabiann1809.reader.ai.MAX_TEXT_LENGTH
 import io.github.fabiann1809.reader.ocr.NoTextFoundException
+import io.github.fabiann1809.reader.ocr.RecognizedText
 import io.github.fabiann1809.reader.testing.FakeTextRecognizer
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import org.junit.Assert.assertEquals
@@ -18,13 +19,25 @@ class ExtractedTextViewModelTest {
 
     private val imageUri = "file:///cache/captures/page.jpg"
 
-    private fun viewModel(result: Result<String>) = ExtractedTextViewModel(imageUri, FakeTextRecognizer(result))
+    private fun viewModel(result: Result<String>) = ExtractedTextViewModel(imageUri, FakeTextRecognizer(result.map { RecognizedText(it) }))
+
+    private fun viewModel(text: RecognizedText) = ExtractedTextViewModel(imageUri, FakeTextRecognizer(Result.success(text)))
 
     @Test
     fun showsRecognizedTextForEditing() {
         val state = viewModel(Result.success("Texto de la página")).uiState.value
 
         assertEquals(ExtractedTextUiState.Editing("Texto de la página"), state)
+    }
+
+    @Test
+    fun doubtedLinesAreMarkedUntilTheUserCorrectsThem() {
+        val viewModel = viewModel(RecognizedText("La entropia es\n\nuna medlda del desorden", uncertainLines = listOf("una medlda del desorden")))
+        assertEquals(listOf("una medlda del desorden"), (viewModel.uiState.value as ExtractedTextUiState.Editing).linesToCheck)
+
+        viewModel.onTextChange("La entropia es\n\nuna medida del desorden")
+
+        assertTrue((viewModel.uiState.value as ExtractedTextUiState.Editing).linesToCheck.isEmpty())
     }
 
     @Test

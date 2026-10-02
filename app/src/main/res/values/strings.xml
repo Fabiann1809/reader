@@ -35,6 +35,7 @@
     <string name="import_error_unknown_file">Archivo sin nombre</string>
     <string name="import_error_dismiss">Descartar</string>
     <string name="import_error_retry">Reintentar</string>
+    <string name="extracted_text_uncertain">No estoy seguro de haber leído bien. Revisa el texto antes de continuar: las líneas dudosas están marcadas.</string>
     <plurals name="import_duplicate_title">
         <item quantity="one">Ya tenías este libro</item>
         <item quantity="other">Ya tenías estos %d libros</item>

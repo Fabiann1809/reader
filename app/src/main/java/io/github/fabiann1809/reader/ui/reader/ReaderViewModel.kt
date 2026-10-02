@@ -186,7 +186,7 @@ class ReaderViewModel(
         }
         updateReady { it.copy(zonePicking = ZonePicking.READING) }
         viewModelScope.launch {
-            val text = textRecognizer.recognize(imageUri).getOrNull()?.takeIf { it.isNotBlank() }
+            val text = textRecognizer.recognize(imageUri).getOrNull()?.text?.takeIf { it.isNotBlank() }
             updateReady {
                 if (text == null) it.copy(zonePicking = ZonePicking.NO_TEXT) else it.copy(zonePicking = null, explaining = text)
             }

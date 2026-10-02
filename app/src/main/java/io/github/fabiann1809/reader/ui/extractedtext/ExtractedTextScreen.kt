@@ -120,9 +120,13 @@ private fun TextEditor(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        val linesToCheck = state.linesToCheck
+        if (linesToCheck.isNotEmpty()) WarningBanner(stringResource(R.string.extracted_text_uncertain))
+        val warning = ReaderTheme.colors.warning
         OutlinedTextField(
             value = state.text,
             onValueChange = onTextChange,
+            visualTransformation = UncertainLinesHighlight(linesToCheck, warning.copy(alpha = UNCERTAIN_MARK_ALPHA)),
             shape = readerTextFieldShape,
             colors = readerTextFieldColors(),
             isError = state.isTooLong,
@@ -154,37 +158,44 @@ private fun SectionLabel(text: String) {
     Text(text = text, style = MaterialTheme.typography.titleMedium)
 }
 
-/** Warning banner (design: "OCR dudoso") plus a way back to the camera. */
+// Doubted lines get a light wash of the warning color behind them.
+private const val UNCERTAIN_MARK_ALPHA = 0.3f
+
+/** Warning banner of the design ("OCR dudoso"): warning color, icon and message. */
+@Composable
+private fun WarningBanner(message: String, modifier: Modifier = Modifier) {
+    val warning = ReaderTheme.colors.warning
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(warning.copy(alpha = 0.12f), MaterialTheme.shapes.medium)
+            .border(1.dp, warning, MaterialTheme.shapes.medium)
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_warning_circle),
+            contentDescription = null,
+            tint = warning,
+            modifier = Modifier.size(22.dp),
+        )
+        Text(text = message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+/** The OCR read nothing: the warning plus a way back to the camera. */
 @Composable
 private fun OcrFailed(reason: OcrFailure, onRetake: () -> Unit, modifier: Modifier = Modifier) {
-    val warning = ReaderTheme.colors.warning
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(warning.copy(alpha = 0.12f), MaterialTheme.shapes.medium)
-                .border(1.dp, warning, MaterialTheme.shapes.medium)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_warning_circle),
-                contentDescription = null,
-                tint = warning,
-                modifier = Modifier.size(22.dp),
-            )
-            Text(
-                text = stringResource(
-                    when (reason) {
-                        OcrFailure.NO_TEXT_FOUND -> R.string.extracted_text_no_text
-                        OcrFailure.UNREADABLE_IMAGE -> R.string.extracted_text_unreadable
-                    },
-                ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
+        WarningBanner(
+            stringResource(
+                when (reason) {
+                    OcrFailure.NO_TEXT_FOUND -> R.string.extracted_text_no_text
+                    OcrFailure.UNREADABLE_IMAGE -> R.string.extracted_text_unreadable
+                },
+            ),
+        )
         OutlineButton(
             text = stringResource(R.string.extracted_text_retake),
             onClick = onRetake,

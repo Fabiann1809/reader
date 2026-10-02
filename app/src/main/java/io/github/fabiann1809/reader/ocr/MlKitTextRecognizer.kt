@@ -18,7 +18,7 @@ class MlKitTextRecognizer(context: Context) : TextRecognizer {
     private val appContext = context.applicationContext
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
-    override suspend fun recognize(imageUri: String): Result<String> {
+    override suspend fun recognize(imageUri: String): Result<RecognizedText> {
         val image = try {
             // Reads the EXIF orientation, so rotated photos are recognized correctly.
             InputImage.fromFilePath(appContext, Uri.parse(imageUri))
@@ -31,11 +31,22 @@ class MlKitTextRecognizer(context: Context) : TextRecognizer {
                 .addOnSuccessListener { visionText ->
                     val lines = visionText.textBlocks.flatMap { block -> block.lines }.mapNotNull { line ->
                         val box = line.boundingBox ?: return@mapNotNull null
-                        OcrLine(text = line.text, left = box.left, top = box.top, right = box.right, bottom = box.bottom)
+                        OcrLine(
+                            text = line.text,
+                            left = box.left,
+                            top = box.top,
+                            right = box.right,
+                            bottom = box.bottom,
+                            confidence = line.confidence,
+                        )
                     }
                     val text = formatRecognizedText(lines)
                     continuation.resume(
-                        if (text.isBlank()) Result.failure(NoTextFoundException()) else Result.success(text),
+                        if (text.isBlank()) {
+                            Result.failure(NoTextFoundException())
+                        } else {
+                            Result.success(RecognizedText(text, uncertainLines(lines)))
+                        },
                     )
                 }
                 .addOnFailureListener { error -> continuation.resume(Result.failure(error)) }
