@@ -27,6 +27,7 @@ import androidx.fragment.compose.AndroidFragment
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.ui.voice.VoiceRecordingSheet
 import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
@@ -103,6 +104,7 @@ fun ReaderScreen(
                     onTextSettings = viewModel::showTextSettings,
                     // In a PDF, "IA" marks a zone to explain (T11.14); EPUB text is selected instead.
                     onAi = if (state.format == BookFormat.PDF) viewModel::startZonePicking else ({}),
+                    onRecord = viewModel::startVoiceNote,
                 )
                 state.zonePicking?.let { picking ->
                     ZonePicker(
@@ -119,6 +121,9 @@ fun ReaderScreen(
                         onChange = viewModel::updateReadingSettings,
                         onDismiss = viewModel::hideTextSettings,
                     )
+                }
+                if (state.recordingVoice) {
+                    VoiceRecordingSheet(bookTitle = state.title, onDismiss = viewModel::closeVoiceNote)
                 }
                 state.explaining?.let { text ->
                     ReaderExplanation(state.bookId, text, onDismiss = viewModel::closeExplanation)

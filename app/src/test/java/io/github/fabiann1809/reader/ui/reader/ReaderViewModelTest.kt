@@ -291,6 +291,17 @@ class ReaderViewModelTest {
     }
 
     @Test
+    fun grabarOpensAndClosesTheVoiceSheet() = runTest {
+        val viewModel = viewModel(bookId = 1, session = FakeSession())
+
+        viewModel.startVoiceNote()
+        assertTrue(ready(viewModel).recordingVoice)
+
+        viewModel.closeVoiceNote()
+        assertFalse(ready(viewModel).recordingVoice)
+    }
+
+    @Test
     fun aNewSizeInTheSheetReplacesAPinch() {
         val session = FakeSession()
         val viewModel = viewModel(bookId = 1, session = session)

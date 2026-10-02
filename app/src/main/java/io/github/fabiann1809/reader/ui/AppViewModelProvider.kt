@@ -26,6 +26,7 @@ import io.github.fabiann1809.reader.ui.notes.AllNotesViewModel
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingViewModel
 import io.github.fabiann1809.reader.ui.reader.ReaderViewModel
 import io.github.fabiann1809.reader.ui.settings.SettingsViewModel
+import io.github.fabiann1809.reader.ui.voice.VoiceRecordingViewModel
 
 /**
  * Creates every ViewModel with its dependencies taken from the AppContainer.
@@ -116,6 +117,12 @@ object AppViewModelProvider {
             SettingsViewModel(
                 apiKeyStore = readerApplication().container.apiKeyStore,
                 aiProvider = readerApplication().container.aiProvider,
+            )
+        }
+        initializer {
+            VoiceRecordingViewModel(
+                recorder = readerApplication().container.voiceRecorder,
+                player = readerApplication().container.voicePlayer,
             )
         }
     }

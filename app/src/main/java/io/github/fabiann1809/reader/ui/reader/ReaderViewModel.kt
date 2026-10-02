@@ -201,6 +201,10 @@ class ReaderViewModel(
 
     fun hideTextSettings() = updateReady { it.copy(textSettingsVisible = false) }
 
+    fun startVoiceNote() = updateReady { it.copy(recordingVoice = true) }
+
+    fun closeVoiceNote() = updateReady { it.copy(recordingVoice = false) }
+
     /** Saves a change from the "Aa" sheet; the page shows it at once. A new size replaces a pinch's. */
     fun updateReadingSettings(change: (ReadingSettings) -> ReadingSettings) {
         val state = _uiState.value as? ReaderUiState.Ready ?: return

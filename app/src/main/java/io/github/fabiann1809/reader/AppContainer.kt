@@ -1,5 +1,9 @@
 package io.github.fabiann1809.reader
 
+import io.github.fabiann1809.reader.data.voice.MediaVoicePlayer
+import io.github.fabiann1809.reader.data.voice.MediaVoiceRecorder
+import io.github.fabiann1809.reader.data.voice.VoicePlayer
+import io.github.fabiann1809.reader.data.voice.VoiceRecorder
 import android.content.Context
 import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.ExplainText
@@ -129,6 +133,10 @@ class AppContainer(context: Context) {
     val readingPreferences: ReadingPreferences by lazy { DataStoreReadingPreferences(appContext) }
 
     val textRecognizer: TextRecognizer by lazy { MlKitTextRecognizer(appContext) }
+
+    val voiceRecorder: VoiceRecorder by lazy { MediaVoiceRecorder(appContext) }
+
+    val voicePlayer: VoicePlayer by lazy { MediaVoicePlayer() }
 
     // No logging interceptor on purpose: requests carry the user's API key.
     private val httpClient: OkHttpClient by lazy {
