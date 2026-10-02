@@ -17,6 +17,10 @@ interface FlashcardDao {
     @Query("SELECT * FROM flashcards WHERE bookId = :bookId ORDER BY createdAt DESC, id DESC")
     fun observeByBook(bookId: Long): Flow<List<Flashcard>>
 
+    /** When the next card is due, of all of them; null without cards. */
+    @Query("SELECT MIN(nextReviewAt) FROM flashcards")
+    suspend fun nextReviewAt(): Long?
+
     @Query("SELECT * FROM flashcards WHERE id = :id")
     suspend fun getById(id: Long): Flashcard?
 

@@ -8,10 +8,13 @@ import io.github.fabiann1809.reader.data.flashcard.ReviewGrade
 import io.github.fabiann1809.reader.data.flashcard.reviewed
 import io.github.fabiann1809.reader.ui.review.DueCard
 import io.github.fabiann1809.reader.util.endOfDay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 
 sealed interface ReviewSessionUiState {
@@ -22,8 +25,11 @@ sealed interface ReviewSessionUiState {
         val current: DueCard get() = cards[index]
     }
 
-    /** Every card was answered; [correct] counts the "Bien" and "Fácil" ones (for T14.5's summary). */
-    data class Finished(val reviewed: Int, val correct: Int) : ReviewSessionUiState
+    /**
+     * Every card was answered (T14.5's summary): [correct] counts the "Bien" and "Fácil" ones, and
+     * [nextReviewAt] is when the next card is due (null while it is being looked up, or without cards).
+     */
+    data class Finished(val reviewed: Int, val correct: Int, val nextReviewAt: Long? = null) : ReviewSessionUiState
 }
 
 /**
@@ -40,6 +46,9 @@ class ReviewSessionViewModel(
     val uiState: StateFlow<ReviewSessionUiState> = _uiState.asStateFlow()
 
     private var correct = 0
+
+    // The answers being saved: the summary waits for them before looking up the next review.
+    private val saves = mutableListOf<Job>()
 
     init {
         viewModelScope.launch {
@@ -70,6 +79,15 @@ class ReviewSessionViewModel(
         } else {
             ReviewSessionUiState.Finished(reviewed = state.cards.size, correct = correct)
         }
-        viewModelScope.launch { flashcardRepository.updateFlashcard(state.current.card.reviewed(grade, now())) }
+        saves += viewModelScope.launch { flashcardRepository.updateFlashcard(state.current.card.reviewed(grade, now())) }
+        if (next == state.cards.size) showNextReview()
+    }
+
+    private fun showNextReview() {
+        viewModelScope.launch {
+            saves.joinAll()
+            val nextReviewAt = flashcardRepository.nextReviewAt()
+            _uiState.update { if (it is ReviewSessionUiState.Finished) it.copy(nextReviewAt = nextReviewAt) else it }
+        }
     }
 }

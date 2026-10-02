@@ -82,4 +82,14 @@ class FlashcardDaoTest {
         assertTrue(flashcardDao.observeByBook(bookId).first().isEmpty())
         assertEquals(listOf("De otro libro"), flashcardDao.observeDue(now = 1).first().map { it.front })
     }
+
+    @Test
+    fun theNextReviewIsTheEarliestOfAllCards() = runTest {
+        assertEquals(null, flashcardDao.nextReviewAt())
+        val bookId = insertBook()
+        flashcardDao.insert(card(bookId, "Después", nextReviewAt = 9_000))
+        flashcardDao.insert(card(bookId, "Antes", nextReviewAt = 3_000))
+
+        assertEquals(3_000L, flashcardDao.nextReviewAt())
+    }
 }

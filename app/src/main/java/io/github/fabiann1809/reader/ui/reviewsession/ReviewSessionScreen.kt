@@ -26,7 +26,7 @@ import io.github.fabiann1809.reader.data.flashcard.ReviewGrade
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 
-/** A review session (T14.4); when every card is answered it closes ([onFinished]). */
+/** A review session (T14.4); at the end its summary (T14.5), whose "Listo" closes it ([onFinished]). */
 @Composable
 fun ReviewSessionScreen(
     onNavigateUp: () -> Unit,
@@ -34,10 +34,18 @@ fun ReviewSessionScreen(
     viewModel: ReviewSessionViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    LaunchedEffect(uiState is ReviewSessionUiState.Finished) {
-        if (uiState is ReviewSessionUiState.Finished) onFinished()
+    // Nothing was due (e.g. reviewed elsewhere meanwhile): there is no session to sum up.
+    val nothingReviewed = (uiState as? ReviewSessionUiState.Finished)?.reviewed == 0
+    LaunchedEffect(nothingReviewed) {
+        if (nothingReviewed) onFinished()
     }
-    ReviewSessionContent(uiState, onFlip = viewModel::flip, onGrade = viewModel::grade, onNavigateUp = onNavigateUp)
+    ReviewSessionContent(
+        uiState,
+        onFlip = viewModel::flip,
+        onGrade = viewModel::grade,
+        onNavigateUp = onNavigateUp,
+        onDone = onFinished,
+    )
 }
 
 @Composable
@@ -47,6 +55,7 @@ fun ReviewSessionContent(
     onGrade: (ReviewGrade) -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
+    onDone: () -> Unit = {},
 ) {
     val reviewing = uiState as? ReviewSessionUiState.Reviewing
     Scaffold(
@@ -59,6 +68,17 @@ fun ReviewSessionContent(
             )
         },
     ) { innerPadding ->
+        val finished = uiState as? ReviewSessionUiState.Finished
+        if (finished != null && finished.reviewed > 0) {
+            SessionSummary(
+                finished,
+                onDone = onDone,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+            )
+            return@Scaffold
+        }
         if (reviewing == null) {
             Box(
                 Modifier

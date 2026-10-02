@@ -25,6 +25,8 @@ class FakeFlashcardRepository(initialCards: List<Flashcard> = emptyList()) : Fla
 
     override suspend fun getFlashcard(id: Long): Flashcard? = cards.value.find { it.id == id }
 
+    override suspend fun nextReviewAt(): Long? = cards.value.minOfOrNull { it.nextReviewAt }
+
     override suspend fun addFlashcard(flashcard: Flashcard): Long {
         val id = nextId++
         cards.update { it + flashcard.copy(id = id) }

@@ -11,6 +11,9 @@ interface FlashcardRepository {
 
     suspend fun getFlashcard(id: Long): Flashcard?
 
+    /** When the next card is due (epoch milliseconds), of all of them; null without cards. */
+    suspend fun nextReviewAt(): Long?
+
     /** Returns the id of the new card. */
     suspend fun addFlashcard(flashcard: Flashcard): Long
 
@@ -25,6 +28,8 @@ class DefaultFlashcardRepository(private val flashcardDao: FlashcardDao) : Flash
     override fun observeByBook(bookId: Long): Flow<List<Flashcard>> = flashcardDao.observeByBook(bookId)
 
     override suspend fun getFlashcard(id: Long): Flashcard? = flashcardDao.getById(id)
+
+    override suspend fun nextReviewAt(): Long? = flashcardDao.nextReviewAt()
 
     override suspend fun addFlashcard(flashcard: Flashcard): Long = flashcardDao.insert(flashcard)
 

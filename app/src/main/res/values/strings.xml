@@ -384,6 +384,14 @@
     <string name="review_tap_to_flip">Toca la ficha para ver la respuesta</string>
     <string name="review_flip">Voltear la ficha</string>
     <string name="review_answer">Respuesta</string>
+    <string name="review_summary_title">¡Sesión terminada!</string>
+    <string name="review_summary_reviewed">Repasadas</string>
+    <string name="review_summary_correct">Aciertos</string>
+    <string name="review_summary_correct_value">%1$d de %2$d</string>
+    <string name="review_summary_next">Próxima revisión</string>
+    <string name="review_summary_today_at">Hoy, %s</string>
+    <string name="review_summary_tomorrow">Mañana</string>
+    <string name="review_summary_done">Listo</string>
     <string name="review_grade_again">Otra vez</string>
     <string name="review_grade_hard">Difícil</string>
     <string name="review_grade_good">Bien</string>

@@ -60,7 +60,11 @@ class ReviewSessionViewModelTest {
         viewModel.flip()
         viewModel.grade(ReviewGrade.EASY)
 
-        assertEquals(ReviewSessionUiState.Finished(reviewed = 2, correct = 1), viewModel.uiState.value)
+        // The next review is the card answered "Otra vez": back in a minute.
+        assertEquals(
+            ReviewSessionUiState.Finished(reviewed = 2, correct = 1, nextReviewAt = now + 1.minutes.inWholeMilliseconds),
+            viewModel.uiState.value,
+        )
         assertEquals(now + 1.minutes.inWholeMilliseconds, cards.currentCards.first { it.id == 1L }.nextReviewAt)
         assertEquals(now + 4.days.inWholeMilliseconds, cards.currentCards.first { it.id == 2L }.nextReviewAt)
     }
