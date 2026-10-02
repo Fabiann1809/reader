@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
 import kotlinx.coroutines.flow.Flow
@@ -40,6 +41,8 @@ class DataStoreReadingPreferences(context: Context, fileName: String = FILE_NAME
             showBattery = prefs[SHOW_BATTERY] ?: defaults.showBattery,
             showPage = prefs[SHOW_PAGE] ?: defaults.showPage,
             keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
+            customBackground = prefs[CUSTOM_BACKGROUND] ?: defaults.customBackground,
+            customText = prefs[CUSTOM_TEXT] ?: defaults.customText,
         )
     }
 
@@ -55,6 +58,8 @@ class DataStoreReadingPreferences(context: Context, fileName: String = FILE_NAME
             prefs[SHOW_BATTERY] = settings.showBattery
             prefs[SHOW_PAGE] = settings.showPage
             prefs[KEEP_SCREEN_ON] = settings.keepScreenOn
+            prefs[CUSTOM_BACKGROUND] = settings.customBackground
+            prefs[CUSTOM_TEXT] = settings.customText
         }
     }
 
@@ -70,5 +75,7 @@ class DataStoreReadingPreferences(context: Context, fileName: String = FILE_NAME
         val SHOW_BATTERY = booleanPreferencesKey("show_battery")
         val SHOW_PAGE = booleanPreferencesKey("show_page")
         val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
+        val CUSTOM_BACKGROUND = longPreferencesKey("custom_background")
+        val CUSTOM_TEXT = longPreferencesKey("custom_text")
     }
 }

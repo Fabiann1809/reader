@@ -46,6 +46,8 @@ class ReadingPreferencesTest {
                 showBattery = false,
                 showPage = true,
                 keepScreenOn = true,
+                customBackground = 0xFFE6F5EC,
+                customText = 0xFF22533D,
             ),
         )
         val read = preferences.settings.first()
@@ -57,5 +59,7 @@ class ReadingPreferencesTest {
         assertEquals(ReadingSettings.MarginsRange.start, read.margins, 0.0001)
         assertEquals(ReadingAlignment.JUSTIFY, read.alignment)
         assertEquals(listOf(false, false, true, true), listOf(read.showClock, read.showBattery, read.showPage, read.keepScreenOn))
+        assertEquals(0xFFE6F5EC, read.customBackground)
+        assertEquals(0xFF22533D, read.customText)
     }
 }

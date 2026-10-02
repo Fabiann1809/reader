@@ -128,6 +128,10 @@
     <string name="reading_theme_paper_gray">Gris papel</string>
     <string name="reading_theme_night">Noche</string>
     <string name="reading_theme_amoled">AMOLED</string>
+    <string name="reading_theme_custom">Personalizado</string>
+    <string name="reading_custom_background">Fondo</string>
+    <string name="reading_custom_text">Texto</string>
+    <string name="reading_custom_color">%1$s, color %2$d</string>
     <string name="reading_font_literata" translatable="false">Literata</string>
     <string name="reading_font_merriweather" translatable="false">Merriweather</string>
     <string name="reading_font_source_serif" translatable="false">Source Serif</string>

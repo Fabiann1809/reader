@@ -50,6 +50,17 @@ class EpubStyleTest {
     }
 
     @Test
+    fun customSendsThePickedColorsAndADarkPageIsDark() {
+        val light = ReadingSettings(theme = ReadingTheme.CUSTOM, customBackground = 0xFFF3F0FD, customText = 0xFF4A403A)
+        val dark = ReadingSettings(theme = ReadingTheme.CUSTOM, customBackground = 0xFF2E1B10, customText = 0xFFD9D3C9)
+
+        assertEquals(0xFFF3F0FD.toInt(), light.toEpubPreferences(null).backgroundColor?.int)
+        assertEquals(0xFF4A403A.toInt(), light.toEpubPreferences(null).textColor?.int)
+        assertEquals(Theme.LIGHT, light.toEpubPreferences(null).theme)
+        assertEquals(Theme.DARK, dark.toEpubPreferences(null).theme)
+    }
+
+    @Test
     fun nightAndAmoledAreDarkThemes() {
         assertEquals(Theme.DARK, ReadingSettings(theme = ReadingTheme.NIGHT).toEpubPreferences(null).theme)
         assertEquals(0xFF000000.toInt(), ReadingSettings(theme = ReadingTheme.AMOLED).toEpubPreferences(null).backgroundColor?.int)

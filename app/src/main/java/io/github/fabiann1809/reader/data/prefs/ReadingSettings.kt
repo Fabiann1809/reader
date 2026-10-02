@@ -1,7 +1,10 @@
 package io.github.fabiann1809.reader.data.prefs
 
-/** Page colors of the reader, independent of the app's theme (design 2.3). */
-enum class ReadingTheme { DAY, SEPIA, PAPER_GRAY, NIGHT, AMOLED }
+/**
+ * Page colors of the reader, independent of the app's theme (design 2.3). [CUSTOM] uses the page
+ * and text colors the reader picked from a palette.
+ */
+enum class ReadingTheme { DAY, SEPIA, PAPER_GRAY, NIGHT, AMOLED, CUSTOM }
 
 /** Fonts the reader offers (all OFL); Literata is the reader's default (design 3). */
 enum class ReadingFont { LITERATA, MERRIWEATHER, SOURCE_SERIF, LORA, ATKINSON, OPEN_DYSLEXIC, INTER }
@@ -24,11 +27,18 @@ data class ReadingSettings(
     val showBattery: Boolean = true,
     val showPage: Boolean = true,
     val keepScreenOn: Boolean = false,
+    // The "Personalizado" theme's colors, as ARGB.
+    val customBackground: Long = DEFAULT_CUSTOM_BACKGROUND,
+    val customText: Long = DEFAULT_CUSTOM_TEXT,
 ) {
     companion object {
         const val DEFAULT_FONT_SIZE = 1.0
         const val DEFAULT_LINE_HEIGHT = 1.6
         const val DEFAULT_MARGINS = 1.0
+
+        // paper-50 and ink-900 (design 2.1).
+        const val DEFAULT_CUSTOM_BACKGROUND = 0xFFFFFBF5
+        const val DEFAULT_CUSTOM_TEXT = 0xFF2A2320
 
         val FontSizeRange = 0.5..3.0
 

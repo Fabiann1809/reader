@@ -81,7 +81,7 @@ fun ReaderScreen(
                 state.selection?.let { selection ->
                     ReaderSelection(
                         selection,
-                        darkPage = state.readingSettings.theme.colors().isDark,
+                        darkPage = state.readingSettings.pageColors().isDark,
                         onExplain = viewModel::explainSelection,
                         onHighlight = viewModel::highlightSelection,
                         onNote = { onWriteNote(selection.text, selection.location) },
@@ -127,7 +127,7 @@ fun ReaderScreen(
 @Composable
 private fun pageBackground(state: ReaderUiState): Color =
     if (state is ReaderUiState.Ready && state.format == BookFormat.EPUB) {
-        Color(state.readingSettings.theme.colors().background)
+        Color(state.readingSettings.pageColors().background)
     } else {
         MaterialTheme.colorScheme.surface
     }
@@ -135,7 +135,7 @@ private fun pageBackground(state: ReaderUiState): Color =
 /** The page's text color: the EPUB theme's, or the app's for PDFs. */
 @Composable
 private fun pageTextColor(state: ReaderUiState.Ready): Color =
-    if (state.format == BookFormat.EPUB) Color(state.readingSettings.theme.colors().text) else MaterialTheme.colorScheme.onSurface
+    if (state.format == BookFormat.EPUB) Color(state.readingSettings.pageColors().text) else MaterialTheme.colorScheme.onSurface
 
 /**
  * Gives the screen back the system's brightness when the reader is left (the edge drag changes it

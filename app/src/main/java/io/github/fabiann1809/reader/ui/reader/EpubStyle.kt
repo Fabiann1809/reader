@@ -23,6 +23,12 @@ fun ReadingTheme.colors(): ReadingColors = when (this) {
     ReadingTheme.PAPER_GRAY -> ReadingColors(background = 0xFFE8E8E4, text = 0xFF222222, isDark = false)
     ReadingTheme.NIGHT -> ReadingColors(background = 0xFF1B1B1A, text = 0xFFD9D3C9, isDark = true)
     ReadingTheme.AMOLED -> ReadingColors(background = 0xFF000000, text = 0xFFC9C4BA, isDark = true)
+    // Its colors live in the settings: see ReadingSettings.pageColors().
+    ReadingTheme.CUSTOM -> ReadingColors(
+        background = ReadingSettings.DEFAULT_CUSTOM_BACKGROUND,
+        text = ReadingSettings.DEFAULT_CUSTOM_TEXT,
+        isDark = false,
+    )
 }
 
 // The CSS family name; OpenDyslexic is the one Readium already bundles.
@@ -55,7 +61,7 @@ private val ReadingFont.fileName: String?
  */
 @OptIn(ExperimentalReadiumApi::class)
 fun ReadingSettings.toEpubPreferences(fontSizeOverride: Double?): EpubPreferences {
-    val colors = theme.colors()
+    val colors = pageColors()
     return EpubPreferences(
         theme = if (colors.isDark) Theme.DARK else Theme.LIGHT,
         backgroundColor = Color(colors.background.toInt()),

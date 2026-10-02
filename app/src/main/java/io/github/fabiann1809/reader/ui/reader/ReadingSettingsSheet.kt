@@ -88,7 +88,10 @@ fun ReadingSettingsSheet(
 @Composable
 private fun TextSettings(settings: ReadingSettings, onChange: ((ReadingSettings) -> ReadingSettings) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Section(R.string.reading_settings_theme) { ThemeRow(settings.theme) { theme -> onChange { it.copy(theme = theme) } } }
+        Section(R.string.reading_settings_theme) {
+            ThemeRow(settings) { theme -> onChange { it.copy(theme = theme) } }
+            if (settings.theme == ReadingTheme.CUSTOM) CustomThemePicker(settings, onChange)
+        }
         Section(R.string.reading_settings_font) { FontPicker(settings.font) { font -> onChange { it.copy(font = font) } } }
         Section(R.string.reading_settings_size) {
             SizeSlider(settings.fontSize) { size -> onChange { it.copy(fontSize = size) } }
@@ -153,11 +156,12 @@ private fun Section(@StringRes title: Int, content: @Composable () -> Unit) {
 
 /** A swatch per theme: its page color with "Aa" in its text color, and the name below. */
 @Composable
-private fun ThemeRow(selected: ReadingTheme, onSelect: (ReadingTheme) -> Unit) {
+private fun ThemeRow(settings: ReadingSettings, onSelect: (ReadingTheme) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
         ReadingTheme.entries.forEach { theme ->
-            val colors = theme.colors()
-            val isSelected = theme == selected
+            // "Personalizado" shows the colors picked for it.
+            val colors = if (theme == ReadingTheme.CUSTOM) settings.copy(theme = theme).pageColors() else theme.colors()
+            val isSelected = theme == settings.theme
             val name = stringResource(theme.label)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -292,6 +296,7 @@ private val ReadingTheme.label: Int
         ReadingTheme.PAPER_GRAY -> R.string.reading_theme_paper_gray
         ReadingTheme.NIGHT -> R.string.reading_theme_night
         ReadingTheme.AMOLED -> R.string.reading_theme_amoled
+        ReadingTheme.CUSTOM -> R.string.reading_theme_custom
     }
 
 private val ReadingFont.label: Int
