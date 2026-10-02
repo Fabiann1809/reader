@@ -1,6 +1,9 @@
 package io.github.fabiann1809.reader.data.note
 
+import io.github.fabiann1809.reader.data.voice.VoiceFiles
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 /** Single entry point to note data. ViewModels depend on this interface so tests can use fakes. */
 interface NoteRepository {
@@ -19,7 +22,10 @@ interface NoteRepository {
     suspend fun deleteNote(note: Note)
 }
 
-class DefaultNoteRepository(private val noteDao: NoteDao) : NoteRepository {
+class DefaultNoteRepository(
+    private val noteDao: NoteDao,
+    private val voiceFiles: VoiceFiles,
+) : NoteRepository {
     override fun observeNotes(bookId: Long): Flow<List<Note>> = noteDao.observeByBook(bookId)
 
     override fun observeAllNotes(): Flow<List<Note>> = noteDao.observeAll()
@@ -30,5 +36,9 @@ class DefaultNoteRepository(private val noteDao: NoteDao) : NoteRepository {
 
     override suspend fun updateNote(note: Note) = noteDao.update(note)
 
-    override suspend fun deleteNote(note: Note) = noteDao.delete(note)
+    override suspend fun deleteNote(note: Note) {
+        noteDao.delete(note)
+        // A voice note's recording goes with it.
+        withContext(Dispatchers.IO) { voiceFiles.delete(note.audioPath) }
+    }
 }

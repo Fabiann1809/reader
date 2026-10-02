@@ -23,6 +23,10 @@ class FakeVoiceRecorder : VoiceRecorder {
     override fun delete(path: String) {
         deleted += path
     }
+
+    var currentLevel = 0.5f
+
+    override fun level(): Float = currentLevel
 }
 
 class FakeVoicePlayer : VoicePlayer {

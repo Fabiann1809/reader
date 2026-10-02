@@ -124,6 +124,7 @@ object AppViewModelProvider {
                 recorder = readerApplication().container.voiceRecorder,
                 player = readerApplication().container.voicePlayer,
                 transcribe = readerApplication().container.transcribeAudio,
+                noteRepository = readerApplication().container.noteRepository,
             )
         }
     }

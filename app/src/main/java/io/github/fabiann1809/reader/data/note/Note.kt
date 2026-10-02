@@ -33,6 +33,9 @@ data class Note(
     // Readium's Locator as JSON when the note was written on a passage in the reader (T11.13):
     // tapping the note opens the book there. Null for notes not tied to a place.
     val location: String? = null,
+    // A voice note's recording, relative to the app's files (see VoiceFiles); null for other notes.
+    val audioPath: String? = null,
+    val tag: NoteTag? = null,
     // Epoch milliseconds.
     val createdAt: Long = System.currentTimeMillis(),
 )

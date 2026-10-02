@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ai
 
+import io.github.fabiann1809.reader.data.voice.VoiceFiles
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,11 +18,13 @@ const val VOICE_NOTE_MIME_TYPE = "audio/mp4"
  */
 class TranscribeAudio(
     private val aiProvider: AiProvider,
+    private val voiceFiles: VoiceFiles,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) {
 
+    /** Transcribes the recording at [path], a [VoiceFiles] stored path. */
     suspend operator fun invoke(path: String): Result<String> {
-        val audio = withContext(ioDispatcher) { runCatching { readRecording(File(path)) } }
+        val audio = withContext(ioDispatcher) { runCatching { readRecording(voiceFiles.resolve(path)) } }
         return audio.fold(
             onSuccess = { bytes -> aiProvider.transcribe(bytes, VOICE_NOTE_MIME_TYPE).map { it.trim() } },
             onFailure = { Result.failure(it) },

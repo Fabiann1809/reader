@@ -9,6 +9,9 @@ import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
 import io.github.fabiann1809.reader.data.note.DefaultNoteRepository
+import io.github.fabiann1809.reader.data.note.NoteTag
+import io.github.fabiann1809.reader.data.note.NoteType
+import io.github.fabiann1809.reader.data.voice.VoiceFiles
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteRepository
 import kotlinx.coroutines.flow.first
@@ -29,6 +32,7 @@ class RepositoryTest {
     private lateinit var noteRepository: NoteRepository
     private lateinit var filesDir: File
     private lateinit var bookFiles: BookFiles
+    private lateinit var voiceFiles: VoiceFiles
 
     @Before
     fun setUp() {
@@ -38,7 +42,8 @@ class RepositoryTest {
         filesDir = File(context.cacheDir, "repository-test").apply { mkdirs() }
         bookFiles = BookFiles(filesDir)
         bookRepository = DefaultBookRepository(database.bookDao(), bookFiles)
-        noteRepository = DefaultNoteRepository(database.noteDao())
+        voiceFiles = VoiceFiles(filesDir)
+        noteRepository = DefaultNoteRepository(database.noteDao(), voiceFiles)
     }
 
     @After
@@ -68,5 +73,37 @@ class RepositoryTest {
         bookRepository.deleteBook(bookRepository.getBook(id)!!)
 
         assertFalse(file.exists())
+    }
+
+    private fun voiceRecording(): String {
+        val file = voiceFiles.newRecording().apply { writeText("audio") }
+        return voiceFiles.storedPath(file)
+    }
+
+    @Test
+    fun aVoiceNoteKeepsItsRecordingAndTagAndDeletingItDeletesTheAudio() = runTest {
+        val bookId = bookRepository.addBook(Book(title = "Cosmos", author = "Carl Sagan"))
+        val audio = voiceRecording()
+        val id = noteRepository.addNote(
+            Note(bookId = bookId, content = "Una idea", type = NoteType.VOICE, audioPath = audio, tag = NoteTag.IDEA),
+        )
+
+        val note = noteRepository.getNote(id)!!
+        assertEquals(audio, note.audioPath)
+        assertEquals(NoteTag.IDEA, note.tag)
+
+        noteRepository.deleteNote(note)
+        assertFalse(voiceFiles.resolve(audio).exists())
+    }
+
+    @Test
+    fun deletingABookAlsoDeletesItsVoiceRecordings() = runTest {
+        val bookId = bookRepository.addBook(Book(title = "Cosmos", author = "Carl Sagan"))
+        val audio = voiceRecording()
+        noteRepository.addNote(Note(bookId = bookId, content = "Una idea", type = NoteType.VOICE, audioPath = audio))
+
+        bookRepository.deleteBook(bookRepository.getBook(bookId)!!)
+
+        assertFalse(voiceFiles.resolve(audio).exists())
     }
 }

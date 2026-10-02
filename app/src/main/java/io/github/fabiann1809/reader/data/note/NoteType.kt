@@ -4,4 +4,7 @@ package io.github.fabiann1809.reader.data.note
 enum class NoteType {
     MANUAL,
     EXPLANATION,
+
+    // Recorded by voice (T13.3): the content is the transcript and Note.audioPath the recording.
+    VOICE,
 }

@@ -27,7 +27,6 @@ import androidx.fragment.compose.AndroidFragment
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
-import io.github.fabiann1809.reader.ui.voice.VoiceRecordingSheet
 import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
@@ -122,9 +121,12 @@ fun ReaderScreen(
                         onDismiss = viewModel::hideTextSettings,
                     )
                 }
-                if (state.recordingVoice) {
-                    VoiceRecordingSheet(bookTitle = state.title, onDismiss = viewModel::closeVoiceNote)
-                }
+                ReaderVoiceNote(
+                    state,
+                    currentLocation = viewModel::currentLocation,
+                    onClose = viewModel::closeVoiceNote,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
                 state.explaining?.let { text ->
                     ReaderExplanation(state.bookId, text, onDismiss = viewModel::closeExplanation)
                 }

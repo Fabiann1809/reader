@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ai
 
+import io.github.fabiann1809.reader.data.voice.VoiceFiles
 import io.github.fabiann1809.reader.testing.FakeAiProvider
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertArrayEquals
@@ -13,7 +14,8 @@ import java.io.RandomAccessFile
 class TranscribeAudioTest {
 
     private val aiProvider = FakeAiProvider()
-    private val transcribe = TranscribeAudio(aiProvider)
+    private val tempDir = File(System.getProperty("java.io.tmpdir"))
+    private val transcribe = TranscribeAudio(aiProvider, VoiceFiles(tempDir))
 
     private fun recording(bytes: ByteArray) = File.createTempFile("voice", ".m4a").apply {
         writeBytes(bytes)
@@ -24,7 +26,7 @@ class TranscribeAudioTest {
     fun sendsTheRecordingAndTrimsTheTranscript() = runTest {
         aiProvider.transcription = Result.success("  Una idea.\n")
 
-        val transcript = transcribe(recording(byteArrayOf(7, 8)).path).getOrThrow()
+        val transcript = transcribe(recording(byteArrayOf(7, 8)).name).getOrThrow()
 
         assertEquals("Una idea.", transcript)
         assertArrayEquals(byteArrayOf(7, 8), aiProvider.audios.single().first)
@@ -33,7 +35,7 @@ class TranscribeAudioTest {
 
     @Test
     fun aMissingRecordingFailsWithoutCallingTheAi() = runTest {
-        val error = transcribe("/nowhere/voice.m4a").exceptionOrNull()
+        val error = transcribe("nowhere/voice.m4a").exceptionOrNull()
 
         assertTrue(error.toString(), error is IOException)
         assertTrue(aiProvider.audios.isEmpty())
@@ -44,7 +46,7 @@ class TranscribeAudioTest {
         val big = File.createTempFile("voice", ".m4a").apply { deleteOnExit() }
         RandomAccessFile(big, "rw").use { it.setLength(MAX_AUDIO_BYTES + 1L) }
 
-        val error = transcribe(big.path).exceptionOrNull()
+        val error = transcribe(big.name).exceptionOrNull()
 
         assertTrue(error.toString(), error is IllegalArgumentException)
         assertTrue(aiProvider.audios.isEmpty())

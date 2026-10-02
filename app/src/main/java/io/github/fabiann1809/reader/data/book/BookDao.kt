@@ -20,6 +20,10 @@ interface BookDao {
     @Query("SELECT * FROM books WHERE id = :id")
     suspend fun getById(id: Long): Book?
 
+    /** The recordings of a book's voice notes, which must be deleted with the book (its notes cascade). */
+    @Query("SELECT audioPath FROM notes WHERE bookId = :bookId AND audioPath IS NOT NULL")
+    suspend fun voiceNoteAudio(bookId: Long): List<String>
+
     @Query("SELECT * FROM books WHERE fileHash = :hash LIMIT 1")
     suspend fun findByFileHash(hash: String): Book?
 

@@ -81,6 +81,9 @@ class MigrationTest {
             assertEquals(NoteType.EXPLANATION, note.type)
             // Added in version 7: the note isn't tied to a place in the book.
             assertNull(note.location)
+            // Added in version 9: not a voice note.
+            assertNull(note.audioPath)
+            assertNull(note.tag)
         } finally {
             database.close()
         }

@@ -10,7 +10,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,31 +34,36 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
-import io.github.fabiann1809.reader.ui.AppViewModelProvider
+import io.github.fabiann1809.reader.data.note.NoteTag
 import io.github.fabiann1809.reader.ui.components.PermissionStatus
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.rememberPermissionState
 
 /**
- * The "Grabar" sheet (T13.1): asks for the microphone if needed, then records at once. After
- * stopping, the recording can be listened to; closing the sheet throws it away.
+ * The "Grabar" sheet (lámina 1i): asks for the microphone if needed, then records at once. After
+ * stopping, the recording can be listened to and its transcript corrected; the check button
+ * saves it ([onSave]) and closing the sheet throws it away. [subtitle] says where the note goes.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VoiceRecordingSheet(
-    bookTitle: String,
+    viewModel: VoiceRecordingViewModel,
+    subtitle: String,
+    onSave: () -> Unit,
     onDismiss: () -> Unit,
-    viewModel: VoiceRecordingViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val permission = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val tag by viewModel.tag.collectAsStateWithLifecycle()
     val granted = permission.status == PermissionStatus.GRANTED
 
-    // Opening the sheet (or granting the microphone) starts recording right away.
+    // Opening the sheet (or granting the microphone) starts recording right away; a note that was
+    // just saved (its snackbar may still be up) doesn't stop a new one.
     LaunchedEffect(granted) {
-        if (granted && viewModel.uiState.value == VoiceRecordingUiState.Idle) viewModel.start()
+        val current = viewModel.uiState.value
+        val ready = current == VoiceRecordingUiState.Idle || current is VoiceRecordingUiState.Saved
+        if (granted && ready) viewModel.start()
     }
     // Without a foreground service the microphone goes silent in the background: end the recording there.
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.stop() }
@@ -78,7 +82,10 @@ fun VoiceRecordingSheet(
             if (granted) {
                 RecordingContent(
                     state,
-                    bookTitle,
+                    subtitle,
+                    tag,
+                    onToggleTag = viewModel::toggleTag,
+                    onSave = onSave,
                     onStop = viewModel::stop,
                     onTogglePlayback = viewModel::togglePlayback,
                     onRetry = viewModel::start,
@@ -96,7 +103,10 @@ fun VoiceRecordingSheet(
 @Composable
 private fun RecordingContent(
     state: VoiceRecordingUiState,
-    bookTitle: String,
+    subtitle: String,
+    tag: NoteTag?,
+    onToggleTag: (NoteTag) -> Unit,
+    onSave: () -> Unit,
     onStop: () -> Unit,
     onTogglePlayback: () -> Unit,
     onRetry: () -> Unit,
@@ -111,23 +121,26 @@ private fun RecordingContent(
     }
     Text(stringResource(title), style = MaterialTheme.typography.titleLarge)
     Text(
-        text = bookTitle,
+        text = subtitle,
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(top = 4.dp, bottom = 24.dp),
     )
+    if (state is VoiceRecordingUiState.Recording) VoiceWave(state.levels, modifier = Modifier.padding(bottom = 12.dp))
     val message = when (state) {
         is VoiceRecordingUiState.Recording -> formatDuration(state.elapsedMillis)
         is VoiceRecordingUiState.Recorded -> formatDuration(state.durationMillis)
         is VoiceRecordingUiState.Failed -> stringResource(state.reason.message())
-        VoiceRecordingUiState.Idle -> formatDuration(0)
+        else -> formatDuration(0)
     }
     Text(
         text = message,
         style = MaterialTheme.typography.titleMedium,
         textAlign = TextAlign.Center,
-        modifier = Modifier.padding(bottom = 24.dp),
+        modifier = Modifier.padding(bottom = 20.dp),
     )
+    val recordingOrRecorded = state is VoiceRecordingUiState.Recording || state is VoiceRecordingUiState.Recorded
+    if (recordingOrRecorded) TagChips(tag, onToggle = onToggleTag, modifier = Modifier.padding(bottom = 24.dp))
     if (state is VoiceRecordingUiState.Recorded) {
         TranscriptField(
             state.transcript,
@@ -136,6 +149,7 @@ private fun RecordingContent(
             modifier = Modifier.padding(bottom = 24.dp),
         )
     }
+    val canSave = (state as? VoiceRecordingUiState.Recorded)?.canSave == true
     Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onDiscard, modifier = Modifier.size(48.dp)) {
             Icon(
@@ -155,8 +169,17 @@ private fun RecordingContent(
             )
             else -> MainButton(R.drawable.ic_microphone, R.string.voice_record_again, MaterialTheme.colorScheme.primary, onRetry)
         }
-        // Keeps the main button centered; saving the note comes with T13.3.
-        Spacer(Modifier.size(48.dp))
+        IconButton(
+            onClick = onSave,
+            enabled = canSave,
+            modifier = Modifier.size(48.dp),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_check),
+                contentDescription = stringResource(R.string.voice_save),
+                tint = if (canSave) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+            )
+        }
     }
 }
 

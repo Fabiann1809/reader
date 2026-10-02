@@ -39,10 +39,13 @@ class DefaultBookRepository(private val bookDao: BookDao, private val bookFiles:
 
     /** Also removes the imported file and the cover, which nothing else points to. */
     override suspend fun deleteBook(book: Book) {
+        val voiceNoteAudio = bookDao.voiceNoteAudio(book.id)
         bookDao.delete(book)
         withContext(Dispatchers.IO) {
             bookFiles.delete(book.filePath)
             bookFiles.delete(book.coverPath)
+            // Also relative to the app's files, so BookFiles can delete them too.
+            voiceNoteAudio.forEach(bookFiles::delete)
         }
     }
 }

@@ -19,7 +19,7 @@ import io.github.fabiann1809.reader.data.note.NoteDao
 
 @Database(
     entities = [Book::class, Note::class, Collection::class, BookCollectionCrossRef::class, Bookmark::class, Highlight::class],
-    version = 8,
+    version = 9,
     exportSchema = true,
     autoMigrations = [
         // 1 → 2: new optional Book columns (kind, format, filePath, coverPath, language, lastOpenedAt).
@@ -36,6 +36,8 @@ import io.github.fabiann1809.reader.data.note.NoteDao
         AutoMigration(from = 6, to = 7),
         // 7 → 8: Book.fileHash, to notice a file imported twice.
         AutoMigration(from = 7, to = 8),
+        // 8 → 9: Note.audioPath and Note.tag, for voice notes.
+        AutoMigration(from = 8, to = 9),
     ],
 )
 abstract class AppDatabase : RoomDatabase() {

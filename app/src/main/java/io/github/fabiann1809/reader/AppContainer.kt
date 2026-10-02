@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader
 
 import io.github.fabiann1809.reader.data.voice.MediaVoicePlayer
 import io.github.fabiann1809.reader.data.voice.MediaVoiceRecorder
+import io.github.fabiann1809.reader.data.voice.VoiceFiles
 import io.github.fabiann1809.reader.data.voice.VoicePlayer
 import io.github.fabiann1809.reader.data.voice.VoiceRecorder
 import android.content.Context
@@ -115,7 +116,7 @@ class AppContainer(context: Context) {
         )
     }
 
-    val noteRepository: NoteRepository by lazy { DefaultNoteRepository(database.noteDao()) }
+    val noteRepository: NoteRepository by lazy { DefaultNoteRepository(database.noteDao(), voiceFiles) }
 
     val bookmarkRepository: BookmarkRepository by lazy { DefaultBookmarkRepository(database.bookmarkDao()) }
 
@@ -135,9 +136,11 @@ class AppContainer(context: Context) {
 
     val textRecognizer: TextRecognizer by lazy { MlKitTextRecognizer(appContext) }
 
-    val voiceRecorder: VoiceRecorder by lazy { MediaVoiceRecorder(appContext) }
+    private val voiceFiles: VoiceFiles by lazy { VoiceFiles(appContext.filesDir) }
 
-    val voicePlayer: VoicePlayer by lazy { MediaVoicePlayer() }
+    val voiceRecorder: VoiceRecorder by lazy { MediaVoiceRecorder(appContext, voiceFiles) }
+
+    val voicePlayer: VoicePlayer by lazy { MediaVoicePlayer(voiceFiles) }
 
     // No logging interceptor on purpose: requests carry the user's API key.
     private val httpClient: OkHttpClient by lazy {
@@ -158,5 +161,5 @@ class AppContainer(context: Context) {
 
     val explainText: ExplainText by lazy { ExplainText(aiProvider) }
 
-    val transcribeAudio: TranscribeAudio by lazy { TranscribeAudio(aiProvider) }
+    val transcribeAudio: TranscribeAudio by lazy { TranscribeAudio(aiProvider, voiceFiles) }
 }

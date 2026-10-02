@@ -17,7 +17,8 @@ import java.io.File
 class MediaVoiceRecorderTest {
 
     private val appContext = ApplicationProvider.getApplicationContext<Context>()
-    private val recorder = MediaVoiceRecorder(appContext)
+    private val voiceFiles = VoiceFiles(appContext.filesDir)
+    private val recorder = MediaVoiceRecorder(appContext, voiceFiles)
 
     @Before
     fun grantMicrophone() {
@@ -31,10 +32,11 @@ class MediaVoiceRecorderTest {
         Thread.sleep(1_500)
         val path = recorder.stop().getOrThrow()
 
-        val file = File(path)
-        assertTrue(path, file.path.startsWith(appContext.filesDir.path))
+        // Stored relative to the app's files, like a book's path.
+        assertTrue(path, path.startsWith("voice/"))
+        val file = voiceFiles.resolve(path)
         val duration = MediaMetadataRetriever().run {
-            setDataSource(path)
+            setDataSource(file.path)
             extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!!.toLong().also { release() }
         }
         assertTrue("duration $duration", duration in 1_000..3_000)

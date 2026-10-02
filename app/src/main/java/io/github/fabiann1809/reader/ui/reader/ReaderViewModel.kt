@@ -205,6 +205,9 @@ class ReaderViewModel(
 
     fun closeVoiceNote() = updateReady { it.copy(recordingVoice = false) }
 
+    /** The page shown now as a Locator in JSON, to anchor a voice note there; null before the first page. */
+    fun currentLocation(): String? = session.currentLocation(bookId)
+
     /** Saves a change from the "Aa" sheet; the page shows it at once. A new size replaces a pinch's. */
     fun updateReadingSettings(change: (ReadingSettings) -> ReadingSettings) {
         val state = _uiState.value as? ReaderUiState.Ready ?: return

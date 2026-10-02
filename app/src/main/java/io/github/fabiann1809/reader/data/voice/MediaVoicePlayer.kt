@@ -3,7 +3,7 @@ package io.github.fabiann1809.reader.data.voice
 import android.media.MediaPlayer
 
 /** [VoicePlayer] with Android's MediaPlayer. */
-class MediaVoicePlayer : VoicePlayer {
+class MediaVoicePlayer(private val voiceFiles: VoiceFiles) : VoicePlayer {
 
     private var player: MediaPlayer? = null
     private var playingPath: String? = null
@@ -17,7 +17,7 @@ class MediaVoicePlayer : VoicePlayer {
         stop()
         val mediaPlayer = MediaPlayer()
         return try {
-            mediaPlayer.setDataSource(path)
+            mediaPlayer.setDataSource(voiceFiles.resolve(path).path)
             mediaPlayer.setOnCompletionListener {
                 stop()
                 onDone()

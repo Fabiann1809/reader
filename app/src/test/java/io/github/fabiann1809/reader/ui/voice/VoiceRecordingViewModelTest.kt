@@ -2,7 +2,11 @@ package io.github.fabiann1809.reader.ui.voice
 
 import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.TranscribeAudio
+import io.github.fabiann1809.reader.data.note.NoteTag
+import io.github.fabiann1809.reader.data.note.NoteType
+import io.github.fabiann1809.reader.data.voice.VoiceFiles
 import io.github.fabiann1809.reader.testing.FakeAiProvider
+import io.github.fabiann1809.reader.testing.FakeNoteRepository
 import io.github.fabiann1809.reader.testing.FakeVoicePlayer
 import io.github.fabiann1809.reader.testing.FakeVoiceRecorder
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
@@ -13,6 +17,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runTest
 import java.io.File
 import java.io.IOException
 
@@ -26,11 +32,20 @@ class VoiceRecordingViewModelTest {
         writeBytes(byteArrayOf(1, 2, 3))
         deleteOnExit()
     }
-    private val recorder = FakeVoiceRecorder().apply { stopResult = Result.success(audioFile.path) }
+    // Stored relative to the app's files, here the temporary folder.
+    private val storedPath = audioFile.name
+    private val recorder = FakeVoiceRecorder().apply { stopResult = Result.success(storedPath) }
     private val player = FakeVoicePlayer()
     private val aiProvider = FakeAiProvider()
+    private val noteRepository = FakeNoteRepository()
     private var clock = 1_000L
-    private val viewModel = VoiceRecordingViewModel(recorder, player, TranscribeAudio(aiProvider, ioDispatcher = Dispatchers.Unconfined), now = { clock })
+    private val viewModel = VoiceRecordingViewModel(
+        recorder,
+        player,
+        TranscribeAudio(aiProvider, VoiceFiles(audioFile.parentFile!!), ioDispatcher = Dispatchers.Unconfined),
+        noteRepository,
+        now = { clock },
+    )
 
     private fun recorded() = viewModel.uiState.value as VoiceRecordingUiState.Recorded
 
@@ -44,7 +59,7 @@ class VoiceRecordingViewModelTest {
         viewModel.stop()
 
         assertFalse(recorder.recording)
-        assertEquals(audioFile.path, recorded().path)
+        assertEquals(storedPath, recorded().path)
         assertEquals(12_000, recorded().durationMillis)
     }
 
@@ -99,7 +114,7 @@ class VoiceRecordingViewModelTest {
         viewModel.stop()
 
         viewModel.togglePlayback()
-        assertEquals(audioFile.path, player.playing)
+        assertEquals(storedPath, player.playing)
         assertTrue(recorded().playing)
         // Playing doesn't lose the transcript.
         assertTrue(recorded().transcript is Transcript.Ready)
@@ -122,7 +137,7 @@ class VoiceRecordingViewModelTest {
         viewModel.togglePlayback()
 
         assertEquals(VoiceRecordingUiState.Failed(VoiceFailure.PLAYBACK), viewModel.uiState.value)
-        assertEquals(listOf(audioFile.path), recorder.deleted)
+        assertEquals(listOf(storedPath), recorder.deleted)
     }
 
     @Test
@@ -132,7 +147,7 @@ class VoiceRecordingViewModelTest {
 
         viewModel.discard()
 
-        assertEquals(listOf(audioFile.path), recorder.deleted)
+        assertEquals(listOf(storedPath), recorder.deleted)
         assertEquals(VoiceRecordingUiState.Idle, viewModel.uiState.value)
     }
 
@@ -153,7 +168,7 @@ class VoiceRecordingViewModelTest {
 
         viewModel.start()
 
-        assertEquals(listOf(audioFile.path), recorder.deleted)
+        assertEquals(listOf(storedPath), recorder.deleted)
         assertTrue(viewModel.uiState.value is VoiceRecordingUiState.Recording)
     }
 
@@ -162,5 +177,79 @@ class VoiceRecordingViewModelTest {
         assertEquals("0:00", formatDuration(0))
         assertEquals("0:12", formatDuration(12_400))
         assertEquals("12:05", formatDuration(725_000))
+    }
+
+    @Test
+    fun theWaveFollowsTheMicrophone() = runTest(mainDispatcherRule.testDispatcher) {
+        recorder.currentLevel = 0.8f
+        viewModel.start()
+
+        advanceTimeBy(350)
+
+        val levels = (viewModel.uiState.value as VoiceRecordingUiState.Recording).levels
+        assertEquals(listOf(0.8f, 0.8f, 0.8f), levels)
+        viewModel.discard()
+    }
+
+    @Test
+    fun aTagIsPickedAndClearedByTappingItAgain() {
+        viewModel.toggleTag(NoteTag.DOUBT)
+        assertEquals(NoteTag.DOUBT, viewModel.tag.value)
+
+        viewModel.toggleTag(NoteTag.IDEA)
+        assertEquals(NoteTag.IDEA, viewModel.tag.value)
+
+        viewModel.toggleTag(NoteTag.IDEA)
+        assertNull(viewModel.tag.value)
+    }
+
+    @Test
+    fun savingKeepsTheRecordingAsAVoiceNoteOfTheBook() {
+        viewModel.start()
+        viewModel.toggleTag(NoteTag.TASK)
+        clock += 5_000
+        viewModel.stop()
+        viewModel.onTranscriptChange("Repasar el capítulo 3")
+
+        viewModel.save(bookId = 7, location = "{\"href\":\"ch3.xhtml\"}", page = 42)
+
+        val note = noteRepository.currentNotes.single()
+        assertEquals(7, note.bookId)
+        assertEquals(NoteType.VOICE, note.type)
+        assertEquals("Repasar el capítulo 3", note.content)
+        assertEquals(storedPath, note.audioPath)
+        assertEquals(NoteTag.TASK, note.tag)
+        assertEquals(42, note.page)
+        assertEquals("{\"href\":\"ch3.xhtml\"}", note.location)
+        assertEquals(VoiceRecordingUiState.Saved(note.id), viewModel.uiState.value)
+
+        // Closing the sheet after saving must not delete the saved recording.
+        viewModel.discard()
+        assertTrue(recorder.deleted.isEmpty())
+    }
+
+    @Test
+    fun itCantBeSavedWhileTheTranscriptIsMissing() {
+        aiProvider.transcription = Result.failure(AiError.NoInternet(IOException("offline")))
+        viewModel.start()
+        viewModel.stop()
+
+        assertFalse(recorded().canSave)
+        viewModel.save(bookId = 7, location = null, page = null)
+
+        assertTrue(noteRepository.currentNotes.isEmpty())
+    }
+
+    @Test
+    fun undoDeletesTheSavedNote() {
+        viewModel.start()
+        viewModel.stop()
+        viewModel.save(bookId = 7, location = null, page = null)
+        val noteId = (viewModel.uiState.value as VoiceRecordingUiState.Saved).noteId!!
+
+        viewModel.undoSave(noteId)
+
+        assertTrue(noteRepository.currentNotes.isEmpty())
+        assertEquals(VoiceRecordingUiState.Idle, viewModel.uiState.value)
     }
 }
