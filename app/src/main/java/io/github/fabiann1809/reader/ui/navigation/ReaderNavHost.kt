@@ -69,7 +69,7 @@ fun ReaderNavHost(
             // No destination yet means the graph is not ready. The onboarding ends on the library anyway,
             // and jumping there would skip it.
             val destination = navController.currentDestination ?: return@collect
-            if (!destination.hasRoute<OnboardingRoute>()) navController.navigateToTab(TopLevelTab.LIBRARY)
+            if (!destination.hasRoute<OnboardingRoute>()) navController.showLibrary()
         }
     }
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -100,6 +100,14 @@ fun ReaderNavHost(
  * Switching tabs keeps a single copy of each tab and remembers its state; going back from any
  * tab returns to the library (design 03 §6), and back from the library leaves the app.
  */
+/**
+ * Shows the library itself: from a screen opened on top of it (a book's detail, the reader) the tab
+ * switch would restore that same screen, so going back down the stack is what reaches it.
+ */
+private fun NavHostController.showLibrary() {
+    if (!popBackStack<LibraryRoute>(inclusive = false)) navigateToTab(TopLevelTab.LIBRARY)
+}
+
 private fun NavHostController.navigateToTab(tab: TopLevelTab) {
     navigate(tab.route) {
         // The library is the root of the tabs even when the graph started on the onboarding.
