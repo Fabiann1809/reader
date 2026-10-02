@@ -255,13 +255,13 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T11.12 Resaltados.** Entidad `Highlight` en 4 colores (decoraciones de Readium), visibles en el detalle. *Hecho cuando:* persisten al reabrir.
 - [x] **T11.13 Notas ancladas.** `Note` guarda la posición (locator) y se puede saltar desde la nota al texto. *Hecho cuando:* tocar la nota abre el lector en ese punto.
 - [x] **T11.14 Explicar en PDF.** El visor de PDF no permite seleccionar texto: el botón "IA" permite marcar un párrafo con el dedo, se recorta esa zona y se lee con el `TextRecognizer` existente. *Hecho cuando:* se explica un párrafo de un PDF.
-- [ ] **T11.15 Lectura en voz alta.** TextToSpeech de Android o TTS de Readium: reproducir/pausar, velocidad, voz, temporizador y resaltado de la frase. *Hecho cuando:* lee el capítulo resaltando.
-- [ ] **T11.16 Portada → lector.** Transición de elemento compartido. *Hecho cuando:* la portada se expande a la página.
+- [ ] **T11.15 Lectura en voz alta.** TextToSpeech de Android o TTS de Readium: reproducir/pausar, velocidad, voz, temporizador y resaltado de la frase. *Hecho cuando:* lee el capítulo resaltando. **Pospuesta** (decisión del usuario, 2026-10-02): se retoma más adelante.
+- [ ] **T11.16 Portada → lector.** Transición de elemento compartido. *Hecho cuando:* la portada se expande a la página. **Al final del proyecto** (decisión del usuario, 2026-10-02): es la de más riesgo técnico.
 
 ### Fase 12 — Explicador y captura ampliados
 - [ ] **T12.1 Más simple y otro ejemplo.** Operaciones nuevas en `AiProvider` con el contexto de la explicación anterior. *Hecho cuando:* cada botón devuelve una versión nueva.
-- [ ] **T12.2 Nivel e idioma.** Simple, Intermedio o Técnico, e idioma de las explicaciones, en Ajustes; el prompt lo usa. *Hecho cuando:* cambia el tono.
-- [ ] **T12.3 Guardar para después.** Sin conexión: cola `PendingExplanation` y WorkManager con restricción de red, más una notificación cuando la explicación está lista. *Hecho cuando:* la explicación llega sola al reconectar.
+- [ ] **T12.2 Nivel e idioma.** Simple, Intermedio o Técnico, e idioma de las explicaciones, en Ajustes; el prompt lo usa. *Hecho cuando:* cambia el tono. **Descartada** (decisión del usuario, 2026-10-02): el prompt del sistema ya fija el tono y no aporta lo suficiente.
+- [ ] **T12.3 Guardar para después.** Sin conexión: cola `PendingExplanation` y WorkManager con restricción de red, más una notificación cuando la explicación está lista. *Hecho cuando:* la explicación llega sola al reconectar. **Pospuesta** (decisión del usuario, 2026-10-02): por ahora basta el mensaje de error de conexión que ya existe.
 - [ ] **T12.4 OCR dudoso.** Usar la confianza de ML Kit para mostrar el aviso "No estoy seguro de haber leído bien" y marcar las líneas dudosas. *Hecho cuando:* una foto borrosa muestra el aviso.
 - [ ] **T12.5 Recorte y párrafo.** Esquinas editables y "Seleccionar párrafo" (bloques de ML Kit). *Hecho cuando:* se explica solo el párrafo elegido.
 - [ ] **T12.6 Asociar captura.** Selector de libro (o "sin libro", lo que requiere migrar `Note.bookId` a nullable) y número de página. *Hecho cuando:* la nota queda en el libro y página elegidos.
@@ -271,7 +271,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [ ] **T13.1 Permiso y grabación.** Pantalla explicativa del micrófono y grabación con MediaRecorder en almacenamiento interno. *Hecho cuando:* se graba y se reproduce.
 - [ ] **T13.2 Transcripción.** Archivo de audio enviado a Gemini con `AiProvider.transcribe` (ver decisión 2). *Hecho cuando:* la nota muestra el texto editable.
 - [ ] **T13.3 Interfaz de grabación.** Hoja con onda, temporizador y etiquetas Idea, Duda, Cita y Tarea; se asocia al libro y la posición; snackbar con Deshacer. *Hecho cuando:* coincide con la lámina 1i.
-- [ ] **T13.4 Grabar sin mirar.** Notificación persistente "Grabar/Detener" con un servicio en primer plano de tipo micrófono. *Hecho cuando:* graba con la pantalla apagada.
+- [ ] **T13.4 Grabar sin mirar.** Notificación persistente "Grabar/Detener" con un servicio en primer plano de tipo micrófono. *Hecho cuando:* graba con la pantalla apagada. **Pospuesta** (decisión del usuario, 2026-10-02).
 - [ ] **T13.5 Nota de voz en listas.** Reproductor y transcripción en el detalle y en Todas las notas. *Hecho cuando:* se reproduce desde la lista.
 
 ### Fase 14 — Fichas y repaso (B4, B5)
@@ -302,9 +302,10 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [ ] **T17.2 Exportar respaldo.** ZIP con los datos en JSON, archivos de libros y audios, guardado con SAF. Nunca incluye la clave de API. *Hecho cuando:* se genera el archivo.
 - [ ] **T17.3 Importar respaldo.** Con confirmación y validación de versión. *Hecho cuando:* restaura en una instalación limpia.
 - [ ] **T17.4 Todas las notas.** Lista global con búsqueda y filtro por tipo. *Hecho cuando:* encuentra una nota por texto.
-- [ ] **T17.6 Widget y accesos directos.** Widget con Glance (Continuar o Grabar nota) y accesos directos del ícono (Continuar, Captura, Nota de voz). *Hecho cuando:* abren el destino correcto.
+- [ ] **T17.6 Widget y accesos directos.** Widget con Glance (Continuar o Grabar nota) y accesos directos del ícono (Continuar, Captura, Nota de voz). *Hecho cuando:* abren el destino correcto. **Pospuesta** (decisión del usuario, 2026-10-02).
 
 ### Fase 18 — Nube (requiere decisiones; ver riesgos)
+> **Al final del proyecto** (decisión del usuario, 2026-10-02): nada de esta fase se hace hasta terminar las demás.
 - [ ] **T18.1 Sincronización con Google Drive.** Carpeta de datos de la app (appDataFolder) con inicio de sesión de Google, estados (Sincronizado, Pendiente, Error con Reintentar) y resolución de conflictos. Cambia la decisión "sin cuentas" del spec. *Hecho cuando:* dos dispositivos ven los mismos datos.
 - [ ] **T18.2 Dropbox.** Mismo contrato que T18.1. *Hecho cuando:* sincroniza.
 
