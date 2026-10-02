@@ -23,6 +23,15 @@ data class Part(
     val text: String? = null,
     // True for the model's internal reasoning parts, which must not be shown to the user.
     val thought: Boolean? = null,
+    // A file sent inside the request, like a voice note's audio.
+    val inlineData: InlineData? = null,
+)
+
+@Serializable
+data class InlineData(
+    val mimeType: String,
+    // The file's bytes in Base64.
+    val data: String,
 )
 
 @Serializable

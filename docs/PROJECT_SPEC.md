@@ -269,7 +269,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 
 ### Fase 13 — Notas de voz (B3)
 - [x] **T13.1 Permiso y grabación.** Pantalla explicativa del micrófono y grabación con MediaRecorder en almacenamiento interno. *Hecho cuando:* se graba y se reproduce.
-- [ ] **T13.2 Transcripción.** Archivo de audio enviado a Gemini con `AiProvider.transcribe` (ver decisión 2). *Hecho cuando:* la nota muestra el texto editable.
+- [x] **T13.2 Transcripción.** Archivo de audio enviado a Gemini con `AiProvider.transcribe` (ver decisión 2). *Hecho cuando:* la nota muestra el texto editable.
 - [ ] **T13.3 Interfaz de grabación.** Hoja con onda, temporizador y etiquetas Idea, Duda, Cita y Tarea; se asocia al libro y la posición; snackbar con Deshacer. *Hecho cuando:* coincide con la lámina 1i.
 - [ ] **T13.4 Grabar sin mirar.** Notificación persistente "Grabar/Detener" con un servicio en primer plano de tipo micrófono. *Hecho cuando:* graba con la pantalla apagada. **Pospuesta** (decisión del usuario, 2026-10-02).
 - [ ] **T13.5 Nota de voz en listas.** Reproductor y transcripción en el detalle y en Todas las notas. *Hecho cuando:* se reproduce desde la lista.

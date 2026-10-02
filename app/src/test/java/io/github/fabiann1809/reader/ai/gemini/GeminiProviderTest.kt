@@ -245,6 +245,32 @@ class GeminiProviderTest {
     }
 
     @Test
+    fun sendsTheAudioInlineAndReturnsTheTranscript() = runTest {
+        enqueueAnswer("Una idea ", "sobre el capítulo.")
+
+        val transcript = provider.transcribe(byteArrayOf(1, 2, 3), "audio/mp4").getOrThrow()
+
+        assertEquals("Una idea sobre el capítulo.", transcript)
+        val body = server.takeRequest().body!!.utf8()
+        assertTrue(body, body.contains("\"inlineData\":{\"mimeType\":\"audio/mp4\",\"data\":\"AQID\"}"))
+        assertTrue(body, body.contains("Transcribe palabra por palabra"))
+    }
+
+    @Test
+    fun silenceIsAnEmptyTranscriptNotAnError() = runTest {
+        enqueue(200, """{"candidates":[{"content":{"parts":[{"text":""}]},"finishReason":"STOP"}]}""")
+
+        assertEquals("", provider.transcribe(byteArrayOf(1), "audio/mp4").getOrThrow())
+    }
+
+    @Test
+    fun anEmptyExplanationIsStillAnError() = runTest {
+        enqueue(200, """{"candidates":[{"content":{"parts":[{"text":""}]},"finishReason":"STOP"}]}""")
+
+        assertFailsWith<AiError.Unknown>()
+    }
+
+    @Test
     fun malformedJsonMapsToUnknown() = runTest {
         enqueue(200, "not json")
 

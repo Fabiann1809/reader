@@ -34,6 +34,8 @@ class ExplanationViewModelTest {
         val answer = CompletableDeferred<Result<Explanation>>()
         val slowProvider = object : AiProvider {
             override suspend fun explain(text: String) = answer.await()
+
+            override suspend fun transcribe(audio: ByteArray, mimeType: String) = Result.success("")
         }
 
         val viewModel = viewModel(slowProvider)

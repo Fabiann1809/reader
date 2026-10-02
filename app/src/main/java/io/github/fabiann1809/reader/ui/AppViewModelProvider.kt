@@ -123,6 +123,7 @@ object AppViewModelProvider {
             VoiceRecordingViewModel(
                 recorder = readerApplication().container.voiceRecorder,
                 player = readerApplication().container.voicePlayer,
+                transcribe = readerApplication().container.transcribeAudio,
             )
         }
     }

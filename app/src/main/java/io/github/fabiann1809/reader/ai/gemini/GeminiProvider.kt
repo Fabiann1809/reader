@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.ai.gemini
 import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.Explanation
+import io.github.fabiann1809.reader.ai.TranscriptionPrompt
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,19 +15,22 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.net.SocketTimeoutException
+import java.util.Base64
 
 /**
  * [AiProvider] backed by Google Gemini (REST `models.generateContent`).
  *
  * The API key is read from [apiKeyStore] on every call and sent only in the
  * `x-goog-api-key` header. Nothing here logs requests, headers or the key.
- * The answer is requested as JSON with [ExplanationSchema] and decoded into an [Explanation].
+ * An explanation is requested as JSON with [ExplanationSchema] and decoded into an [Explanation];
+ * a transcription sends the audio inline, with [transcriptionInstruction], and gets plain text.
  * Every failure is reported as an [AiError]. When [model] is overloaded (5xx), the request is
  * retried once with [fallbackModel] so the user still gets an answer.
  */
 class GeminiProvider(
     private val apiKeyStore: ApiKeyStore,
     private val systemInstruction: String,
+    private val transcriptionInstruction: String = TranscriptionPrompt.SYSTEM_INSTRUCTION,
     private val httpClient: OkHttpClient,
     private val baseUrl: String = DEFAULT_BASE_URL,
     private val model: String = DEFAULT_MODEL,
@@ -39,8 +43,6 @@ class GeminiProvider(
     }
 
     override suspend fun explain(text: String): Result<Explanation> {
-        val apiKey = apiKeyStore.getApiKey() ?: return Result.failure(AiError.MissingApiKey())
-
         val request = GenerateContentRequest(
             systemInstruction = Content(parts = listOf(Part(text = systemInstruction))),
             contents = listOf(Content(role = "user", parts = listOf(Part(text = text)))),
@@ -50,16 +52,38 @@ class GeminiProvider(
                 responseSchema = ExplanationSchema,
             ),
         )
+        return generate(request) { answer -> json.decodeFromString<Explanation>(answer.requireText()).normalized() }
+    }
+
+    override suspend fun transcribe(audio: ByteArray, mimeType: String): Result<String> {
+        val request = GenerateContentRequest(
+            systemInstruction = Content(parts = listOf(Part(text = transcriptionInstruction))),
+            contents = listOf(
+                Content(
+                    role = "user",
+                    parts = listOf(Part(inlineData = InlineData(mimeType, Base64.getEncoder().encodeToString(audio)))),
+                ),
+            ),
+            // Low temperature: a transcript should repeat what was said, not reword it.
+            generationConfig = GenerationConfig(temperature = TRANSCRIPTION_TEMPERATURE),
+        )
+        // Silence is a valid answer: an empty transcript, not an error.
+        return generate(request) { answer -> answer }
+    }
+
+    /** Sends [request], falling back to [fallbackModel] when [model] is overloaded, and [parse]s the answer. */
+    private suspend fun <T> generate(request: GenerateContentRequest, parse: (String) -> T): Result<T> {
+        val apiKey = apiKeyStore.getApiKey() ?: return Result.failure(AiError.MissingApiKey())
         return withContext(Dispatchers.IO) {
-            val result = call(model, apiKey, request)
+            val result = call(model, apiKey, request, parse)
             val unavailable = result.exceptionOrNull() is AiError.ServiceUnavailable
-            if (unavailable && fallbackModel != null) call(fallbackModel, apiKey, request) else result
+            if (unavailable && fallbackModel != null) call(fallbackModel, apiKey, request, parse) else result
         }
     }
 
-    private fun call(model: String, apiKey: String, request: GenerateContentRequest): Result<Explanation> =
+    private fun <T> call(model: String, apiKey: String, request: GenerateContentRequest, parse: (String) -> T): Result<T> =
         try {
-            Result.success(send(model, apiKey, request))
+            Result.success(parse(send(model, apiKey, request)))
         } catch (e: AiError) {
             Result.failure(e)
         } catch (e: SocketTimeoutException) {
@@ -72,7 +96,8 @@ class GeminiProvider(
             Result.failure(AiError.Unknown("Unexpected Gemini response", e))
         }
 
-    private fun send(model: String, apiKey: String, body: GenerateContentRequest): Explanation {
+    /** The model's answer as text; empty only when the model ended normally without saying anything. */
+    private fun send(model: String, apiKey: String, body: GenerateContentRequest): String {
         val httpRequest = Request.Builder()
             .url("$baseUrl/v1beta/models/$model:generateContent")
             .header("x-goog-api-key", apiKey)
@@ -82,8 +107,7 @@ class GeminiProvider(
         httpClient.newCall(httpRequest).execute().use { response ->
             val responseBody = response.body.string()
             if (!response.isSuccessful) throw GeminiErrorParser.parse(response.code, responseBody)
-            val answer = extractText(json.decodeFromString<GenerateContentResponse>(responseBody))
-            return json.decodeFromString<Explanation>(answer).normalized()
+            return extractText(json.decodeFromString<GenerateContentResponse>(responseBody))
         }
     }
 
@@ -95,13 +119,12 @@ class GeminiProvider(
             .mapNotNull { it.text }
             .joinToString(separator = "")
             .trim()
-        if (text.isEmpty()) {
-            // An empty answer with a finish reason like SAFETY means the output was filtered.
-            throw candidate.finishReason?.takeIf { it != "STOP" }?.let { AiError.ContentBlocked(it) }
-                ?: AiError.Unknown("Gemini returned no text")
-        }
+        // An empty answer with a finish reason like SAFETY means the output was filtered.
+        if (text.isEmpty()) candidate.finishReason?.takeIf { it != "STOP" }?.let { throw AiError.ContentBlocked(it) }
         return text
     }
+
+    private fun String.requireText(): String = ifEmpty { throw AiError.Unknown("Gemini returned no text") }
 
     // Models sometimes return "" instead of null for an empty caveat.
     private fun Explanation.normalized(): Explanation = copy(
@@ -122,6 +145,7 @@ class GeminiProvider(
         const val DEFAULT_FALLBACK_MODEL = "gemini-flash-lite-latest"
 
         private const val TEMPERATURE = 0.4
+        private const val TRANSCRIPTION_TEMPERATURE = 0.0
         private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
     }
 }

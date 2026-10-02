@@ -1,5 +1,8 @@
 package io.github.fabiann1809.reader.ui.voice
 
+import io.github.fabiann1809.reader.ai.AiError
+import io.github.fabiann1809.reader.ai.TranscribeAudio
+import io.github.fabiann1809.reader.testing.FakeAiProvider
 import io.github.fabiann1809.reader.testing.FakeVoicePlayer
 import io.github.fabiann1809.reader.testing.FakeVoiceRecorder
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
@@ -9,6 +12,8 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import kotlinx.coroutines.Dispatchers
+import java.io.File
 import java.io.IOException
 
 class VoiceRecordingViewModelTest {
@@ -16,10 +21,18 @@ class VoiceRecordingViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val recorder = FakeVoiceRecorder()
+    // A real file: the transcription reads the recording before sending it.
+    private val audioFile = File.createTempFile("voice", ".m4a").apply {
+        writeBytes(byteArrayOf(1, 2, 3))
+        deleteOnExit()
+    }
+    private val recorder = FakeVoiceRecorder().apply { stopResult = Result.success(audioFile.path) }
     private val player = FakeVoicePlayer()
+    private val aiProvider = FakeAiProvider()
     private var clock = 1_000L
-    private val viewModel = VoiceRecordingViewModel(recorder, player, now = { clock })
+    private val viewModel = VoiceRecordingViewModel(recorder, player, TranscribeAudio(aiProvider, ioDispatcher = Dispatchers.Unconfined), now = { clock })
+
+    private fun recorded() = viewModel.uiState.value as VoiceRecordingUiState.Recorded
 
     @Test
     fun recordsUntilStoppedAndKeepsTheLength() {
@@ -31,7 +44,34 @@ class VoiceRecordingViewModelTest {
         viewModel.stop()
 
         assertFalse(recorder.recording)
-        assertEquals(VoiceRecordingUiState.Recorded("/files/voice/voice-1.m4a", durationMillis = 12_000), viewModel.uiState.value)
+        assertEquals(audioFile.path, recorded().path)
+        assertEquals(12_000, recorded().durationMillis)
+    }
+
+    @Test
+    fun theRecordingIsWrittenDownAndCanBeCorrected() {
+        viewModel.start()
+        viewModel.stop()
+
+        assertEquals(Transcript.Ready("Una idea sobre el capítulo"), recorded().transcript)
+        assertEquals("audio/mp4", aiProvider.audios.single().second)
+
+        viewModel.onTranscriptChange("Una idea sobre el capítulo 3")
+        assertEquals(Transcript.Ready("Una idea sobre el capítulo 3"), recorded().transcript)
+    }
+
+    @Test
+    fun aFailedTranscriptionCanBeRetried() {
+        aiProvider.transcription = Result.failure(AiError.NoInternet(IOException("offline")))
+        viewModel.start()
+        viewModel.stop()
+        assertTrue(recorded().transcript is Transcript.Failed)
+
+        aiProvider.transcription = Result.success("Ahora sí")
+        viewModel.retryTranscription()
+
+        assertEquals(Transcript.Ready("Ahora sí"), recorded().transcript)
+        assertEquals(2, aiProvider.audios.size)
     }
 
     @Test
@@ -59,8 +99,10 @@ class VoiceRecordingViewModelTest {
         viewModel.stop()
 
         viewModel.togglePlayback()
-        assertEquals("/files/voice/voice-1.m4a", player.playing)
-        assertTrue((viewModel.uiState.value as VoiceRecordingUiState.Recorded).playing)
+        assertEquals(audioFile.path, player.playing)
+        assertTrue(recorded().playing)
+        // Playing doesn't lose the transcript.
+        assertTrue(recorded().transcript is Transcript.Ready)
 
         viewModel.togglePlayback()
         assertNull(player.playing)
@@ -80,6 +122,7 @@ class VoiceRecordingViewModelTest {
         viewModel.togglePlayback()
 
         assertEquals(VoiceRecordingUiState.Failed(VoiceFailure.PLAYBACK), viewModel.uiState.value)
+        assertEquals(listOf(audioFile.path), recorder.deleted)
     }
 
     @Test
@@ -89,7 +132,7 @@ class VoiceRecordingViewModelTest {
 
         viewModel.discard()
 
-        assertEquals(listOf("/files/voice/voice-1.m4a"), recorder.deleted)
+        assertEquals(listOf(audioFile.path), recorder.deleted)
         assertEquals(VoiceRecordingUiState.Idle, viewModel.uiState.value)
     }
 
@@ -110,7 +153,7 @@ class VoiceRecordingViewModelTest {
 
         viewModel.start()
 
-        assertEquals(listOf("/files/voice/voice-1.m4a"), recorder.deleted)
+        assertEquals(listOf(audioFile.path), recorder.deleted)
         assertTrue(viewModel.uiState.value is VoiceRecordingUiState.Recording)
     }
 

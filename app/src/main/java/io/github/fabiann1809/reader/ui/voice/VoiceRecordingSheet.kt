@@ -83,6 +83,8 @@ fun VoiceRecordingSheet(
                     onTogglePlayback = viewModel::togglePlayback,
                     onRetry = viewModel::start,
                     onDiscard = close,
+                    onTranscriptChange = viewModel::onTranscriptChange,
+                    onRetryTranscript = viewModel::retryTranscription,
                 )
             } else {
                 MicrophonePermissionContent(permission.status, onRequest = permission.request)
@@ -99,6 +101,8 @@ private fun RecordingContent(
     onTogglePlayback: () -> Unit,
     onRetry: () -> Unit,
     onDiscard: () -> Unit,
+    onTranscriptChange: (String) -> Unit,
+    onRetryTranscript: () -> Unit,
 ) {
     val title = when (state) {
         is VoiceRecordingUiState.Recorded -> R.string.voice_recorded_title
@@ -124,6 +128,14 @@ private fun RecordingContent(
         textAlign = TextAlign.Center,
         modifier = Modifier.padding(bottom = 24.dp),
     )
+    if (state is VoiceRecordingUiState.Recorded) {
+        TranscriptField(
+            state.transcript,
+            onChange = onTranscriptChange,
+            onRetry = onRetryTranscript,
+            modifier = Modifier.padding(bottom = 24.dp),
+        )
+    }
     Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onDiscard, modifier = Modifier.size(48.dp)) {
             Icon(

@@ -16,4 +16,12 @@ class FakeAiProvider(
         requests += text
         return result
     }
+
+    var transcription: Result<String> = Result.success("Una idea sobre el capítulo")
+    val audios = mutableListOf<Pair<ByteArray, String>>()
+
+    override suspend fun transcribe(audio: ByteArray, mimeType: String): Result<String> {
+        audios += audio to mimeType
+        return transcription
+    }
 }

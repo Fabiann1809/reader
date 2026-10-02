@@ -182,6 +182,10 @@
     <string name="voice_permission_message">Reader usa el micrófono solo mientras grabas una nota de voz. El audio se guarda en tu teléfono.</string>
     <string name="voice_permission_denied_message">Activa el micrófono en los ajustes del sistema para grabar notas de voz.</string>
     <string name="voice_permission_allow">Permitir micrófono</string>
+    <string name="voice_transcribing">Pasando tu nota a texto…</string>
+    <string name="voice_transcript_label">Transcripción</string>
+    <string name="voice_transcript_empty">No se entendió ninguna palabra. Puedes escribir la nota aquí.</string>
+    <string name="voice_transcript_retry">Reintentar</string>
     <string name="book_menu_select">Seleccionar</string>
     <string name="selection_close">Cancelar selección</string>
     <plurals name="selection_count">
