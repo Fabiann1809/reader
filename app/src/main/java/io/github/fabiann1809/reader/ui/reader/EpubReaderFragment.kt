@@ -1,6 +1,9 @@
 package io.github.fabiann1809.reader.ui.reader
 
 import android.os.Bundle
+import android.view.ActionMode
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
@@ -24,6 +27,9 @@ class EpubReaderFragment : NavigatorHostFragment() {
 
     override val navigatorClass: Class<out Fragment> = EpubNavigatorFragment::class.java
 
+    /** Set by ReaderScreen: the text selected on the page, or null when the selection ends (T11.10). */
+    var onSelection: (TextSelection?) -> Unit = {}
+
     override val onPinch: (Float) -> Unit = { scale ->
         val current = session.adjustments.fontSize ?: session.readingSettings.value.fontSize
         val fontSize = fontSizeAfterPinch(current, scale)
@@ -35,7 +41,7 @@ class EpubReaderFragment : NavigatorHostFragment() {
         EpubNavigatorFactory(publication).createFragmentFactory(
             initialLocator = initialLocator,
             initialPreferences = session.readingSettings.value.toEpubPreferences(session.adjustments.fontSize),
-            configuration = readerFontsConfiguration(),
+            configuration = readerFontsConfiguration().apply { selectionActionModeCallback = SelectionCallback() },
         )
 
     override fun dummyNavigatorFactory(): FragmentFactory = EpubNavigatorFragment.createDummyFactory()
@@ -46,6 +52,44 @@ class EpubReaderFragment : NavigatorHostFragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 session.readingSettings.collect(::applyPreferences)
             }
+        }
+    }
+
+    /** Ends the selection, e.g. once a capsule action used it. */
+    fun clearSelection() {
+        (navigator as? EpubNavigatorFragment)?.clearSelection()
+    }
+
+    /**
+     * Replaces the system's text menu with the app's capsule: the menu stays empty (so Android shows
+     * none) while ReaderScreen draws the capsule from [onSelection].
+     */
+    private inner class SelectionCallback : ActionMode.Callback {
+        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+            menu.clear()
+            reportSelection()
+            return true
+        }
+
+        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
+            menu.clear()
+            // Dragging the handles changes the selection: the capsule follows it.
+            reportSelection()
+            return true
+        }
+
+        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean = false
+
+        override fun onDestroyActionMode(mode: ActionMode) = onSelection(null)
+    }
+
+    private fun reportSelection() {
+        val navigator = navigator as? EpubNavigatorFragment ?: return
+        viewLifecycleOwner.lifecycleScope.launch {
+            val selection = navigator.currentSelection() ?: return@launch
+            val text = selection.locator.text.highlight?.takeIf { it.isNotBlank() } ?: return@launch
+            val bounds = selection.rect?.let { SelectionBounds(it.left, it.top, it.right, it.bottom) }
+            onSelection(TextSelection(text, bounds))
         }
     }
 

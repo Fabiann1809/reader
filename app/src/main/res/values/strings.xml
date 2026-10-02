@@ -90,6 +90,15 @@
     <string name="reader_bookmarks_empty_hint">Toca el marcador de la barra de arriba para guardar la página.</string>
     <string name="reader_toc_empty">Este libro no tiene índice.</string>
     <string name="reader_untitled_chapter">Sin título</string>
+    <string name="selection_explain">Explicar</string>
+    <string name="selection_highlight">Resaltar</string>
+    <string name="selection_note">Nota</string>
+    <string name="selection_voice_note">Nota de voz</string>
+    <string name="selection_card">Crear ficha</string>
+    <string name="selection_more">Más</string>
+    <string name="selection_copy">Copiar</string>
+    <string name="selection_search">Buscar</string>
+    <string name="selection_share">Compartir</string>
     <string name="reading_settings_theme">Tema</string>
     <string name="reading_settings_font">Fuente</string>
     <string name="reading_settings_size">Tamaño</string>

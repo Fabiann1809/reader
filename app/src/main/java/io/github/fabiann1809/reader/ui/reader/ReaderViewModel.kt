@@ -129,6 +129,11 @@ class ReaderViewModel(
         bookmarkRepository.observeBookmarks(bookId).collect { list -> updateReady { it.copy(bookmarks = list) } }
     }
 
+    /** The page's selected text, or null when it ends; the capsule replaces the controls meanwhile. */
+    fun setSelection(selection: TextSelection?) = updateReady {
+        it.copy(selection = selection, controlsVisible = if (selection != null) false else it.controlsVisible)
+    }
+
     /** Opens the "Aa" sheet. */
     fun showTextSettings() = updateReady { it.copy(textSettingsVisible = true) }
 

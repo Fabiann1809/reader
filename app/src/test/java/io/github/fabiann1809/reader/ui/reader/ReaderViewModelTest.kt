@@ -282,6 +282,21 @@ class ReaderViewModelTest {
         assertEquals(0.4f, session.adjustments.brightness!!, 0.0001f)
     }
 
+    @Test
+    fun aSelectionHidesTheControlsAndEndingItKeepsThemHidden() {
+        val viewModel = viewModel(bookId = 1, session = FakeSession())
+        viewModel.toggleControls()
+        val selection = TextSelection("memoria", SelectionBounds(10f, 20f, 110f, 60f))
+
+        viewModel.setSelection(selection)
+        assertEquals(selection, ready(viewModel).selection)
+        assertFalse(ready(viewModel).controlsVisible)
+
+        viewModel.setSelection(null)
+        assertNull(ready(viewModel).selection)
+        assertFalse(ready(viewModel).controlsVisible)
+    }
+
     private fun ready(viewModel: ReaderViewModel) = viewModel.uiState.value as ReaderUiState.Ready
 
     @Test

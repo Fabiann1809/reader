@@ -12,6 +12,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,12 +55,17 @@ fun ReaderScreen(
                 BackHandler(enabled = !state.controlsVisible, onBack = viewModel::showControls)
                 KeepScreenOn(state.readingSettings.keepScreenOn)
                 val indicators = state.readingSettings.showsIndicators
+                // The page ends above the indicators, so they never cover text.
+                val pageModifier = Modifier.padding(bottom = if (indicators) IndicatorsHeight else 0.dp)
+                // Kept so the selection capsule can end the selection after using it.
+                var epubFragment by remember { mutableStateOf<EpubReaderFragment?>(null) }
                 BookNavigator(
                     state.bookId,
                     state.format,
                     onCenterTap = viewModel::toggleControls,
-                    // The page ends above the indicators, so they never cover text.
-                    modifier = Modifier.padding(bottom = if (indicators) IndicatorsHeight else 0.dp),
+                    onSelection = viewModel::setSelection,
+                    onEpubFragment = { epubFragment = it },
+                    modifier = pageModifier,
                 )
                 if (indicators) {
                     ReadingIndicators(
@@ -66,6 +74,14 @@ fun ReaderScreen(
                         positionCount = state.positionCount,
                         textColor = pageTextColor(state),
                         modifier = Modifier.align(Alignment.BottomCenter),
+                    )
+                }
+                state.selection?.let { selection ->
+                    ReaderSelection(
+                        selection,
+                        darkPage = state.readingSettings.theme.colors().isDark,
+                        onEnd = { epubFragment?.clearSelection() },
+                        modifier = pageModifier,
                     )
                 }
                 ReaderControls(
@@ -128,10 +144,24 @@ private fun SystemBrightnessOnLeave() {
 
 /** Readium's navigator for the book's format. */
 @Composable
-private fun BookNavigator(bookId: Long, format: BookFormat, onCenterTap: () -> Unit, modifier: Modifier = Modifier) {
+private fun BookNavigator(
+    bookId: Long,
+    format: BookFormat,
+    onCenterTap: () -> Unit,
+    onSelection: (TextSelection?) -> Unit,
+    onEpubFragment: (EpubReaderFragment) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val arguments = bundleOf(NavigatorHostFragment.ARG_BOOK_ID to bookId)
     val fragmentModifier = modifier.fillMaxSize()
-    val connect: (NavigatorHostFragment) -> Unit = { it.onCenterTap = onCenterTap }
+    val connect: (NavigatorHostFragment) -> Unit = { fragment ->
+        fragment.onCenterTap = onCenterTap
+        // Only EPUB pages have selectable text; PDFs get it with OCR later (T11.14).
+        (fragment as? EpubReaderFragment)?.let { epub ->
+            epub.onSelection = onSelection
+            onEpubFragment(epub)
+        }
+    }
     when (format) {
         BookFormat.PDF -> AndroidFragment<PdfReaderFragment>(arguments = arguments, modifier = fragmentModifier, onUpdate = connect)
         // The session only opens EPUB and PDF (see ReadiumReaderSession).
