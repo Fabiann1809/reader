@@ -1,7 +1,5 @@
-package io.github.fabiann1809.reader.ui.capture
+package io.github.fabiann1809.reader.ui.components
 
-import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.activity.compose.LocalActivity
@@ -18,7 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 
-enum class CameraPermissionStatus {
+enum class PermissionStatus {
     GRANTED,
 
     /** Never asked yet: show the explanation and ask. */
@@ -35,54 +33,52 @@ enum class CameraPermissionStatus {
  * Pure decision logic (unit-tested). Android only reports "permanently denied" indirectly:
  * after a request, a denied permission that no longer needs a rationale can't be asked again.
  */
-fun cameraPermissionStatus(
+fun permissionStatus(
     isGranted: Boolean,
     hasRequested: Boolean,
     shouldShowRationale: Boolean,
-): CameraPermissionStatus = when {
-    isGranted -> CameraPermissionStatus.GRANTED
-    !hasRequested -> CameraPermissionStatus.NOT_REQUESTED
-    shouldShowRationale -> CameraPermissionStatus.DENIED
-    else -> CameraPermissionStatus.PERMANENTLY_DENIED
+): PermissionStatus = when {
+    isGranted -> PermissionStatus.GRANTED
+    !hasRequested -> PermissionStatus.NOT_REQUESTED
+    shouldShowRationale -> PermissionStatus.DENIED
+    else -> PermissionStatus.PERMANENTLY_DENIED
 }
 
-class CameraPermissionState(
-    val status: CameraPermissionStatus,
+class PermissionState(
+    val status: PermissionStatus,
     val request: () -> Unit,
 )
 
+/** The state of a runtime [permission] (the camera, the microphone...) and how to ask for it. */
 @Composable
-fun rememberCameraPermissionState(): CameraPermissionState {
+fun rememberPermissionState(permission: String): PermissionState {
     val context = LocalContext.current
     val activity = LocalActivity.current
-    var isGranted by remember { mutableStateOf(context.hasCameraPermission()) }
+    var isGranted by remember { mutableStateOf(context.hasPermission(permission)) }
     var hasRequested by rememberSaveable { mutableStateOf(false) }
     // Kept in state (not read during composition) so a second denial, which changes only
     // this value, still triggers a recomposition.
-    var shouldShowRationale by remember { mutableStateOf(activity?.shouldShowCameraRationale() ?: false) }
+    var shouldShowRationale by remember { mutableStateOf(activity?.shouldShowRequestPermissionRationale(permission) ?: false) }
 
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         hasRequested = true
         isGranted = granted
-        shouldShowRationale = activity?.shouldShowCameraRationale() ?: false
+        shouldShowRationale = activity?.shouldShowRequestPermissionRationale(permission) ?: false
     }
 
     // The user may grant the permission from system settings and come back.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        isGranted = context.hasCameraPermission()
-        shouldShowRationale = activity?.shouldShowCameraRationale() ?: false
+        isGranted = context.hasPermission(permission)
+        shouldShowRationale = activity?.shouldShowRequestPermissionRationale(permission) ?: false
     }
 
-    val status = cameraPermissionStatus(
+    val status = permissionStatus(
         isGranted = isGranted,
         hasRequested = hasRequested,
         shouldShowRationale = shouldShowRationale,
     )
-    return CameraPermissionState(status = status, request = { launcher.launch(Manifest.permission.CAMERA) })
+    return PermissionState(status = status, request = { launcher.launch(permission) })
 }
 
-private fun Context.hasCameraPermission(): Boolean =
-    ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-
-private fun Activity.shouldShowCameraRationale(): Boolean =
-    shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
+private fun Context.hasPermission(permission: String): Boolean =
+    ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED

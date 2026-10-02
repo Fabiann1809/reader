@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ui.capture
 
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -38,8 +39,10 @@ import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ui.components.LightStatusBarIcons
 import io.github.fabiann1809.reader.ui.components.OutlineButton
+import io.github.fabiann1809.reader.ui.components.PermissionStatus
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
+import io.github.fabiann1809.reader.ui.components.rememberPermissionState
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import io.github.fabiann1809.reader.util.cropImage
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +51,7 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun CaptureScreen(onNavigateUp: () -> Unit, onImageReady: (Uri) -> Unit) {
-    val permission = rememberCameraPermissionState()
+    val permission = rememberPermissionState(Manifest.permission.CAMERA)
     val context = LocalContext.current
     val resources = LocalResources.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -65,7 +68,7 @@ fun CaptureScreen(onNavigateUp: () -> Unit, onImageReady: (Uri) -> Unit) {
     }
 
     val uri = capturedUri
-    val showCamera = uri == null && permission.status == CameraPermissionStatus.GRANTED
+    val showCamera = uri == null && permission.status == PermissionStatus.GRANTED
     if (showCamera) LightStatusBarIcons()
 
     Scaffold(
@@ -127,7 +130,7 @@ fun CaptureScreen(onNavigateUp: () -> Unit, onImageReady: (Uri) -> Unit) {
 
 @Composable
 fun CameraPermissionRequest(
-    status: CameraPermissionStatus,
+    status: PermissionStatus,
     onRequestPermission: () -> Unit,
     onOpenSettings: () -> Unit,
     onPickFromGallery: () -> Unit,
@@ -151,7 +154,7 @@ fun CameraPermissionRequest(
         )
         Text(
             text = stringResource(
-                if (status == CameraPermissionStatus.PERMANENTLY_DENIED) {
+                if (status == PermissionStatus.PERMANENTLY_DENIED) {
                     R.string.camera_permission_denied_message
                 } else {
                     R.string.camera_permission_message
@@ -160,7 +163,7 @@ fun CameraPermissionRequest(
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )
-        if (status == CameraPermissionStatus.PERMANENTLY_DENIED) {
+        if (status == PermissionStatus.PERMANENTLY_DENIED) {
             PrimaryButton(
                 text = stringResource(R.string.camera_permission_open_settings),
                 onClick = onOpenSettings,
@@ -189,7 +192,7 @@ fun CameraPermissionRequest(
 private fun CameraPermissionRequestPreview() {
     ReaderTheme {
         CameraPermissionRequest(
-            status = CameraPermissionStatus.NOT_REQUESTED,
+            status = PermissionStatus.NOT_REQUESTED,
             onRequestPermission = {},
             onOpenSettings = {},
             onPickFromGallery = {},
