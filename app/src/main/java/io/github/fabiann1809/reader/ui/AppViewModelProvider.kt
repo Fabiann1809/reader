@@ -69,6 +69,7 @@ object AppViewModelProvider {
                 bookmarkRepository = readerApplication().container.bookmarkRepository,
                 highlightRepository = readerApplication().container.highlightRepository,
                 readingPreferences = readerApplication().container.readingPreferences,
+                textRecognizer = readerApplication().container.textRecognizer,
                 session = readerApplication().container.readerSession,
             )
         }

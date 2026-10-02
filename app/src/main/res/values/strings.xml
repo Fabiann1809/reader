@@ -100,6 +100,10 @@
     <string name="reader_toc_empty">Este libro no tiene índice.</string>
     <string name="reader_untitled_chapter">Sin título</string>
     <string name="selection_explain">Explicar</string>
+    <string name="zone_hint">Marca el párrafo que quieres entender</string>
+    <string name="zone_reading">Leyendo la zona…</string>
+    <string name="zone_no_text">No encontramos texto ahí. Prueba marcándolo de nuevo.</string>
+    <string name="zone_cancel">Cancelar</string>
     <string name="selection_highlight">Resaltar</string>
     <string name="selection_note">Nota</string>
     <string name="highlights_title">Resaltados</string>

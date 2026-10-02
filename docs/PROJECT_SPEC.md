@@ -254,7 +254,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T11.11 Explicador como hoja inferior.** Reutiliza `ExplainText` y los bloques de `ui/explanation`; al cerrar vuelve al punto de lectura. *Hecho cuando:* se explica una selección sin salir del lector.
 - [x] **T11.12 Resaltados.** Entidad `Highlight` en 4 colores (decoraciones de Readium), visibles en el detalle. *Hecho cuando:* persisten al reabrir.
 - [x] **T11.13 Notas ancladas.** `Note` guarda la posición (locator) y se puede saltar desde la nota al texto. *Hecho cuando:* tocar la nota abre el lector en ese punto.
-- [ ] **T11.14 Explicar en PDF.** Si el PDF no tiene capa de texto seleccionable, recorte de la zona + OCR con el `TextRecognizer` existente. *Hecho cuando:* se explica un párrafo de un PDF.
+- [x] **T11.14 Explicar en PDF.** El visor de PDF no permite seleccionar texto: el botón "IA" permite marcar un párrafo con el dedo, se recorta esa zona y se lee con el `TextRecognizer` existente. *Hecho cuando:* se explica un párrafo de un PDF.
 - [ ] **T11.15 Lectura en voz alta.** TextToSpeech de Android o TTS de Readium: reproducir/pausar, velocidad, voz, temporizador y resaltado de la frase. *Hecho cuando:* lee el capítulo resaltando.
 - [ ] **T11.16 Portada → lector.** Transición de elemento compartido. *Hecho cuando:* la portada se expande a la página.
 

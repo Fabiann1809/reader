@@ -15,6 +15,7 @@ import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.data.reader.ReaderSession
 import io.github.fabiann1809.reader.data.reader.TocEntry
+import io.github.fabiann1809.reader.ocr.TextRecognizer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,6 +32,7 @@ class ReaderViewModel(
     private val bookmarkRepository: BookmarkRepository,
     private val highlightRepository: HighlightRepository,
     private val readingPreferences: ReadingPreferences,
+    private val textRecognizer: TextRecognizer,
     private val session: ReaderSession,
     // A place to open the book at (e.g. a note's), instead of where the reader left off.
     private val startAt: String? = null,
@@ -169,6 +171,26 @@ class ReaderViewModel(
     /** "Explicar" in the capsule: explains the selected text in a sheet over the page (T11.11). */
     fun explainSelection() = updateReady { state ->
         state.selection?.let { state.copy(explaining = it.text, selection = null) } ?: state
+    }
+
+    /** "IA" in a PDF: mark a zone of the page to explain it (T11.14), with nothing else on top. */
+    fun startZonePicking() = updateReady { it.copy(zonePicking = ZonePicking.MARKING, controlsVisible = false) }
+
+    fun cancelZonePicking() = updateReady { it.copy(zonePicking = null) }
+
+    /** Reads the marked zone's picture ([imageUri]) with the OCR and explains its text; null means it couldn't be saved. */
+    fun explainZone(imageUri: String?) {
+        if (imageUri == null) {
+            updateReady { it.copy(zonePicking = ZonePicking.NO_TEXT) }
+            return
+        }
+        updateReady { it.copy(zonePicking = ZonePicking.READING) }
+        viewModelScope.launch {
+            val text = textRecognizer.recognize(imageUri).getOrNull()?.takeIf { it.isNotBlank() }
+            updateReady {
+                if (text == null) it.copy(zonePicking = ZonePicking.NO_TEXT) else it.copy(zonePicking = null, explaining = text)
+            }
+        }
     }
 
     /** Closing the explainer leaves the reader on the same page. */

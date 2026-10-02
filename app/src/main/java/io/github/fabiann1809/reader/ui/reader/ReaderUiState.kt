@@ -16,6 +16,7 @@ sealed interface ReaderUiState {
      * reports its first page; [positionCount] is the book's total for the page indicator. [contentsVisible] is the index and bookmarks sheet, and
      * [textSettingsVisible] the "Aa" sheet for [readingSettings]. [selection] is the text selected on
      * the page, which shows the selection capsule, and [explaining] the text in the explainer sheet.
+     * [zonePicking] is set while a zone of a PDF page is being marked to explain it.
      */
     data class Ready(
         val bookId: Long,
@@ -34,6 +35,7 @@ sealed interface ReaderUiState {
         val textSettingsVisible: Boolean = false,
         val selection: TextSelection? = null,
         val explaining: String? = null,
+        val zonePicking: ZonePicking? = null,
     ) : ReaderUiState {
         /** True when the open page has a bookmark: the top bar shows it filled. */
         val pageIsBookmarked: Boolean get() = bookmarks.atPosition(position).isNotEmpty()
@@ -44,3 +46,6 @@ sealed interface ReaderUiState {
 
     data class CannotOpen(val problem: OpenProblem) : ReaderUiState
 }
+
+/** Marking a zone of a PDF page to explain it (T11.14): drawing it, reading it, or nothing found. */
+enum class ZonePicking { MARKING, READING, NO_TEXT }

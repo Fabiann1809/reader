@@ -18,6 +18,7 @@ import io.github.fabiann1809.reader.data.reader.TocEntry
 import io.github.fabiann1809.reader.testing.FakeBookmarkRepository
 import io.github.fabiann1809.reader.testing.FakeHighlightRepository
 import io.github.fabiann1809.reader.testing.FakeReadingPreferences
+import io.github.fabiann1809.reader.testing.FakeTextRecognizer
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -107,6 +108,7 @@ class ReaderViewModelTest {
 
     private val bookmarks = FakeBookmarkRepository()
     private val highlights = FakeHighlightRepository()
+    private val ocr = FakeTextRecognizer(Result.success("Lo esencial es invisible a los ojos."))
     private val readingPreferences = FakeReadingPreferences(ReadingSettings(theme = ReadingTheme.SEPIA))
 
     private fun viewModel(bookId: Long, session: ReaderSession, startAt: String? = null) = ReaderViewModel(
@@ -115,6 +117,7 @@ class ReaderViewModelTest {
         bookmarkRepository = bookmarks,
         highlightRepository = highlights,
         readingPreferences = readingPreferences,
+        textRecognizer = ocr,
         session = session,
         startAt = startAt,
         now = { 5_000L },
@@ -373,6 +376,38 @@ class ReaderViewModelTest {
         viewModel(bookId = 1, session = session, startAt = "{\"href\":\"c3.xhtml\"}")
 
         assertEquals("{\"href\":\"c3.xhtml\"}", session.openedAt)
+    }
+
+    @Test
+    fun aMarkedZoneOfAPdfIsReadAndExplained() {
+        val viewModel = viewModel(bookId = 3, session = FakeSession())
+        viewModel.toggleControls()
+
+        viewModel.startZonePicking()
+        assertEquals(ZonePicking.MARKING, ready(viewModel).zonePicking)
+        assertFalse(ready(viewModel).controlsVisible)
+
+        viewModel.explainZone("file:///cache/reader-zone.png")
+
+        assertNull(ready(viewModel).zonePicking)
+        assertEquals("Lo esencial es invisible a los ojos.", ready(viewModel).explaining)
+    }
+
+    @Test
+    fun aZoneWithoutTextAsksToMarkItAgain() {
+        ocr.result = Result.success("  ")
+        val viewModel = viewModel(bookId = 3, session = FakeSession())
+        viewModel.startZonePicking()
+
+        viewModel.explainZone("file:///cache/reader-zone.png")
+        assertEquals(ZonePicking.NO_TEXT, ready(viewModel).zonePicking)
+
+        viewModel.explainZone(null)
+        assertEquals(ZonePicking.NO_TEXT, ready(viewModel).zonePicking)
+        assertNull(ready(viewModel).explaining)
+
+        viewModel.cancelZonePicking()
+        assertNull(ready(viewModel).zonePicking)
     }
 
     private fun ready(viewModel: ReaderViewModel) = viewModel.uiState.value as ReaderUiState.Ready

@@ -14,6 +14,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +33,7 @@ import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.ImmersiveMode
 import io.github.fabiann1809.reader.ui.components.OutlineButton
 import io.github.fabiann1809.reader.ui.components.StatusMessage
+import kotlinx.coroutines.launch
 
 /** Full-screen reading. The book's pages come from Readium's navigator, embedded as a Fragment. */
 @Composable
@@ -59,14 +61,17 @@ fun ReaderScreen(
                 val indicators = state.readingSettings.showsIndicators
                 // The page ends above the indicators, so they never cover text.
                 val pageModifier = Modifier.padding(bottom = if (indicators) IndicatorsHeight else 0.dp)
-                // Kept so the selection capsule can end the selection after using it.
+                // Kept so the selection capsule can end the selection, and a PDF zone can be captured.
                 var epubFragment by remember { mutableStateOf<EpubReaderFragment?>(null) }
+                var pdfFragment by remember { mutableStateOf<PdfReaderFragment?>(null) }
+                val scope = rememberCoroutineScope()
                 BookNavigator(
                     state.bookId,
                     state.format,
                     onCenterTap = viewModel::toggleControls,
                     onSelection = viewModel::setSelection,
                     onEpubFragment = { epubFragment = it },
+                    onPdfFragment = { pdfFragment = it },
                     modifier = pageModifier,
                 )
                 if (indicators) {
@@ -96,7 +101,17 @@ fun ReaderScreen(
                     onBookmark = viewModel::toggleBookmark,
                     onIndex = viewModel::showContents,
                     onTextSettings = viewModel::showTextSettings,
+                    // In a PDF, "IA" marks a zone to explain (T11.14); EPUB text is selected instead.
+                    onAi = if (state.format == BookFormat.PDF) viewModel::startZonePicking else ({}),
                 )
+                state.zonePicking?.let { picking ->
+                    ZonePicker(
+                        state = picking,
+                        onExplain = { zone -> scope.launch { viewModel.explainZone(pdfFragment?.captureZone(zone)) } },
+                        onCancel = viewModel::cancelZonePicking,
+                        modifier = pageModifier,
+                    )
+                }
                 if (state.textSettingsVisible) {
                     ReadingSettingsSheet(
                         settings = state.readingSettings,
@@ -158,6 +173,7 @@ private fun BookNavigator(
     onCenterTap: () -> Unit,
     onSelection: (TextSelection?) -> Unit,
     onEpubFragment: (EpubReaderFragment) -> Unit,
+    onPdfFragment: (PdfReaderFragment) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val arguments = bundleOf(NavigatorHostFragment.ARG_BOOK_ID to bookId)
@@ -169,6 +185,7 @@ private fun BookNavigator(
             epub.onSelection = onSelection
             onEpubFragment(epub)
         }
+        (fragment as? PdfReaderFragment)?.let(onPdfFragment)
     }
     when (format) {
         BookFormat.PDF -> AndroidFragment<PdfReaderFragment>(arguments = arguments, modifier = fragmentModifier, onUpdate = connect)
