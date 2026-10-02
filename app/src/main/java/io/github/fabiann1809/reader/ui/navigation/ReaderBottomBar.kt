@@ -2,6 +2,8 @@ package io.github.fabiann1809.reader.ui.navigation
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -58,6 +60,8 @@ fun ReaderBottomBar(
     selected: TopLevelTab,
     onSelect: (TopLevelTab) -> Unit,
     modifier: Modifier = Modifier,
+    // Tabs with something waiting, marked with a dot (design 03 §1: cards to review today).
+    dotted: Set<TopLevelTab> = emptySet(),
 ) {
     NavigationBar(modifier = modifier, containerColor = MaterialTheme.colorScheme.surfaceContainer) {
         TopLevelTab.entries.forEach { tab ->
@@ -66,10 +70,12 @@ fun ReaderBottomBar(
                 selected = isSelected,
                 onClick = { onSelect(tab) },
                 icon = {
-                    Icon(
-                        painter = painterResource(if (isSelected) tab.selectedIcon else tab.icon),
-                        contentDescription = null,
-                    )
+                    BadgedBox(badge = { if (tab in dotted) Badge() }) {
+                        Icon(
+                            painter = painterResource(if (isSelected) tab.selectedIcon else tab.icon),
+                            contentDescription = null,
+                        )
+                    }
                 },
                 label = { Text(stringResource(tab.label), style = MaterialTheme.typography.labelSmall) },
                 colors = NavigationBarItemDefaults.colors(

@@ -39,6 +39,7 @@ import io.github.fabiann1809.reader.ui.onboarding.OnboardingScreen
 import io.github.fabiann1809.reader.ui.privacy.PrivacyScreen
 import io.github.fabiann1809.reader.ui.progress.ProgressScreen
 import io.github.fabiann1809.reader.ui.reader.ReaderScreen
+import io.github.fabiann1809.reader.ui.review.PendingReviewsViewModel
 import io.github.fabiann1809.reader.ui.review.ReviewScreen
 import io.github.fabiann1809.reader.ui.settings.SettingsScreen
 import kotlinx.coroutines.flow.Flow
@@ -64,6 +65,7 @@ fun ReaderNavHost(
     startDestination: Any = LibraryRoute,
     navController: NavHostController = rememberNavController(),
     showLibraryRequests: Flow<Unit> = emptyFlow(),
+    pendingReviews: PendingReviewsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     LaunchedEffect(navController, showLibraryRequests) {
         showLibraryRequests.collect {
@@ -83,7 +85,12 @@ fun ReaderNavHost(
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
             if (currentTab != null) {
-                ReaderBottomBar(selected = currentTab, onSelect = { tab -> navController.navigateToTab(tab) })
+                val reviewsPending by pendingReviews.hasPending.collectAsStateWithLifecycle()
+                ReaderBottomBar(
+                    selected = currentTab,
+                    onSelect = { tab -> navController.navigateToTab(tab) },
+                    dotted = if (reviewsPending) setOf(TopLevelTab.REVIEW) else emptySet(),
+                )
             }
         },
     ) { innerPadding ->

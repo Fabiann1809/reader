@@ -60,7 +60,8 @@ class ReaderNavHostTest {
     @Test
     fun bottomBarSwitchesBetweenTabs() {
         composeRule.onNodeWithText(string(R.string.tab_review)).performClick()
-        composeRule.onNodeWithText(string(R.string.review_empty_title)).assertIsDisplayed()
+        // The device may hold cards or not: the "Hoy" chip shows either way.
+        composeRule.onNodeWithText(string(R.string.review_mode_today)).assertIsDisplayed()
 
         composeRule.onNodeWithText(string(R.string.tab_progress)).performClick()
         composeRule.onNodeWithText(string(R.string.progress_empty_title)).assertIsDisplayed()

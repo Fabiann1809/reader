@@ -28,6 +28,8 @@ import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
 import io.github.fabiann1809.reader.ui.notes.AllNotesViewModel
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingViewModel
 import io.github.fabiann1809.reader.ui.reader.ReaderViewModel
+import io.github.fabiann1809.reader.ui.review.PendingReviewsViewModel
+import io.github.fabiann1809.reader.ui.review.ReviewViewModel
 import io.github.fabiann1809.reader.ui.settings.SettingsViewModel
 import io.github.fabiann1809.reader.ui.voice.VoiceNotePlayerViewModel
 import io.github.fabiann1809.reader.ui.voice.VoiceRecordingViewModel
@@ -124,6 +126,15 @@ object AppViewModelProvider {
         }
         initializer {
             VoiceNotePlayerViewModel(readerApplication().container.newVoicePlayer())
+        }
+        initializer {
+            ReviewViewModel(
+                flashcardRepository = readerApplication().container.flashcardRepository,
+                bookRepository = readerApplication().container.bookRepository,
+            )
+        }
+        initializer {
+            PendingReviewsViewModel(readerApplication().container.flashcardRepository)
         }
         initializer {
             AppStartViewModel(readerApplication().container.appPreferences)
