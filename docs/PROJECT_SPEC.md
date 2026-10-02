@@ -272,7 +272,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T13.2 Transcripción.** Archivo de audio enviado a Gemini con `AiProvider.transcribe` (ver decisión 2). *Hecho cuando:* la nota muestra el texto editable.
 - [x] **T13.3 Interfaz de grabación.** Hoja con onda, temporizador y etiquetas Idea, Duda, Cita y Tarea; se asocia al libro y la posición; snackbar con Deshacer. *Hecho cuando:* coincide con la lámina 1i.
 - [ ] **T13.4 Grabar sin mirar.** Notificación persistente "Grabar/Detener" con un servicio en primer plano de tipo micrófono. *Hecho cuando:* graba con la pantalla apagada. **Pospuesta** (decisión del usuario, 2026-10-02).
-- [ ] **T13.5 Nota de voz en listas.** Reproductor y transcripción en el detalle y en Todas las notas. *Hecho cuando:* se reproduce desde la lista.
+- [x] **T13.5 Nota de voz en listas.** Reproductor y transcripción en el detalle y en Todas las notas. *Hecho cuando:* se reproduce desde la lista.
 
 ### Fase 14 — Fichas y repaso (B4, B5)
 - [ ] **T14.1 Entidad Flashcard.** Frente, reverso, fuente (libro y página), próxima revisión, facilidad e intervalo. *Hecho cuando:* compila con su migración.

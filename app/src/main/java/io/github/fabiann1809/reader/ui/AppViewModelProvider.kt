@@ -26,6 +26,7 @@ import io.github.fabiann1809.reader.ui.notes.AllNotesViewModel
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingViewModel
 import io.github.fabiann1809.reader.ui.reader.ReaderViewModel
 import io.github.fabiann1809.reader.ui.settings.SettingsViewModel
+import io.github.fabiann1809.reader.ui.voice.VoiceNotePlayerViewModel
 import io.github.fabiann1809.reader.ui.voice.VoiceRecordingViewModel
 
 /**
@@ -108,6 +109,9 @@ object AppViewModelProvider {
             )
         }
         initializer {
+            VoiceNotePlayerViewModel(readerApplication().container.newVoicePlayer())
+        }
+        initializer {
             AppStartViewModel(readerApplication().container.appPreferences)
         }
         initializer {
@@ -122,7 +126,7 @@ object AppViewModelProvider {
         initializer {
             VoiceRecordingViewModel(
                 recorder = readerApplication().container.voiceRecorder,
-                player = readerApplication().container.voicePlayer,
+                player = readerApplication().container.newVoicePlayer(),
                 transcribe = readerApplication().container.transcribeAudio,
                 noteRepository = readerApplication().container.noteRepository,
             )

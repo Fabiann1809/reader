@@ -23,6 +23,8 @@ import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.NoteItem
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.components.StatusMessage
+import io.github.fabiann1809.reader.ui.voice.VoiceNoteControls
+import io.github.fabiann1809.reader.ui.voice.rememberVoiceNoteControls
 
 @Composable
 fun AllNotesScreen(
@@ -33,7 +35,13 @@ fun AllNotesScreen(
     viewModel: AllNotesViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    AllNotesContent(uiState = uiState, onNavigateUp = onNavigateUp, onNoteClick = onNoteClick, onOpenNoteInBook = onOpenNoteInBook)
+    AllNotesContent(
+        uiState = uiState,
+        onNavigateUp = onNavigateUp,
+        onNoteClick = onNoteClick,
+        onOpenNoteInBook = onOpenNoteInBook,
+        voiceNotes = rememberVoiceNoteControls(),
+    )
 }
 
 @Composable
@@ -44,6 +52,7 @@ fun AllNotesContent(
     // A note written on a passage opens the book there (T11.13).
     onOpenNoteInBook: (Note) -> Unit = {},
     modifier: Modifier = Modifier,
+    voiceNotes: VoiceNoteControls = VoiceNoteControls(),
 ) {
     Scaffold(
         modifier = modifier,
@@ -74,6 +83,9 @@ fun AllNotesContent(
                         bookTitle = item.bookTitle,
                         onClick = { onNoteClick(item.note) },
                         onOpenInBook = { onOpenNoteInBook(item.note) },
+                        isPlaying = voiceNotes.isPlaying(item.note),
+                        playbackFailed = voiceNotes.failed(item.note),
+                        onTogglePlayback = { voiceNotes.onToggle(item.note) },
                     )
                 }
             }

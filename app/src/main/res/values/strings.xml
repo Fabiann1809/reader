@@ -190,6 +190,8 @@
     <string name="voice_saved">Nota de voz guardada</string>
     <string name="voice_undo">Deshacer</string>
     <string name="voice_book_page">%1$s · pág. %2$d</string>
+    <string name="note_type_voice">Nota de voz</string>
+    <string name="note_voice_untranscribed">Sin transcripción: escúchala con el botón.</string>
     <string name="note_tag_idea">Idea</string>
     <string name="note_tag_doubt">Duda</string>
     <string name="note_tag_quote">Cita</string>

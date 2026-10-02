@@ -59,6 +59,8 @@ import io.github.fabiann1809.reader.ui.components.labelRes
 import io.github.fabiann1809.reader.ui.components.progressFraction
 import io.github.fabiann1809.reader.ui.library.CollectionNameDialog
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
+import io.github.fabiann1809.reader.ui.voice.VoiceNoteControls
+import io.github.fabiann1809.reader.ui.voice.rememberVoiceNoteControls
 import io.github.fabiann1809.reader.util.formatDate
 import kotlin.math.roundToInt
 
@@ -93,6 +95,7 @@ fun BookDetailScreen(
         onOpenNoteInBook = onOpenNoteInBook,
         onCapturePage = onCapturePage,
         onRead = onRead,
+        voiceNotes = rememberVoiceNoteControls(),
     )
 }
 
@@ -112,6 +115,7 @@ fun BookDetailContent(
     onCapturePage: () -> Unit,
     modifier: Modifier = Modifier,
     onRead: () -> Unit = {},
+    voiceNotes: VoiceNoteControls = VoiceNoteControls(),
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     var showProgressDialog by rememberSaveable { mutableStateOf(false) }
@@ -162,6 +166,7 @@ fun BookDetailContent(
                 onAddNote = onAddNote,
                 onNoteClick = onNoteClick,
                 onOpenNoteInBook = onOpenNoteInBook,
+                voiceNotes = voiceNotes,
                 modifier = contentModifier,
             )
         }
@@ -275,6 +280,7 @@ private fun BookDetailBody(
     onNoteClick: (Long) -> Unit,
     // A note written on a passage opens the book there (T11.13).
     onOpenNoteInBook: (Note) -> Unit = {},
+    voiceNotes: VoiceNoteControls = VoiceNoteControls(),
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -307,7 +313,14 @@ private fun BookDetailBody(
             }
         } else {
             items(notes, key = { it.id }) { note ->
-                NoteItem(note = note, onClick = { onNoteClick(note.id) }, onOpenInBook = { onOpenNoteInBook(note) })
+                NoteItem(
+                    note = note,
+                    onClick = { onNoteClick(note.id) },
+                    onOpenInBook = { onOpenNoteInBook(note) },
+                    isPlaying = voiceNotes.isPlaying(note),
+                    playbackFailed = voiceNotes.failed(note),
+                    onTogglePlayback = { voiceNotes.onToggle(note) },
+                )
             }
         }
         highlightsSection(highlights)

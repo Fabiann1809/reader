@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,7 +28,8 @@ import io.github.fabiann1809.reader.util.formatDate
 
 // Card style from the design (7.10): surface-container, 16 dp corners, no border, elevation 1.
 // A note written on a passage (T11.13) opens the book there when tapped ([onOpenInBook]) and
-// is edited with its pencil ([onClick]); any other note is edited by tapping it.
+// is edited with its pencil ([onClick]); any other note is edited by tapping it. A voice note
+// (T13.5) plays its recording with [onTogglePlayback].
 @Composable
 fun NoteItem(
     note: Note,
@@ -36,6 +38,9 @@ fun NoteItem(
     // Shown where notes of several books are mixed (e.g. "Todas las notas").
     bookTitle: String? = null,
     onOpenInBook: (() -> Unit)? = null,
+    isPlaying: Boolean = false,
+    playbackFailed: Boolean = false,
+    onTogglePlayback: () -> Unit = {},
 ) {
     val openInBook = onOpenInBook.takeIf { note.location != null }
     Card(
@@ -58,12 +63,18 @@ fun NoteItem(
             if (note.type == NoteType.EXPLANATION) {
                 AiLabel()
             }
+            if (note.type == NoteType.VOICE) {
+                VoiceNoteHeader(note.tag, isPlaying, playbackFailed, onTogglePlayback)
+            }
             if (openInBook != null) {
                 AnchoredNoteHeader(onEdit = onClick)
             }
+            // A voice note where no words were heard has only its recording.
+            val untranscribed = note.type == NoteType.VOICE && note.content.isBlank()
             Text(
-                text = note.content,
+                text = if (untranscribed) stringResource(R.string.note_voice_untranscribed) else note.content,
                 style = MaterialTheme.typography.bodyMedium,
+                color = if (untranscribed) MaterialTheme.colorScheme.onSurfaceVariant else Color.Unspecified,
                 maxLines = PREVIEW_MAX_LINES,
                 overflow = TextOverflow.Ellipsis,
             )

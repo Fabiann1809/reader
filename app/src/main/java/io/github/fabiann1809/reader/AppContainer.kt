@@ -140,7 +140,8 @@ class AppContainer(context: Context) {
 
     val voiceRecorder: VoiceRecorder by lazy { MediaVoiceRecorder(appContext, voiceFiles) }
 
-    val voicePlayer: VoicePlayer by lazy { MediaVoicePlayer(voiceFiles) }
+    // A new player each time: a screen that closes stops only its own playback.
+    fun newVoicePlayer(): VoicePlayer = MediaVoicePlayer(voiceFiles)
 
     // No logging interceptor on purpose: requests carry the user's API key.
     private val httpClient: OkHttpClient by lazy {
