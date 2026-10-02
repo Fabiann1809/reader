@@ -73,6 +73,8 @@ class MigrationTest {
             assertTrue(database.bookmarkDao().observeByBook(1).first().isEmpty())
             // Added in version 6: no highlights yet.
             assertTrue(database.highlightDao().observeByBook(1).first().isEmpty())
+            // Added in version 10: no flashcards yet.
+            assertTrue(database.flashcardDao().observeByBook(1).first().isEmpty())
 
             val note = database.noteDao().observeByBook(1).first().single()
             assertEquals("Idea central", note.content)

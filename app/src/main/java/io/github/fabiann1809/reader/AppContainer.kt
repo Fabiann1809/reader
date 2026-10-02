@@ -38,6 +38,8 @@ import io.github.fabiann1809.reader.data.collection.CollectionRepository
 import io.github.fabiann1809.reader.data.collection.DefaultCollectionRepository
 import io.github.fabiann1809.reader.data.bookmark.BookmarkRepository
 import io.github.fabiann1809.reader.data.bookmark.DefaultBookmarkRepository
+import io.github.fabiann1809.reader.data.flashcard.DefaultFlashcardRepository
+import io.github.fabiann1809.reader.data.flashcard.FlashcardRepository
 import io.github.fabiann1809.reader.data.highlight.DefaultHighlightRepository
 import io.github.fabiann1809.reader.data.highlight.HighlightRepository
 import io.github.fabiann1809.reader.data.note.DefaultNoteRepository
@@ -121,6 +123,8 @@ class AppContainer(context: Context) {
     val bookmarkRepository: BookmarkRepository by lazy { DefaultBookmarkRepository(database.bookmarkDao()) }
 
     val highlightRepository: HighlightRepository by lazy { DefaultHighlightRepository(database.highlightDao()) }
+
+    val flashcardRepository: FlashcardRepository by lazy { DefaultFlashcardRepository(database.flashcardDao()) }
 
     val collectionRepository: CollectionRepository by lazy {
         DefaultCollectionRepository(database.collectionDao(), database.bookDao())

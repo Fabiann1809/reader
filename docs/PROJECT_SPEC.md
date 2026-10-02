@@ -275,7 +275,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T13.5 Nota de voz en listas.** Reproductor y transcripción en el detalle y en Todas las notas. *Hecho cuando:* se reproduce desde la lista.
 
 ### Fase 14 — Fichas y repaso (B4, B5)
-- [ ] **T14.1 Entidad Flashcard.** Frente, reverso, fuente (libro y página), próxima revisión, facilidad e intervalo. *Hecho cuando:* compila con su migración.
+- [x] **T14.1 Entidad Flashcard.** Frente, reverso, fuente (libro y página), próxima revisión, facilidad e intervalo. *Hecho cuando:* compila con su migración.
 - [ ] **T14.2 Crear ficha.** Manual, y desde nota, explicación, cita o selección; la IA propone frente y reverso (`AiProvider.makeFlashcard`). *Hecho cuando:* se crea desde cada origen.
 - [ ] **T14.3 Pestaña Repasar.** Hoy, Por libro y Por etiqueta; punto de aviso cuando hay pendientes; estado vacío "Sin fichas por repasar". *Hecho cuando:* muestra las fichas pendientes.
 - [ ] **T14.4 Sesión de repaso.** Volteo 3D y 4 botones con el intervalo debajo; algoritmo SM-2 simplificado con pruebas unitarias. *Hecho cuando:* las fechas de repaso se recalculan bien.

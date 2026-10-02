@@ -8,6 +8,8 @@ import androidx.room.RoomDatabase
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.bookmark.Bookmark
 import io.github.fabiann1809.reader.data.bookmark.BookmarkDao
+import io.github.fabiann1809.reader.data.flashcard.Flashcard
+import io.github.fabiann1809.reader.data.flashcard.FlashcardDao
 import io.github.fabiann1809.reader.data.highlight.Highlight
 import io.github.fabiann1809.reader.data.highlight.HighlightDao
 import io.github.fabiann1809.reader.data.book.BookDao
@@ -18,8 +20,8 @@ import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteDao
 
 @Database(
-    entities = [Book::class, Note::class, Collection::class, BookCollectionCrossRef::class, Bookmark::class, Highlight::class],
-    version = 9,
+    entities = [Book::class, Note::class, Collection::class, BookCollectionCrossRef::class, Bookmark::class, Highlight::class, Flashcard::class],
+    version = 10,
     exportSchema = true,
     autoMigrations = [
         // 1 → 2: new optional Book columns (kind, format, filePath, coverPath, language, lastOpenedAt).
@@ -38,6 +40,8 @@ import io.github.fabiann1809.reader.data.note.NoteDao
         AutoMigration(from = 7, to = 8),
         // 8 → 9: Note.audioPath and Note.tag, for voice notes.
         AutoMigration(from = 8, to = 9),
+        // 9 → 10: the flashcards table.
+        AutoMigration(from = 9, to = 10),
     ],
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -51,6 +55,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun bookmarkDao(): BookmarkDao
 
     abstract fun highlightDao(): HighlightDao
+
+    abstract fun flashcardDao(): FlashcardDao
 
     companion object {
         private const val DATABASE_NAME = "reader.db"
