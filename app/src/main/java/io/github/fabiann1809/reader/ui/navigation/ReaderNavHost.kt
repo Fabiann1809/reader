@@ -41,6 +41,7 @@ import io.github.fabiann1809.reader.ui.progress.ProgressScreen
 import io.github.fabiann1809.reader.ui.reader.ReaderScreen
 import io.github.fabiann1809.reader.ui.review.PendingReviewsViewModel
 import io.github.fabiann1809.reader.ui.review.ReviewScreen
+import io.github.fabiann1809.reader.ui.reviewsession.ReviewSessionScreen
 import io.github.fabiann1809.reader.ui.settings.SettingsScreen
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -152,7 +153,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
             )
         }
         composable<ReviewRoute> {
-            ReviewScreen()
+            ReviewScreen(onStartSession = { navController.navigate(ReviewSessionRoute) })
         }
         composable<ProgressRoute> {
             ProgressScreen()
@@ -218,6 +219,12 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onCreateFlashcard = { source, page, tag ->
                     navController.navigate(FlashcardEditorRoute(bookId, source, page ?: 0, tag?.name))
                 },
+            )
+        }
+        composable<ReviewSessionRoute> {
+            ReviewSessionScreen(
+                onNavigateUp = { navController.navigateUp() },
+                onFinished = { navController.navigateUp() },
             )
         }
         composable<FlashcardEditorRoute> {

@@ -16,6 +16,10 @@ data object LibraryRoute
 @Serializable
 data object ReviewRoute
 
+/** A review session of today's cards (T14.4). */
+@Serializable
+data object ReviewSessionRoute
+
 @Serializable
 data object ProgressRoute
 

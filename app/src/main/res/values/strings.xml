@@ -376,6 +376,23 @@
         <item quantity="one">%d ficha para hoy</item>
         <item quantity="other">%d fichas para hoy</item>
     </plurals>
+    <plurals name="review_start">
+        <item quantity="one">Empezar (%d ficha)</item>
+        <item quantity="other">Empezar (%d fichas)</item>
+    </plurals>
+    <string name="review_session_counter">%1$d / %2$d</string>
+    <string name="review_tap_to_flip">Toca la ficha para ver la respuesta</string>
+    <string name="review_flip">Voltear la ficha</string>
+    <string name="review_answer">Respuesta</string>
+    <string name="review_grade_again">Otra vez</string>
+    <string name="review_grade_hard">Difícil</string>
+    <string name="review_grade_good">Bien</string>
+    <string name="review_grade_easy">Fácil</string>
+    <string name="review_wait_minutes">%d min</string>
+    <plurals name="review_wait_days">
+        <item quantity="one">%d día</item>
+        <item quantity="other">%d días</item>
+    </plurals>
     <string name="flashcard_source_page">%1$s · pág. %2$d</string>
     <string name="review_empty_title">Sin fichas por repasar</string>
     <string name="review_empty_message">Crea fichas desde tus notas y explicaciones.</string>
