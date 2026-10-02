@@ -74,6 +74,8 @@ class ReaderViewModelTest {
 
         override fun tableOfContents(bookId: Long): List<TocEntry> = toc
 
+        override fun positionCount(bookId: Long): Int? = 120
+
         override suspend fun jumpToChapter(bookId: Long, entry: TocEntry) {
             jumpedToChapters += entry
         }
@@ -111,6 +113,7 @@ class ReaderViewModelTest {
                 format = BookFormat.EPUB,
                 title = "El principito",
                 tableOfContents = session.toc,
+                positionCount = 120,
                 readingSettings = ReadingSettings(theme = ReadingTheme.SEPIA),
             ),
             viewModel.uiState.value,

@@ -13,7 +13,7 @@ sealed interface ReaderUiState {
     /**
      * The book is open in the [ReaderSession]; the navigator for its [format] takes it from there.
      * The page's [chapter], [progression] (0 to 1), [href] and [position] are null until the navigator
-     * reports its first page. [contentsVisible] is the index and bookmarks sheet, and
+     * reports its first page; [positionCount] is the book's total for the page indicator. [contentsVisible] is the index and bookmarks sheet, and
      * [textSettingsVisible] the "Aa" sheet for [readingSettings].
      */
     data class Ready(
@@ -24,6 +24,7 @@ sealed interface ReaderUiState {
         val progression: Float? = null,
         val href: String? = null,
         val position: Int? = null,
+        val positionCount: Int? = null,
         val controlsVisible: Boolean = false,
         val contentsVisible: Boolean = false,
         val tableOfContents: List<TocEntry> = emptyList(),

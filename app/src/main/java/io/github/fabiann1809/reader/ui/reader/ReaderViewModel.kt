@@ -159,6 +159,7 @@ class ReaderViewModel(
             format,
             book.title,
             tableOfContents = session.tableOfContents(bookId),
+            positionCount = session.positionCount(bookId),
             readingSettings = settings,
         )
     }

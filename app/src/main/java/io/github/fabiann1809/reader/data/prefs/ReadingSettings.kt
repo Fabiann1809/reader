@@ -10,7 +10,8 @@ enum class ReadingAlignment { START, JUSTIFY }
 
 /**
  * The "Aa" settings, saved for every book. [fontSize] is a multiplier of the book's own size,
- * [lineHeight] a multiple of the font size and [margins] Readium's page margin factor.
+ * [lineHeight] a multiple of the font size and [margins] Readium's page margin factor. The
+ * discreet indicators under the page (T11.9) and keeping the screen on are page settings.
  */
 data class ReadingSettings(
     val theme: ReadingTheme = ReadingTheme.DAY,
@@ -19,6 +20,10 @@ data class ReadingSettings(
     val lineHeight: Double = DEFAULT_LINE_HEIGHT,
     val margins: Double = DEFAULT_MARGINS,
     val alignment: ReadingAlignment = ReadingAlignment.START,
+    val showClock: Boolean = true,
+    val showBattery: Boolean = true,
+    val showPage: Boolean = true,
+    val keepScreenOn: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_FONT_SIZE = 1.0

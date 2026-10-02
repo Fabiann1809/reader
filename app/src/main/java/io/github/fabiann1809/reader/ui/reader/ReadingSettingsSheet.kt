@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenuItem
@@ -27,6 +28,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,8 +56,8 @@ import kotlin.math.roundToInt
 
 /**
  * The reader's "Aa" sheet (design 10.12, T11.7): theme (with the quick day/night switch), font,
- * size, line height, margins and alignment. Every change shows on the page at once and is saved.
- * PDFs keep their own look, so they only get a note.
+ * size, line height, margins and alignment, then the page settings (T11.9). Every change shows at
+ * once and is saved. PDFs keep their own look, so instead of the text settings they get a note.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,27 +77,69 @@ fun ReadingSettingsSheet(
         ) {
             if (isPdf) {
                 Text(stringResource(R.string.reading_settings_pdf), style = MaterialTheme.typography.bodyMedium)
-                return@Column
+            } else {
+                TextSettings(settings, onChange)
             }
-            Section(R.string.reading_settings_theme) { ThemeRow(settings.theme) { theme -> onChange { it.copy(theme = theme) } } }
-            Section(R.string.reading_settings_font) { FontPicker(settings.font) { font -> onChange { it.copy(font = font) } } }
-            Section(R.string.reading_settings_size) {
-                SizeSlider(settings.fontSize) { size -> onChange { it.copy(fontSize = size) } }
-            }
-            Section(R.string.reading_settings_line_height) {
-                SettingSlider(settings.lineHeight, ReadingSettings.LineHeightRange, R.string.reading_settings_line_height) { value ->
-                    onChange { it.copy(lineHeight = value) }
-                }
-            }
-            Section(R.string.reading_settings_margins) {
-                SettingSlider(settings.margins, ReadingSettings.MarginsRange, R.string.reading_settings_margins) { value ->
-                    onChange { it.copy(margins = value) }
-                }
-            }
-            Section(R.string.reading_settings_alignment) {
-                AlignmentChoice(settings.alignment) { alignment -> onChange { it.copy(alignment = alignment) } }
+            Section(R.string.reading_settings_page) { PageSettings(settings, onChange) }
+        }
+    }
+}
+
+@Composable
+private fun TextSettings(settings: ReadingSettings, onChange: ((ReadingSettings) -> ReadingSettings) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Section(R.string.reading_settings_theme) { ThemeRow(settings.theme) { theme -> onChange { it.copy(theme = theme) } } }
+        Section(R.string.reading_settings_font) { FontPicker(settings.font) { font -> onChange { it.copy(font = font) } } }
+        Section(R.string.reading_settings_size) {
+            SizeSlider(settings.fontSize) { size -> onChange { it.copy(fontSize = size) } }
+        }
+        Section(R.string.reading_settings_line_height) {
+            SettingSlider(settings.lineHeight, ReadingSettings.LineHeightRange, R.string.reading_settings_line_height) { value ->
+                onChange { it.copy(lineHeight = value) }
             }
         }
+        Section(R.string.reading_settings_margins) {
+            SettingSlider(settings.margins, ReadingSettings.MarginsRange, R.string.reading_settings_margins) { value ->
+                onChange { it.copy(margins = value) }
+            }
+        }
+        Section(R.string.reading_settings_alignment) {
+            AlignmentChoice(settings.alignment) { alignment -> onChange { it.copy(alignment = alignment) } }
+        }
+    }
+}
+
+/** The indicators under the page and keeping the screen on (T11.9); they apply to EPUB and PDF. */
+@Composable
+private fun PageSettings(settings: ReadingSettings, onChange: ((ReadingSettings) -> ReadingSettings) -> Unit) {
+    Column {
+        SwitchRow(R.string.reading_settings_show_clock, settings.showClock) { on -> onChange { it.copy(showClock = on) } }
+        SwitchRow(R.string.reading_settings_show_battery, settings.showBattery) { on -> onChange { it.copy(showBattery = on) } }
+        SwitchRow(R.string.reading_settings_show_page, settings.showPage) { on -> onChange { it.copy(showPage = on) } }
+        SwitchRow(R.string.reading_settings_keep_screen_on, settings.keepScreenOn) { on -> onChange { it.copy(keepScreenOn = on) } }
+    }
+}
+
+@Composable
+private fun SwitchRow(@StringRes label: Int, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .toggleable(value = checked, role = Role.Switch, onValueChange = onCheckedChange)
+            .padding(vertical = 8.dp),
+    ) {
+        Text(stringResource(label), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        // The whole row toggles; the switch only shows the state. Off, the thumb takes the inactive
+        // icon color: Material's default matches this theme's track and would disappear.
+        Switch(
+            checked = checked,
+            onCheckedChange = null,
+            colors = SwitchDefaults.colors(
+                uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                uncheckedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            ),
+        )
     }
 }
 

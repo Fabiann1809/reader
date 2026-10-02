@@ -249,7 +249,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T11.6 Índice y marcadores.** Entidad `Bookmark`. *Hecho cuando:* se salta a un capítulo y a un marcador.
 - [ ] **T11.7 Ajustes "Aa".** Temas Día, Sepia, Gris papel, Noche, AMOLED y Personalizado; fuentes (Literata, Merriweather, Source Serif, Lora, Atkinson, OpenDyslexic, Inter; todas OFL); tamaño, interlineado, márgenes y alineación; independientes del tema de la app; el cambio rápido Día/Noche vive aquí. *Hecho cuando:* los cambios se ven al instante y persisten.
 - [ ] **T11.8 Efecto de página.** Deslizar, desvanecer, desplazamiento continuo o ninguno. *Hecho cuando:* se elige y se aplica.
-- [ ] **T11.9 Indicadores discretos.** Hora, batería y página/total; mantener la pantalla encendida. *Hecho cuando:* son activables.
+- [x] **T11.9 Indicadores discretos.** Hora, batería y página/total; mantener la pantalla encendida. *Hecho cuando:* son activables.
 - [ ] **T11.10 Selección de texto.** Barra contextual: Explicar, Resaltar, Nota, Voz, Ficha y Más (copiar, buscar, compartir). *Hecho cuando:* aparece al seleccionar en un EPUB.
 - [ ] **T11.11 Explicador como hoja inferior.** Reutiliza `ExplainText` y los bloques de `ui/explanation`; al cerrar vuelve al punto de lectura. *Hecho cuando:* se explica una selección sin salir del lector.
 - [ ] **T11.12 Resaltados.** Entidad `Highlight` en 4 colores (decoraciones de Readium), visibles en el detalle. *Hecho cuando:* persisten al reabrir.

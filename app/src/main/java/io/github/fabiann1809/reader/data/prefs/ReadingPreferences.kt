@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -35,6 +36,10 @@ class DataStoreReadingPreferences(context: Context, fileName: String = FILE_NAME
             lineHeight = prefs[LINE_HEIGHT]?.coerceIn(ReadingSettings.LineHeightRange) ?: defaults.lineHeight,
             margins = prefs[MARGINS]?.coerceIn(ReadingSettings.MarginsRange) ?: defaults.margins,
             alignment = enumOrNull<ReadingAlignment>(prefs[ALIGNMENT]) ?: defaults.alignment,
+            showClock = prefs[SHOW_CLOCK] ?: defaults.showClock,
+            showBattery = prefs[SHOW_BATTERY] ?: defaults.showBattery,
+            showPage = prefs[SHOW_PAGE] ?: defaults.showPage,
+            keepScreenOn = prefs[KEEP_SCREEN_ON] ?: defaults.keepScreenOn,
         )
     }
 
@@ -46,6 +51,10 @@ class DataStoreReadingPreferences(context: Context, fileName: String = FILE_NAME
             prefs[LINE_HEIGHT] = settings.lineHeight
             prefs[MARGINS] = settings.margins
             prefs[ALIGNMENT] = settings.alignment.name
+            prefs[SHOW_CLOCK] = settings.showClock
+            prefs[SHOW_BATTERY] = settings.showBattery
+            prefs[SHOW_PAGE] = settings.showPage
+            prefs[KEEP_SCREEN_ON] = settings.keepScreenOn
         }
     }
 
@@ -57,5 +66,9 @@ class DataStoreReadingPreferences(context: Context, fileName: String = FILE_NAME
         val LINE_HEIGHT = doublePreferencesKey("line_height")
         val MARGINS = doublePreferencesKey("margins")
         val ALIGNMENT = stringPreferencesKey("alignment")
+        val SHOW_CLOCK = booleanPreferencesKey("show_clock")
+        val SHOW_BATTERY = booleanPreferencesKey("show_battery")
+        val SHOW_PAGE = booleanPreferencesKey("show_page")
+        val KEEP_SCREEN_ON = booleanPreferencesKey("keep_screen_on")
     }
 }

@@ -20,6 +20,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.locateProgression
+import org.readium.r2.shared.publication.services.positions
 
 /** Why a book could not be opened in the reader. */
 enum class OpenProblem {
@@ -79,6 +80,12 @@ interface ReaderSession {
     /** Moves the open navigator of [bookId] to [totalProgression] (0 to 1) of the book, e.g. from the progress bar. */
     suspend fun jumpTo(bookId: Long, totalProgression: Double)
 
+    /**
+     * How many positions the open book has: the "total" of the page indicator (about a page each;
+     * a PDF's pages). Null when unknown.
+     */
+    fun positionCount(bookId: Long): Int?
+
     /** The open book's table of contents in reading order; empty when it has none. */
     fun tableOfContents(bookId: Long): List<TocEntry>
 
@@ -115,6 +122,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
     private var openPublication: Publication? = null
     private var lastLocator: Locator? = null
     private var toc: List<Pair<TocEntry, Link>> = emptyList()
+    private var positionCount: Int? = null
 
     private val _locations = MutableSharedFlow<ReadingLocation>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     override val locations: SharedFlow<ReadingLocation> = _locations.asSharedFlow()
@@ -148,6 +156,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         openPublication = publication
         lastLocator = book.readingLocation?.let(::parseLocator)
         toc = flattenToc(publication.tableOfContents)
+        positionCount = withContext(Dispatchers.IO) { publication.positions().size }.takeIf { it > 0 }
         return null
     }
 
@@ -174,6 +183,8 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         val locator = publication.locateProgression(totalProgression.coerceIn(0.0, 1.0)) ?: return
         _jumps.tryEmit(locator)
     }
+
+    override fun positionCount(bookId: Long): Int? = positionCount.takeIf { bookId == openBookId }
 
     override fun tableOfContents(bookId: Long): List<TocEntry> = if (bookId == openBookId) toc.map { it.first } else emptyList()
 
@@ -202,6 +213,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         openBookId = null
         lastLocator = null
         toc = emptyList()
+        positionCount = null
     }
 
     // A location saved by another Readium version that can't be read just means starting from the beginning.

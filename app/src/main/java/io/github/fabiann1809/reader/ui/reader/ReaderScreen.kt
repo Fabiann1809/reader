@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import androidx.fragment.compose.AndroidFragment
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -48,7 +50,24 @@ fun ReaderScreen(
                 SystemBrightnessOnLeave()
                 // While the controls are hidden, the first "Atrás" shows them; with them shown, it leaves.
                 BackHandler(enabled = !state.controlsVisible, onBack = viewModel::showControls)
-                BookNavigator(state.bookId, state.format, onCenterTap = viewModel::toggleControls)
+                KeepScreenOn(state.readingSettings.keepScreenOn)
+                val indicators = state.readingSettings.showsIndicators
+                BookNavigator(
+                    state.bookId,
+                    state.format,
+                    onCenterTap = viewModel::toggleControls,
+                    // The page ends above the indicators, so they never cover text.
+                    modifier = Modifier.padding(bottom = if (indicators) IndicatorsHeight else 0.dp),
+                )
+                if (indicators) {
+                    ReadingIndicators(
+                        settings = state.readingSettings,
+                        position = state.position,
+                        positionCount = state.positionCount,
+                        textColor = pageTextColor(state),
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                    )
+                }
                 ReaderControls(
                     state,
                     onBack = onNavigateUp,
@@ -89,6 +108,11 @@ private fun pageBackground(state: ReaderUiState): Color =
         MaterialTheme.colorScheme.surface
     }
 
+/** The page's text color: the EPUB theme's, or the app's for PDFs. */
+@Composable
+private fun pageTextColor(state: ReaderUiState.Ready): Color =
+    if (state.format == BookFormat.EPUB) Color(state.readingSettings.theme.colors().text) else MaterialTheme.colorScheme.onSurface
+
 /**
  * Gives the screen back the system's brightness when the reader is left (the edge drag changes it
  * while reading). On a rotation this resets the old window, which is about to go anyway.
@@ -104,14 +128,14 @@ private fun SystemBrightnessOnLeave() {
 
 /** Readium's navigator for the book's format. */
 @Composable
-private fun BookNavigator(bookId: Long, format: BookFormat, onCenterTap: () -> Unit) {
+private fun BookNavigator(bookId: Long, format: BookFormat, onCenterTap: () -> Unit, modifier: Modifier = Modifier) {
     val arguments = bundleOf(NavigatorHostFragment.ARG_BOOK_ID to bookId)
-    val modifier = Modifier.fillMaxSize()
+    val fragmentModifier = modifier.fillMaxSize()
     val connect: (NavigatorHostFragment) -> Unit = { it.onCenterTap = onCenterTap }
     when (format) {
-        BookFormat.PDF -> AndroidFragment<PdfReaderFragment>(arguments = arguments, modifier = modifier, onUpdate = connect)
+        BookFormat.PDF -> AndroidFragment<PdfReaderFragment>(arguments = arguments, modifier = fragmentModifier, onUpdate = connect)
         // The session only opens EPUB and PDF (see ReadiumReaderSession).
-        else -> AndroidFragment<EpubReaderFragment>(arguments = arguments, modifier = modifier, onUpdate = connect)
+        else -> AndroidFragment<EpubReaderFragment>(arguments = arguments, modifier = fragmentModifier, onUpdate = connect)
     }
 }
 
