@@ -8,17 +8,20 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.toRoute
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ReaderApplication
+import io.github.fabiann1809.reader.data.note.NoteTag
 import io.github.fabiann1809.reader.ui.addbook.AddBookViewModel
 import io.github.fabiann1809.reader.ui.bookdetail.BookDetailViewModel
 import io.github.fabiann1809.reader.ui.capture.PhotoCropViewModel
 import io.github.fabiann1809.reader.ui.explanation.ExplanationLabels
 import io.github.fabiann1809.reader.ui.explanation.ExplanationViewModel
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextViewModel
+import io.github.fabiann1809.reader.ui.flashcardeditor.FlashcardEditorViewModel
 import io.github.fabiann1809.reader.ui.library.LibraryViewModel
 import io.github.fabiann1809.reader.ui.library.WatchedFolderViewModel
 import io.github.fabiann1809.reader.ui.navigation.BookDetailRoute
 import io.github.fabiann1809.reader.ui.navigation.ExplanationRoute
 import io.github.fabiann1809.reader.ui.navigation.ExtractedTextRoute
+import io.github.fabiann1809.reader.ui.navigation.FlashcardEditorRoute
 import io.github.fabiann1809.reader.ui.navigation.NoteEditorRoute
 import io.github.fabiann1809.reader.ui.navigation.ReaderRoute
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
@@ -84,6 +87,17 @@ object AppViewModelProvider {
                 noteRepository = readerApplication().container.noteRepository,
                 sourceText = route.sourceText,
                 location = route.location,
+            )
+        }
+        initializer {
+            val route = createSavedStateHandle().toRoute<FlashcardEditorRoute>()
+            FlashcardEditorViewModel(
+                bookId = route.bookId,
+                flashcardRepository = readerApplication().container.flashcardRepository,
+                makeFlashcard = readerApplication().container.makeFlashcard,
+                source = route.source,
+                page = route.page.takeIf { it > 0 },
+                tag = route.tag?.let { name -> NoteTag.entries.find { it.name == name } },
             )
         }
         initializer {

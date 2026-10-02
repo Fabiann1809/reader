@@ -41,6 +41,8 @@ fun ReaderScreen(
     onNavigateUp: () -> Unit,
     // "Nota" on a selection: writes a note on that passage, anchored to its place (T11.13).
     onWriteNote: (sourceText: String, location: String) -> Unit,
+    // "Crear ficha" on a selection or an explanation (T14.2): the text and the page it is on.
+    onCreateFlashcard: (source: String, page: Int?) -> Unit = { _, _ -> },
     viewModel: ReaderViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -90,6 +92,7 @@ fun ReaderScreen(
                         onExplain = viewModel::explainSelection,
                         onHighlight = viewModel::highlightSelection,
                         onNote = { onWriteNote(selection.text, selection.location) },
+                        onCard = { onCreateFlashcard(selection.text, state.position) },
                         onEnd = { epubFragment?.clearSelection() },
                         modifier = pageModifier,
                     )
@@ -128,7 +131,15 @@ fun ReaderScreen(
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
                 state.explaining?.let { text ->
-                    ReaderExplanation(state.bookId, text, onDismiss = viewModel::closeExplanation)
+                    ReaderExplanation(
+                        state.bookId,
+                        text,
+                        onDismiss = viewModel::closeExplanation,
+                        onCreateFlashcard = { source ->
+                            viewModel.closeExplanation()
+                            onCreateFlashcard(source, state.position)
+                        },
+                    )
                 }
                 if (state.contentsVisible) {
                     ContentsSheet(

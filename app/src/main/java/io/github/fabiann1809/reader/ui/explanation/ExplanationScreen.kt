@@ -50,6 +50,7 @@ import io.github.fabiann1809.reader.ai.KeyTerm
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
+import io.github.fabiann1809.reader.ui.components.TonalButton
 import io.github.fabiann1809.reader.ui.components.aiErrorMessageRes
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
@@ -57,6 +58,8 @@ import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 fun ExplanationScreen(
     onNavigateUp: () -> Unit,
     onNoteSaved: () -> Unit,
+    // "Crear ficha" (T14.2), with the explained text as the card's source.
+    onCreateFlashcard: (source: String) -> Unit = {},
     viewModel: ExplanationViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -68,6 +71,7 @@ fun ExplanationScreen(
         onRetry = viewModel::retry,
         onSaveAsNote = viewModel::saveAsNote,
         onNavigateUp = onNavigateUp,
+        onCreateFlashcard = { onCreateFlashcard(uiState.sourceText) },
     )
 }
 
@@ -78,6 +82,7 @@ fun ExplanationContent(
     onSaveAsNote: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
+    onCreateFlashcard: (() -> Unit)? = null,
 ) {
     Scaffold(
         modifier = modifier,
@@ -93,6 +98,7 @@ fun ExplanationContent(
             uiState = uiState,
             onRetry = onRetry,
             onSaveAsNote = onSaveAsNote,
+            onCreateFlashcard = onCreateFlashcard,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -112,12 +118,14 @@ fun ExplanationBody(
     onRetry: () -> Unit,
     onSaveAsNote: () -> Unit,
     modifier: Modifier = Modifier,
+    // Shown under "Guardar como nota" when the caller can open the card editor (T14.2).
+    onCreateFlashcard: (() -> Unit)? = null,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(20.dp)) {
         SourceText(uiState.sourceText)
         when (val state = uiState.explanation) {
             ExplanationState.Loading -> Loading()
-            is ExplanationState.Success -> ExplanationBlocks(state.explanation, uiState, onSaveAsNote)
+            is ExplanationState.Success -> ExplanationBlocks(state.explanation, uiState, onSaveAsNote, onCreateFlashcard)
             is ExplanationState.Failed -> Failed(state.error, onRetry)
         }
     }
@@ -189,7 +197,12 @@ private fun SourceText(text: String) {
 }
 
 @Composable
-private fun ExplanationBlocks(explanation: Explanation, uiState: ExplanationUiState, onSaveAsNote: () -> Unit) {
+private fun ExplanationBlocks(
+    explanation: Explanation,
+    uiState: ExplanationUiState,
+    onSaveAsNote: () -> Unit,
+    onCreateFlashcard: (() -> Unit)?,
+) {
     // Selectable so the user can copy parts of the explanation.
     SelectionContainer {
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -209,8 +222,18 @@ private fun ExplanationBlocks(explanation: Explanation, uiState: ExplanationUiSt
         icon = R.drawable.ic_bookmark_simple,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 16.dp),
+            .padding(bottom = if (onCreateFlashcard == null) 16.dp else 0.dp),
     )
+    onCreateFlashcard?.let { onClick ->
+        TonalButton(
+            text = stringResource(R.string.flashcard_create),
+            onClick = onClick,
+            icon = R.drawable.ic_cards_three,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+        )
+    }
 }
 
 /** A gently pulsing sparkle while the AI "thinks" (design motion), plus skeleton lines. */

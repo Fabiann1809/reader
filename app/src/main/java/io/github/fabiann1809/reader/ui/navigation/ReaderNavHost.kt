@@ -27,6 +27,7 @@ import io.github.fabiann1809.reader.ui.bookdetail.BookDetailScreen
 import io.github.fabiann1809.reader.ui.capture.CaptureScreen
 import io.github.fabiann1809.reader.ui.explanation.ExplanationScreen
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextScreen
+import io.github.fabiann1809.reader.ui.flashcardeditor.FlashcardEditorScreen
 import io.github.fabiann1809.reader.ui.library.LibraryScreen
 import io.github.fabiann1809.reader.ui.more.AboutScreen
 import io.github.fabiann1809.reader.ui.more.BackupScreen
@@ -188,6 +189,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onWriteNote = { text, location ->
                     navController.navigate(NoteEditorRoute(bookId, sourceText = text, location = location))
                 },
+                onCreateFlashcard = { source, page -> navController.navigate(FlashcardEditorRoute(bookId, source, page ?: 0)) },
             )
         }
         composable<BookDetailRoute> { entry ->
@@ -195,14 +197,24 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
             BookDetailScreen(
                 onNavigateUp = { navController.navigateUp() },
                 onAddNote = { navController.navigate(NoteEditorRoute(bookId)) },
+                onAddFlashcard = { navController.navigate(FlashcardEditorRoute(bookId)) },
                 onNoteClick = { noteId -> navController.navigate(NoteEditorRoute(bookId, noteId)) },
                 onOpenNoteInBook = { note -> navController.navigate(ReaderRoute(bookId, note.location)) },
                 onCapturePage = { navController.navigate(CaptureRoute(bookId)) },
                 onRead = { navController.navigate(ReaderRoute(bookId)) },
             )
         }
-        composable<NoteEditorRoute> {
-            NoteEditorScreen(onNavigateUp = { navController.navigateUp() })
+        composable<NoteEditorRoute> { entry ->
+            val bookId = entry.toRoute<NoteEditorRoute>().bookId
+            NoteEditorScreen(
+                onNavigateUp = { navController.navigateUp() },
+                onCreateFlashcard = { source, page, tag ->
+                    navController.navigate(FlashcardEditorRoute(bookId, source, page ?: 0, tag?.name))
+                },
+            )
+        }
+        composable<FlashcardEditorRoute> {
+            FlashcardEditorScreen(onNavigateUp = { navController.navigateUp() })
         }
         composable<CaptureRoute> { entry ->
             val bookId = entry.toRoute<CaptureRoute>().bookId
@@ -218,11 +230,13 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onExplain = { text -> navController.navigate(ExplanationRoute(bookId, text)) },
             )
         }
-        composable<ExplanationRoute> {
+        composable<ExplanationRoute> { entry ->
+            val bookId = entry.toRoute<ExplanationRoute>().bookId
             ExplanationScreen(
                 onNavigateUp = { navController.navigateUp() },
                 // Back to the book, dropping the capture screens so "back" doesn't walk through them again.
                 onNoteSaved = { navController.popBackStack<BookDetailRoute>(inclusive = false) },
+                onCreateFlashcard = { source -> navController.navigate(FlashcardEditorRoute(bookId, source)) },
             )
         }
         composable<SettingsRoute> {

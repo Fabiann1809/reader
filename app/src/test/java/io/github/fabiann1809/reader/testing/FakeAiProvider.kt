@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader.testing
 
 import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.Explanation
+import io.github.fabiann1809.reader.ai.FlashcardDraft
 
 /**
  * Configurable AiProvider for tests: returns [result] and records every text it was asked to explain.
@@ -23,5 +24,13 @@ class FakeAiProvider(
     override suspend fun transcribe(audio: ByteArray, mimeType: String): Result<String> {
         audios += audio to mimeType
         return transcription
+    }
+
+    var flashcard: Result<FlashcardDraft> = Result.success(FlashcardDraft("¿Qué mide la entropía?", "El desorden de un sistema."))
+    val flashcardRequests = mutableListOf<String>()
+
+    override suspend fun makeFlashcard(text: String): Result<FlashcardDraft> {
+        flashcardRequests += text
+        return flashcard
     }
 }

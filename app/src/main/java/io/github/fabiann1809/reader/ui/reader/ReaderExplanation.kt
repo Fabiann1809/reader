@@ -13,7 +13,7 @@ import io.github.fabiann1809.reader.ui.explanation.ExplanationViewModel
  * keyed by the text, so reopening the same selection shows the answer again without asking the AI.
  */
 @Composable
-fun ReaderExplanation(bookId: Long, text: String, onDismiss: () -> Unit) {
+fun ReaderExplanation(bookId: Long, text: String, onDismiss: () -> Unit, onCreateFlashcard: (source: String) -> Unit) {
     val viewModel: ExplanationViewModel = viewModel(
         key = "explanation:$bookId:$text",
         factory = AppViewModelProvider.explanationInReader(bookId, text),
@@ -24,5 +24,6 @@ fun ReaderExplanation(bookId: Long, text: String, onDismiss: () -> Unit) {
         onRetry = viewModel::retry,
         onSaveAsNote = viewModel::saveAsNote,
         onDismiss = onDismiss,
+        onCreateFlashcard = { onCreateFlashcard(text) },
     )
 }

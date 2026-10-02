@@ -271,6 +271,19 @@ class GeminiProviderTest {
     }
 
     @Test
+    fun proposesACardFromTheTextWithItsSchema() = runTest {
+        enqueueAnswer("""{"front":" ¿Qué mide la entropía? ","back":"El desorden de un sistema."}""")
+
+        val draft = provider.makeFlashcard("La entropía es una medida del desorden.").getOrThrow()
+
+        assertEquals("¿Qué mide la entropía?", draft.front)
+        assertEquals("El desorden de un sistema.", draft.back)
+        val body = server.takeRequest().body!!.utf8()
+        assertTrue(body, body.contains("fichas de repaso"))
+        assertTrue(body, body.contains("\"front\""))
+    }
+
+    @Test
     fun malformedJsonMapsToUnknown() = runTest {
         enqueue(200, "not json")
 

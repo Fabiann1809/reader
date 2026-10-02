@@ -4,6 +4,7 @@ import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.ExplainText
 import io.github.fabiann1809.reader.ai.Explanation
+import io.github.fabiann1809.reader.ai.FlashcardDraft
 import io.github.fabiann1809.reader.data.note.NoteType
 import io.github.fabiann1809.reader.testing.FakeAiProvider
 import io.github.fabiann1809.reader.testing.FakeNoteRepository
@@ -36,6 +37,8 @@ class ExplanationViewModelTest {
             override suspend fun explain(text: String) = answer.await()
 
             override suspend fun transcribe(audio: ByteArray, mimeType: String) = Result.success("")
+
+            override suspend fun makeFlashcard(text: String) = Result.success(FlashcardDraft("", ""))
         }
 
         val viewModel = viewModel(slowProvider)

@@ -19,4 +19,7 @@ interface AiProvider {
      * words were heard; failures are [AiError]s, like [explain]'s.
      */
     suspend fun transcribe(audio: ByteArray, mimeType: String): Result<String>
+
+    /** Proposes a review card (front and back) about [text] (T14.2); failures are [AiError]s. */
+    suspend fun makeFlashcard(text: String): Result<FlashcardDraft>
 }

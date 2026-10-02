@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.data.note.NoteTag
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
@@ -46,6 +47,8 @@ import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 @Composable
 fun NoteEditorScreen(
     onNavigateUp: () -> Unit,
+    // "Crear ficha" on a saved note (T14.2): its text, page and label.
+    onCreateFlashcard: (source: String, page: Int?, tag: NoteTag?) -> Unit = { _, _, _ -> },
     viewModel: NoteEditorViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -61,6 +64,7 @@ fun NoteEditorScreen(
         onSave = viewModel::save,
         onDelete = viewModel::delete,
         onNavigateUp = onNavigateUp,
+        onCreateFlashcard = { onCreateFlashcard(uiState.flashcardSource, uiState.page.toIntOrNull(), uiState.tag) },
     )
 }
 
@@ -73,6 +77,7 @@ fun NoteEditorContent(
     onDelete: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
+    onCreateFlashcard: () -> Unit = {},
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -84,6 +89,12 @@ fun NoteEditorContent(
                 onNavigateUp = onNavigateUp,
                 actions = {
                     if (uiState.isEditing && !uiState.isLoading) {
+                        IconButton(onClick = onCreateFlashcard, enabled = uiState.content.isNotBlank()) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_cards_three),
+                                contentDescription = stringResource(R.string.flashcard_create),
+                            )
+                        }
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(
                                 painter = painterResource(R.drawable.ic_trash),

@@ -361,6 +361,13 @@
     <string name="tab_review">Repasar</string>
     <string name="tab_progress">Progreso</string>
     <string name="tab_more">Más</string>
+    <string name="flashcard_new_title">Nueva ficha</string>
+    <string name="flashcard_new">Nueva ficha</string>
+    <string name="flashcard_create">Crear ficha</string>
+    <string name="flashcard_suggest">Sugerir con IA</string>
+    <string name="flashcard_suggesting">Pensando la ficha…</string>
+    <string name="flashcard_field_front">Frente: pregunta o concepto</string>
+    <string name="flashcard_field_back">Reverso: respuesta</string>
     <string name="review_empty_title">Sin fichas por repasar</string>
     <string name="review_empty_message">Crea fichas desde tus notas y explicaciones.</string>
     <string name="progress_empty_title">Empieza tu primera sesión</string>

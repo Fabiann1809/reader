@@ -42,6 +42,18 @@ data class NoteEditorRoute(
     val location: String? = null,
 )
 
+/**
+ * "Nueva ficha" (T14.2) for [bookId]. A card from a note, explanation or selection brings its
+ * [source] text, [page] (0 when unknown) and the note's [tag] (a NoteTag name).
+ */
+@Serializable
+data class FlashcardEditorRoute(
+    val bookId: Long,
+    val source: String? = null,
+    val page: Int = 0,
+    val tag: String? = null,
+)
+
 @Serializable
 data class CaptureRoute(val bookId: Long)
 

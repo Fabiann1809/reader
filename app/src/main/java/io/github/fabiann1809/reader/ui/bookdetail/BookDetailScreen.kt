@@ -68,6 +68,7 @@ import kotlin.math.roundToInt
 fun BookDetailScreen(
     onNavigateUp: () -> Unit,
     onAddNote: () -> Unit,
+    onAddFlashcard: () -> Unit = {},
     onNoteClick: (Long) -> Unit,
     // A note written on a passage opens the book there (T11.13).
     onOpenNoteInBook: (Note) -> Unit = {},
@@ -91,6 +92,7 @@ fun BookDetailScreen(
         onCollectionChange = viewModel::setInCollection,
         onCreateCollection = viewModel::createCollectionWithBook,
         onAddNote = onAddNote,
+        onAddFlashcard = onAddFlashcard,
         onNoteClick = onNoteClick,
         onOpenNoteInBook = onOpenNoteInBook,
         onCapturePage = onCapturePage,
@@ -109,6 +111,7 @@ fun BookDetailContent(
     onCollectionChange: (collectionId: Long, isIncluded: Boolean) -> Unit,
     onCreateCollection: (String) -> Unit,
     onAddNote: () -> Unit,
+    onAddFlashcard: () -> Unit = {},
     onNoteClick: (Long) -> Unit,
     // A note written on a passage opens the book there (T11.13).
     onOpenNoteInBook: (Note) -> Unit = {},
@@ -164,6 +167,7 @@ fun BookDetailContent(
                 onCapturePage = onCapturePage,
                 onRead = onRead,
                 onAddNote = onAddNote,
+                onAddFlashcard = onAddFlashcard,
                 onNoteClick = onNoteClick,
                 onOpenNoteInBook = onOpenNoteInBook,
                 voiceNotes = voiceNotes,
@@ -277,6 +281,7 @@ private fun BookDetailBody(
     onCapturePage: () -> Unit,
     onRead: () -> Unit,
     onAddNote: () -> Unit,
+    onAddFlashcard: () -> Unit = {},
     onNoteClick: (Long) -> Unit,
     // A note written on a passage opens the book there (T11.13).
     onOpenNoteInBook: (Note) -> Unit = {},
@@ -298,6 +303,7 @@ private fun BookDetailBody(
                 onCapturePage = onCapturePage,
                 onUpdateProgressClick = onUpdateProgressClick,
                 onAddNote = onAddNote,
+                onAddFlashcard = onAddFlashcard,
             )
         }
         item(key = "notes_header") {

@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.ui.noteeditor
 
 import io.github.fabiann1809.reader.data.note.Note
+import io.github.fabiann1809.reader.data.note.NoteTag
 import io.github.fabiann1809.reader.data.note.NoteType
 import io.github.fabiann1809.reader.testing.FakeNoteRepository
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
@@ -148,5 +149,23 @@ class NoteEditorViewModelTest {
     @Test
     fun missingNoteClosesEditor() {
         assertTrue(editViewModel(noteId = 99).uiState.value.isDeleted)
+    }
+
+    @Test
+    fun aCardFromANoteCarriesItsPassageTextAndLabel() {
+        val voiceNote = Note(
+            id = 9,
+            bookId = 7,
+            content = "  Repasar la entropía  ",
+            type = NoteType.VOICE,
+            sourceText = "La entropía mide el desorden.",
+            location = "{}",
+            tag = NoteTag.TASK,
+        )
+        val viewModel = NoteEditorViewModel(bookId = 7, noteId = 9, noteRepository = FakeNoteRepository(listOf(voiceNote)))
+
+        val state = viewModel.uiState.value
+        assertEquals("La entropía mide el desorden.\n\nRepasar la entropía", state.flashcardSource)
+        assertEquals(NoteTag.TASK, state.tag)
     }
 }

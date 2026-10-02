@@ -3,6 +3,8 @@ package io.github.fabiann1809.reader.ai.gemini
 import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.Explanation
+import io.github.fabiann1809.reader.ai.FlashcardDraft
+import io.github.fabiann1809.reader.ai.FlashcardPrompt
 import io.github.fabiann1809.reader.ai.TranscriptionPrompt
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +25,8 @@ import java.util.Base64
  * The API key is read from [apiKeyStore] on every call and sent only in the
  * `x-goog-api-key` header. Nothing here logs requests, headers or the key.
  * An explanation is requested as JSON with [ExplanationSchema] and decoded into an [Explanation];
- * a transcription sends the audio inline, with [transcriptionInstruction], and gets plain text.
+ * a transcription sends the audio inline, with [transcriptionInstruction], and gets plain text;
+ * a card proposal is JSON with [FlashcardSchema].
  * Every failure is reported as an [AiError]. When [model] is overloaded (5xx), the request is
  * retried once with [fallbackModel] so the user still gets an answer.
  */
@@ -31,6 +34,7 @@ class GeminiProvider(
     private val apiKeyStore: ApiKeyStore,
     private val systemInstruction: String,
     private val transcriptionInstruction: String = TranscriptionPrompt.SYSTEM_INSTRUCTION,
+    private val flashcardInstruction: String = FlashcardPrompt.SYSTEM_INSTRUCTION,
     private val httpClient: OkHttpClient,
     private val baseUrl: String = DEFAULT_BASE_URL,
     private val model: String = DEFAULT_MODEL,
@@ -69,6 +73,21 @@ class GeminiProvider(
         )
         // Silence is a valid answer: an empty transcript, not an error.
         return generate(request) { answer -> answer }
+    }
+
+    override suspend fun makeFlashcard(text: String): Result<FlashcardDraft> {
+        val request = GenerateContentRequest(
+            systemInstruction = Content(parts = listOf(Part(text = flashcardInstruction))),
+            contents = listOf(Content(role = "user", parts = listOf(Part(text = text)))),
+            generationConfig = GenerationConfig(
+                temperature = TEMPERATURE,
+                responseMimeType = "application/json",
+                responseSchema = FlashcardSchema,
+            ),
+        )
+        return generate(request) { answer ->
+            json.decodeFromString<FlashcardDraft>(answer.requireText()).let { FlashcardDraft(it.front.trim(), it.back.trim()) }
+        }
     }
 
     /** Sends [request], falling back to [fallbackModel] when [model] is overloaded, and [parse]s the answer. */

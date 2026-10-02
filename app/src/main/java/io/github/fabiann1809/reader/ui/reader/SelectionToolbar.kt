@@ -59,8 +59,8 @@ class SelectionActions(
 /**
  * The capsule for a selection in the reader: "Explicar" opens the explainer ([onExplain]),
  * "Resaltar" saves it in a color ([onHighlight]), "Nota" writes a note on it ([onNote]) and "Más"
- * copies, searches or shares the text; each one then ends the selection with [onEnd]. The other
- * actions get their feature in their own task: voice note (phase 13) and card (phase 14).
+ * copies, searches or shares the text, and "Crear ficha" makes a card of it ([onCard], T14.2);
+ * each one then ends the selection with [onEnd]. The voice note gets its feature in its own task.
  */
 @Composable
 fun ReaderSelection(
@@ -71,6 +71,7 @@ fun ReaderSelection(
     onNote: () -> Unit,
     onEnd: () -> Unit,
     modifier: Modifier = Modifier,
+    onCard: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val actions = SelectionActions(
@@ -84,6 +85,10 @@ fun ReaderSelection(
         },
         onNote = {
             onNote()
+            onEnd()
+        },
+        onCard = {
+            onCard()
             onEnd()
         },
         onCopy = {

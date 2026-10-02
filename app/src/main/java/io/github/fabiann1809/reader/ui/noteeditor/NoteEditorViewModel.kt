@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteRepository
+import io.github.fabiann1809.reader.data.note.NoteTag
 import io.github.fabiann1809.reader.data.note.NoteType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,6 +14,8 @@ import kotlinx.coroutines.launch
 
 /** Room ids start at 1, so 0 means "create a new note". */
 const val NEW_NOTE_ID = 0L
+
+private const val PARAGRAPH_BREAK = "\n\n"
 
 data class NoteEditorUiState(
     val isEditing: Boolean = false,
@@ -26,12 +29,18 @@ data class NoteEditorUiState(
     val isDeleted: Boolean = false,
     // The passage a note from the reader is about (T11.13), shown above the note.
     val quote: String? = null,
+    // A voice note's label (T13.3), carried to a card made from the note.
+    val tag: NoteTag? = null,
 ) {
     val isPageValid: Boolean
         get() = page.isEmpty() || (page.toIntOrNull() ?: 0) > 0
 
     val canSave: Boolean
         get() = content.isNotBlank() && isPageValid && !isSaving && !isLoading
+
+    /** What a card made from this note is about (T14.2): the passage, if any, and the note. */
+    val flashcardSource: String
+        get() = listOfNotNull(quote, content.trim().takeIf { it.isNotEmpty() }).joinToString(separator = PARAGRAPH_BREAK)
 }
 
 class NoteEditorViewModel(
@@ -74,6 +83,7 @@ class NoteEditorViewModel(
                     content = note.content,
                     page = note.page?.toString().orEmpty(),
                     quote = note.sourceText.takeIf { note.location != null },
+                    tag = note.tag,
                 )
             }
         }

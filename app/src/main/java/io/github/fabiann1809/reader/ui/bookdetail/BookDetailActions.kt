@@ -26,6 +26,7 @@ fun BookDetailActions(
     onCapturePage: () -> Unit,
     onUpdateProgressClick: () -> Unit,
     onAddNote: () -> Unit,
+    onAddFlashcard: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 8.dp)) {
         if (book.kind == BookKind.DIGITAL) {
@@ -56,5 +57,12 @@ fun BookDetailActions(
                 modifier = Modifier.weight(1f),
             )
         }
+        // On its own row: three buttons side by side don't fit their labels on a phone.
+        TonalButton(
+            text = stringResource(R.string.flashcard_new),
+            onClick = onAddFlashcard,
+            icon = R.drawable.ic_cards_three,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
