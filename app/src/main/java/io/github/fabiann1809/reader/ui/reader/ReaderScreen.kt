@@ -93,6 +93,7 @@ fun ReaderScreen(
                         onHighlight = viewModel::highlightSelection,
                         onNote = { onWriteNote(selection.text, selection.location) },
                         onCard = { onCreateFlashcard(selection.text, state.position) },
+                        onVoiceNote = viewModel::startVoiceNote,
                         onEnd = { epubFragment?.clearSelection() },
                         modifier = pageModifier,
                     )
