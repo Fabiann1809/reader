@@ -1,7 +1,8 @@
 package io.github.fabiann1809.reader.ui.components
 
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.material3.MaterialTheme
 import android.app.Activity
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalView
@@ -16,7 +17,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 @Composable
 fun LightStatusBarIcons() {
     val view = LocalView.current
-    val darkTheme = isSystemInDarkTheme()
+    // The app's theme (chosen in Ajustes), which may differ from the phone's.
+    val darkTheme = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     if (view.isInEditMode) return
     DisposableEffect(view, darkTheme) {
         val window = (view.context as? Activity)?.window

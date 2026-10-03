@@ -62,6 +62,7 @@ import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.components.aiErrorMessageRes
 import io.github.fabiann1809.reader.ui.components.readerTextFieldColors
 import io.github.fabiann1809.reader.ui.components.readerTextFieldShape
+import io.github.fabiann1809.reader.ui.reader.ReadingSettingsSheet
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 private const val API_KEY_URL = "https://aistudio.google.com/apikey"
@@ -71,8 +72,10 @@ fun SettingsScreen(
     onNavigateUp: () -> Unit,
     onOpenPrivacy: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    general: GeneralSettingsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val generalState by general.uiState.collectAsStateWithLifecycle()
     SettingsContent(
         uiState = uiState,
         onKeyInputChange = viewModel::onKeyInputChange,
@@ -82,7 +85,23 @@ fun SettingsScreen(
         onMessageShown = viewModel::onMessageShown,
         onOpenPrivacy = onOpenPrivacy,
         onNavigateUp = onNavigateUp,
+        // T17.1: appearance, reading defaults and the AI features, above the API key.
+        generalSettings = {
+            AppearanceSection(generalState, onTheme = general::setTheme, onView = general::setLibraryView, onBooksPerRow = general::setBooksPerRow)
+            SettingsDivider()
+            ReadingDefaultsSection(onOpen = general::showReadingSettings)
+            SettingsDivider()
+            AiFeaturesSection(generalState, onAutoTranscribe = general::setAutoTranscribe, onChapterEnd = general::setChapterEndSuggestion)
+        },
     )
+    if (generalState.readingSheetVisible) {
+        ReadingSettingsSheet(
+            settings = generalState.reading,
+            isPdf = false,
+            onChange = general::updateReadingSettings,
+            onDismiss = general::hideReadingSettings,
+        )
+    }
 }
 
 @Composable
@@ -96,6 +115,7 @@ fun SettingsContent(
     onOpenPrivacy: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
+    generalSettings: @Composable () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val resources = LocalResources.current
@@ -126,7 +146,8 @@ fun SettingsContent(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(stringResource(R.string.settings_ai_section), style = MaterialTheme.typography.titleMedium)
+            generalSettings()
+            Text(stringResource(R.string.settings_api_key_section), style = MaterialTheme.typography.titleSmall)
             KeyStatus(hasApiKey = uiState.hasApiKey)
             ApiKeyField(value = uiState.keyInput, onValueChange = onKeyInputChange)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {

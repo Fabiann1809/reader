@@ -359,6 +359,18 @@ class ReaderViewModelTest {
     }
 
     @Test
+    fun theSuggestionCanBeTurnedOff() = runTest {
+        chapterSuggestions.enabled = false
+        val session = twoChapterSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.4, href = "c1.xhtml")
+
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 2", progression = 0.5, href = "c2.xhtml")
+
+        assertNull(ready(viewModel).chapterEnd)
+    }
+
+    @Test
     fun goingBackToAnEarlierChapterSuggestsNothing() = runTest {
         val session = twoChapterSession()
         val viewModel = viewModel(bookId = 1, session = session)

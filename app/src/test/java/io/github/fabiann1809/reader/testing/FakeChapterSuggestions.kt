@@ -4,6 +4,9 @@ import io.github.fabiann1809.reader.data.prefs.ChapterSuggestions
 
 class FakeChapterSuggestions : ChapterSuggestions {
     val suggested = mutableSetOf<Pair<Long, String>>()
+    var enabled = true
+
+    override suspend fun isEnabled(): Boolean = enabled
 
     override suspend fun wasSuggested(bookId: Long, href: String): Boolean = (bookId to href) in suggested
 

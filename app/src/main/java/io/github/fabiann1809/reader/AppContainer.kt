@@ -49,7 +49,9 @@ import io.github.fabiann1809.reader.data.note.DefaultNoteRepository
 import io.github.fabiann1809.reader.data.note.NoteRepository
 import io.github.fabiann1809.reader.data.prefs.AppPreferences
 import io.github.fabiann1809.reader.data.prefs.DataStoreAppPreferences
+import io.github.fabiann1809.reader.data.prefs.AppSettingsStore
 import io.github.fabiann1809.reader.data.prefs.ChapterSuggestions
+import io.github.fabiann1809.reader.data.prefs.DataStoreAppSettingsStore
 import io.github.fabiann1809.reader.data.session.DefaultReadingSessionRepository
 import io.github.fabiann1809.reader.data.session.ReadingSessionRepository
 import io.github.fabiann1809.reader.data.session.ReadingSessionTracker
@@ -155,7 +157,9 @@ class AppContainer(context: Context) {
 
     val readingPreferences: ReadingPreferences by lazy { DataStoreReadingPreferences(appContext) }
 
-    val chapterSuggestions: ChapterSuggestions by lazy { DataStoreChapterSuggestions(appContext) }
+    val appSettings: AppSettingsStore by lazy { DataStoreAppSettingsStore(appContext) }
+
+    val chapterSuggestions: ChapterSuggestions by lazy { DataStoreChapterSuggestions(appContext, appSettings) }
 
     val readingGoalStore: ReadingGoalStore by lazy { DataStoreReadingGoalStore(appContext) }
 

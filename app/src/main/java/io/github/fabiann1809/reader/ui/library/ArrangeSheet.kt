@@ -164,7 +164,7 @@ private fun BookKind.labelRes(): Int = when (this) {
 }
 
 @StringRes
-private fun LibraryView.labelRes(): Int = when (this) {
+internal fun LibraryView.labelRes(): Int = when (this) {
     LibraryView.SHELVES -> R.string.view_shelves
     LibraryView.GRID -> R.string.view_grid
     LibraryView.LIST -> R.string.view_list

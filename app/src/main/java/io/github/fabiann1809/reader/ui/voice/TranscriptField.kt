@@ -41,6 +41,18 @@ fun TranscriptField(
             CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
             Text(stringResource(R.string.voice_transcribing), style = MaterialTheme.typography.bodyMedium)
         }
+        Transcript.Off -> Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = stringResource(R.string.voice_transcript_off),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            TextButton(onClick = onRetry) { Text(stringResource(R.string.voice_transcript_request)) }
+        }
         is Transcript.Ready -> OutlinedTextField(
             shape = readerTextFieldShape,
             colors = readerTextFieldColors(),

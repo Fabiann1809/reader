@@ -5,7 +5,9 @@ import io.github.fabiann1809.reader.ai.TranscribeAudio
 import io.github.fabiann1809.reader.data.note.NoteTag
 import io.github.fabiann1809.reader.data.note.NoteType
 import io.github.fabiann1809.reader.data.voice.VoiceFiles
+import io.github.fabiann1809.reader.data.prefs.AppSettings
 import io.github.fabiann1809.reader.testing.FakeAiProvider
+import io.github.fabiann1809.reader.testing.FakeAppSettingsStore
 import io.github.fabiann1809.reader.testing.FakeNoteRepository
 import io.github.fabiann1809.reader.testing.FakeVoicePlayer
 import io.github.fabiann1809.reader.testing.FakeVoiceRecorder
@@ -38,12 +40,14 @@ class VoiceRecordingViewModelTest {
     private val player = FakeVoicePlayer()
     private val aiProvider = FakeAiProvider()
     private val noteRepository = FakeNoteRepository()
+    private val appSettings = FakeAppSettingsStore()
     private var clock = 1_000L
     private val viewModel = VoiceRecordingViewModel(
         recorder,
         player,
         TranscribeAudio(aiProvider, VoiceFiles(audioFile.parentFile!!), ioDispatcher = Dispatchers.Unconfined),
         noteRepository,
+        appSettings,
         now = { clock },
     )
 
@@ -251,5 +255,19 @@ class VoiceRecordingViewModelTest {
 
         assertTrue(noteRepository.currentNotes.isEmpty())
         assertEquals(VoiceRecordingUiState.Idle, viewModel.uiState.value)
+    }
+
+    @Test
+    fun withAutomaticTranscriptionOffItWaitsToBeAskedAndCanStillBeSaved() {
+        appSettings.settings.value = AppSettings(autoTranscribe = false)
+        viewModel.start()
+        viewModel.stop()
+
+        assertEquals(Transcript.Off, recorded().transcript)
+        assertTrue(aiProvider.audios.isEmpty())
+        assertTrue(recorded().canSave)
+
+        viewModel.retryTranscription()
+        assertEquals(Transcript.Ready("Una idea sobre el capítulo"), recorded().transcript)
     }
 }

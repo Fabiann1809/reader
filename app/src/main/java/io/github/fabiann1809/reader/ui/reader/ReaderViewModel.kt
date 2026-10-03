@@ -267,7 +267,7 @@ class ReaderViewModel(
         if (state.format != BookFormat.EPUB) return
         val end = state.tableOfContents.finishedChapter(state.href, newHref) ?: return
         viewModelScope.launch {
-            if (chapterSuggestions.wasSuggested(bookId, end.href)) return@launch
+            if (!chapterSuggestions.isEnabled() || chapterSuggestions.wasSuggested(bookId, end.href)) return@launch
             chapterSuggestions.markSuggested(bookId, end.href)
             updateReady { it.copy(chapterEnd = end) }
         }

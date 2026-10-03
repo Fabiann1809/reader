@@ -37,6 +37,7 @@ import io.github.fabiann1809.reader.ui.reader.ReaderViewModel
 import io.github.fabiann1809.reader.ui.review.PendingReviewsViewModel
 import io.github.fabiann1809.reader.ui.review.ReviewViewModel
 import io.github.fabiann1809.reader.ui.reviewsession.ReviewSessionViewModel
+import io.github.fabiann1809.reader.ui.settings.GeneralSettingsViewModel
 import io.github.fabiann1809.reader.ui.settings.SettingsViewModel
 import io.github.fabiann1809.reader.ui.voice.VoiceNotePlayerViewModel
 import io.github.fabiann1809.reader.ui.voice.VoiceRecordingViewModel
@@ -184,6 +185,13 @@ object AppViewModelProvider {
             OnboardingViewModel(readerApplication().container.appPreferences)
         }
         initializer {
+            GeneralSettingsViewModel(
+                appSettings = readerApplication().container.appSettings,
+                appPreferences = readerApplication().container.appPreferences,
+                readingPreferences = readerApplication().container.readingPreferences,
+            )
+        }
+        initializer {
             SettingsViewModel(
                 apiKeyStore = readerApplication().container.apiKeyStore,
                 aiProvider = readerApplication().container.aiProvider,
@@ -195,6 +203,7 @@ object AppViewModelProvider {
                 player = readerApplication().container.newVoicePlayer(),
                 transcribe = readerApplication().container.transcribeAudio,
                 noteRepository = readerApplication().container.noteRepository,
+                appSettings = readerApplication().container.appSettings,
             )
         }
     }

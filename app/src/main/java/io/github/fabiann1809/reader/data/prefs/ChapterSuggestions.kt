@@ -11,17 +11,26 @@ import kotlinx.coroutines.flow.first
 
 /** Remembers which chapters already got the end-of-chapter suggestion (T15.5): it shows once per chapter. */
 interface ChapterSuggestions {
+    /** False when turned off in Ajustes (T17.1). */
+    suspend fun isEnabled(): Boolean
+
     suspend fun wasSuggested(bookId: Long, href: String): Boolean
 
     suspend fun markSuggested(bookId: Long, href: String)
 }
 
 // Tests pass their own [fileName] so they never touch the app's data.
-class DataStoreChapterSuggestions(context: Context, fileName: String = FILE_NAME) : ChapterSuggestions {
+class DataStoreChapterSuggestions(
+    context: Context,
+    private val appSettings: AppSettingsStore,
+    fileName: String = FILE_NAME,
+) : ChapterSuggestions {
 
     private val dataStore: DataStore<Preferences> = PreferenceDataStoreFactory.create(
         produceFile = { context.applicationContext.preferencesDataStoreFile(fileName) },
     )
+
+    override suspend fun isEnabled(): Boolean = appSettings.current().chapterEndSuggestion
 
     override suspend fun wasSuggested(bookId: Long, href: String): Boolean =
         key(bookId, href) in dataStore.data.first()[SUGGESTED].orEmpty()

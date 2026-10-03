@@ -13,8 +13,8 @@ sealed interface VoiceRecordingUiState {
         val playing: Boolean = false,
         val transcript: Transcript = Transcript.Loading,
     ) : VoiceRecordingUiState {
-        /** Saved once the transcript is there (even empty: the audio is the note then). */
-        val canSave: Boolean get() = transcript is Transcript.Ready
+        /** Saved once the transcript is there (even empty: the audio is the note then), or not asked for. */
+        val canSave: Boolean get() = transcript is Transcript.Ready || transcript == Transcript.Off
     }
 
     /**
@@ -31,6 +31,9 @@ enum class VoiceFailure { MICROPHONE_UNAVAILABLE, TOO_SHORT, PLAYBACK }
 /** The recording written down by the AI (T13.2), which the user can correct. */
 sealed interface Transcript {
     data object Loading : Transcript
+
+    /** Automatic transcription is off in Ajustes (T17.1): only on request. */
+    data object Off : Transcript
 
     /** An empty [text] means no words were heard. */
     data class Ready(val text: String) : Transcript

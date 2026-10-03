@@ -7,6 +7,8 @@ import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteRepository
 import io.github.fabiann1809.reader.data.note.NoteTag
 import io.github.fabiann1809.reader.data.note.NoteType
+import io.github.fabiann1809.reader.data.prefs.AppSettingsStore
+import io.github.fabiann1809.reader.data.prefs.current
 import io.github.fabiann1809.reader.data.voice.VoicePlayer
 import io.github.fabiann1809.reader.data.voice.VoiceRecorder
 import kotlinx.coroutines.Job
@@ -26,6 +28,7 @@ class VoiceRecordingViewModel(
     private val player: VoicePlayer,
     private val transcribe: TranscribeAudio,
     private val noteRepository: NoteRepository,
+    private val appSettings: AppSettingsStore,
     private val now: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
 
@@ -72,12 +75,13 @@ class VoiceRecordingViewModel(
      */
     fun save(bookId: Long, location: String?, page: Int?) {
         val recorded = _uiState.value as? VoiceRecordingUiState.Recorded ?: return
-        val transcript = recorded.transcript as? Transcript.Ready ?: return
+        if (!recorded.canSave) return
+        val text = (recorded.transcript as? Transcript.Ready)?.text.orEmpty()
         player.stop()
         val note = Note(
             bookId = bookId,
             page = page,
-            content = transcript.text.trim(),
+            content = text.trim(),
             type = NoteType.VOICE,
             location = location,
             audioPath = recorded.path,
@@ -108,16 +112,19 @@ class VoiceRecordingViewModel(
         recorder.stop().fold(
             onSuccess = { path ->
                 _uiState.value = VoiceRecordingUiState.Recorded(path, duration)
-                transcribe(path)
+                viewModelScope.launch {
+                    // Each transcription spends quota: with it off in Ajustes, it waits to be asked for.
+                    if (appSettings.current().autoTranscribe) transcribe(path) else updateRecorded { it.copy(transcript = Transcript.Off) }
+                }
             },
             onFailure = { _uiState.value = VoiceRecordingUiState.Failed(VoiceFailure.TOO_SHORT) },
         )
     }
 
-    /** After a failed transcription (no connection, quota...): tries again with the same recording. */
+    /** After a failed transcription (no connection, quota...), or when it wasn't automatic: asks for it. */
     fun retryTranscription() {
         val recorded = _uiState.value as? VoiceRecordingUiState.Recorded ?: return
-        if (recorded.transcript !is Transcript.Failed) return
+        if (recorded.transcript !is Transcript.Failed && recorded.transcript != Transcript.Off) return
         updateRecorded { it.copy(transcript = Transcript.Loading) }
         transcribe(recorded.path)
     }
