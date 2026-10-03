@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.ui.components.AiButton
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.util.daysFromToday
 import io.github.fabiann1809.reader.util.formatDate
@@ -32,6 +33,7 @@ fun SessionSummary(
     finished: ReviewSessionUiState.Finished,
     onDone: () -> Unit,
     modifier: Modifier = Modifier,
+    onQuiz: () -> Unit = {},
     now: Long = System.currentTimeMillis(),
 ) {
     Column(
@@ -68,6 +70,12 @@ fun SessionSummary(
                 }
             }
         }
+        // Optional, never automatic (design 02: "Ponme a prueba" as an option).
+        AiButton(
+            text = stringResource(R.string.quiz_try_me),
+            onClick = onQuiz,
+            modifier = Modifier.fillMaxWidth(),
+        )
         PrimaryButton(
             text = stringResource(R.string.review_summary_done),
             onClick = onDone,

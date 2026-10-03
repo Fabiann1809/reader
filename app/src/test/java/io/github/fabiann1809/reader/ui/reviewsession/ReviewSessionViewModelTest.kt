@@ -62,7 +62,12 @@ class ReviewSessionViewModelTest {
 
         // The next review is the card answered "Otra vez": back in a minute.
         assertEquals(
-            ReviewSessionUiState.Finished(reviewed = 2, correct = 1, nextReviewAt = now + 1.minutes.inWholeMilliseconds),
+            ReviewSessionUiState.Finished(
+                reviewed = 2,
+                correct = 1,
+                nextReviewAt = now + 1.minutes.inWholeMilliseconds,
+                quizSource = "¿Uno? — 1\n¿Dos? — 2",
+            ),
             viewModel.uiState.value,
         )
         assertEquals(now + 1.minutes.inWholeMilliseconds, cards.currentCards.first { it.id == 1L }.nextReviewAt)

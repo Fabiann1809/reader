@@ -102,6 +102,9 @@ interface ReaderSession {
     /** The page shown now, as a Locator in JSON to bookmark it; null before the navigator reported one. */
     fun currentLocation(bookId: Long): String?
 
+    /** The plain text of the chapter file [href] of the open EPUB [bookId] (T15.3); null if it can't be read. */
+    suspend fun chapterText(bookId: Long, href: String): String?
+
     /** Where the open navigator must go (see [jumpTo]). */
     val jumps: SharedFlow<Locator>
 
@@ -216,6 +219,8 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
     }
 
     override fun currentLocation(bookId: Long): String? = lastLocator.takeIf { bookId == openBookId }?.toJSON()?.toString()
+
+    override suspend fun chapterText(bookId: Long, href: String): String? = publication(bookId)?.chapterText(href)
 
     override fun close(bookId: Long) {
         if (bookId == openBookId) closeCurrent()

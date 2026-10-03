@@ -31,6 +31,8 @@ import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 fun ReviewSessionScreen(
     onNavigateUp: () -> Unit,
     onFinished: () -> Unit,
+    // "Ponme a prueba" in the summary: a quiz about the reviewed cards.
+    onQuiz: (source: String, count: Int, title: String) -> Unit = { _, _, _ -> },
     viewModel: ReviewSessionViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -45,6 +47,7 @@ fun ReviewSessionScreen(
         onGrade = viewModel::grade,
         onNavigateUp = onNavigateUp,
         onDone = onFinished,
+        onQuiz = onQuiz,
     )
 }
 
@@ -56,6 +59,7 @@ fun ReviewSessionContent(
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
     onDone: () -> Unit = {},
+    onQuiz: (source: String, count: Int, title: String) -> Unit = { _, _, _ -> },
 ) {
     val reviewing = uiState as? ReviewSessionUiState.Reviewing
     Scaffold(
@@ -70,9 +74,12 @@ fun ReviewSessionContent(
     ) { innerPadding ->
         val finished = uiState as? ReviewSessionUiState.Finished
         if (finished != null && finished.reviewed > 0) {
+            val reviewTitle = stringResource(R.string.quiz_title_review)
             SessionSummary(
                 finished,
                 onDone = onDone,
+                // A few cards make a short quiz; many, a longer one.
+                onQuiz = { onQuiz(finished.quizSource, if (finished.reviewed >= 5) 5 else 3, reviewTitle) },
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),

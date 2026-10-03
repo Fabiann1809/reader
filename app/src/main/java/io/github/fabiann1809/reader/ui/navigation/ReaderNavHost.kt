@@ -29,6 +29,7 @@ import io.github.fabiann1809.reader.ui.explanation.ExplanationScreen
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextScreen
 import io.github.fabiann1809.reader.ui.flashcardeditor.FlashcardEditorScreen
 import io.github.fabiann1809.reader.ui.interpretation.InterpretationScreen
+import io.github.fabiann1809.reader.ui.quiz.QuizScreen
 import io.github.fabiann1809.reader.ui.library.LibraryScreen
 import io.github.fabiann1809.reader.ui.more.AboutScreen
 import io.github.fabiann1809.reader.ui.more.BackupScreen
@@ -200,6 +201,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 },
                 onCreateFlashcard = { source, page -> navController.navigate(FlashcardEditorRoute(bookId, source, page ?: 0)) },
                 onNowYou = { source -> navController.navigate(InterpretationRoute(source)) },
+                onQuiz = { source, count, title -> navController.navigate(QuizRoute(source, count, title)) },
             )
         }
         composable<BookDetailRoute> { entry ->
@@ -227,10 +229,20 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
             ReviewSessionScreen(
                 onNavigateUp = { navController.navigateUp() },
                 onFinished = { navController.navigateUp() },
+                // The quiz replaces the summary: closing it goes back to the Repasar tab.
+                onQuiz = { source, count, title ->
+                    navController.navigate(QuizRoute(source, count, title)) { popUpTo<ReviewSessionRoute> { inclusive = true } }
+                },
             )
         }
         composable<InterpretationRoute> {
-            InterpretationScreen(onNavigateUp = { navController.navigateUp() })
+            InterpretationScreen(
+                onNavigateUp = { navController.navigateUp() },
+                onQuiz = { source, count, title -> navController.navigate(QuizRoute(source, count, title)) },
+            )
+        }
+        composable<QuizRoute> { entry ->
+            QuizScreen(title = entry.toRoute<QuizRoute>().title, onClose = { navController.navigateUp() })
         }
         composable<FlashcardEditorRoute> {
             FlashcardEditorScreen(onNavigateUp = { navController.navigateUp() })

@@ -285,7 +285,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 ### Fase 15 — Comprensión y quiz (B6, B7)
 - [x] **T15.1 Ahora tú.** El usuario escribe su interpretación y `AiProvider.analyzeInterpretation` devuelve qué está bien, incompleto o confuso, con referencia al texto. *Hecho cuando:* coincide con la lámina 1i. La referencia al texto es una cita del párrafo explicado (no hay número de página que enlazar); "Ponme a prueba" llega con el quiz (T15.3).
 - [x] **T15.2 Generar quiz.** `AiProvider.generateQuiz` con 3, 5 o 10 preguntas de 4 opciones, en JSON con esquema; el contexto es el capítulo (lector) o las notas y capturas (libro físico). *Hecho cuando:* devuelve un quiz válido.
-- [ ] **T15.3 Pantalla de quiz.** Opción elegida, correcta o incorrecta, explicación, enlace a la página y salir con diálogo. *Hecho cuando:* coincide con la lámina 1h.
+- [x] **T15.3 Pantalla de quiz.** Opción elegida, correcta o incorrecta, explicación, enlace a la página y salir con diálogo. *Hecho cuando:* coincide con la lámina 1h. Se abre con "Ponme a prueba" desde el resumen de repaso (sobre las fichas repasadas), desde "Ahora tú" (3 preguntas sobre el párrafo) y desde el menú del lector (el capítulo, 3, 5 o 10 preguntas; solo EPUB), según decidió el usuario (2026-10-02). Sin enlace "Ver en la página": las preguntas no traen página.
 - [ ] **T15.4 Resultado.** Puntaje, temas fuertes y débiles, y "Crear fichas de lo que falló". *Hecho cuando:* crea las fichas.
 - [ ] **T15.5 Sugerencia al terminar un capítulo.** Discreta y descartable, nunca modal. *Hecho cuando:* aparece una vez por capítulo.
 

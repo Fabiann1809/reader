@@ -62,6 +62,10 @@ data class FlashcardEditorRoute(
 @Serializable
 data class InterpretationRoute(val sourceText: String)
 
+/** A quiz of [count] questions about [source] (T15.3); [title] heads it (a chapter, "Repaso"...). */
+@Serializable
+data class QuizRoute(val source: String, val count: Int, val title: String)
+
 @Serializable
 data class CaptureRoute(val bookId: Long)
 

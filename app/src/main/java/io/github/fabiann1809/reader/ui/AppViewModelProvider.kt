@@ -24,11 +24,13 @@ import io.github.fabiann1809.reader.ui.navigation.ExplanationRoute
 import io.github.fabiann1809.reader.ui.navigation.ExtractedTextRoute
 import io.github.fabiann1809.reader.ui.navigation.FlashcardEditorRoute
 import io.github.fabiann1809.reader.ui.navigation.InterpretationRoute
+import io.github.fabiann1809.reader.ui.navigation.QuizRoute
 import io.github.fabiann1809.reader.ui.navigation.NoteEditorRoute
 import io.github.fabiann1809.reader.ui.navigation.ReaderRoute
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
 import io.github.fabiann1809.reader.ui.notes.AllNotesViewModel
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingViewModel
+import io.github.fabiann1809.reader.ui.quiz.QuizViewModel
 import io.github.fabiann1809.reader.ui.reader.ReaderViewModel
 import io.github.fabiann1809.reader.ui.review.PendingReviewsViewModel
 import io.github.fabiann1809.reader.ui.review.ReviewViewModel
@@ -110,6 +112,10 @@ object AppViewModelProvider {
                 sourceText = createSavedStateHandle().toRoute<InterpretationRoute>().sourceText,
                 analyzeInterpretation = readerApplication().container.analyzeInterpretation,
             )
+        }
+        initializer {
+            val route = createSavedStateHandle().toRoute<QuizRoute>()
+            QuizViewModel(route.source, route.count, readerApplication().container.generateQuiz)
         }
         initializer {
             ExtractedTextViewModel(

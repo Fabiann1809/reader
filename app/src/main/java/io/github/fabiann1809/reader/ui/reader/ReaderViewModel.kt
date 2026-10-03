@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader.ui.reader
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.fabiann1809.reader.ai.MAX_QUIZ_TEXT_LENGTH
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.BookStatus
@@ -207,6 +208,30 @@ class ReaderViewModel(
 
     /** The page shown now as a Locator in JSON, to anchor a voice note there; null before the first page. */
     fun currentLocation(): String? = session.currentLocation(bookId)
+
+    fun showMenu() = updateReady { it.copy(menuVisible = true, chapterUnreadable = false) }
+
+    fun hideMenu() = updateReady { it.copy(menuVisible = false) }
+
+    /** "Ponme a prueba" in the menu: reads the open chapter and asks to open a quiz of [count] questions about it. */
+    fun startChapterQuiz(count: Int) {
+        val state = _uiState.value as? ReaderUiState.Ready ?: return
+        val href = state.href ?: return
+        viewModelScope.launch {
+            // A very long chapter is cut: its beginning is still enough for a few questions.
+            val text = session.chapterText(bookId, href)?.take(MAX_QUIZ_TEXT_LENGTH)
+            updateReady {
+                if (text == null) {
+                    it.copy(chapterUnreadable = true)
+                } else {
+                    it.copy(menuVisible = false, chapterQuiz = ChapterQuiz(text, count, state.chapter ?: state.title))
+                }
+            }
+        }
+    }
+
+    /** The reader opened the quiz. */
+    fun chapterQuizStarted() = updateReady { it.copy(chapterQuiz = null) }
 
     /** Saves a change from the "Aa" sheet; the page shows it at once. A new size replaces a pinch's. */
     fun updateReadingSettings(change: (ReadingSettings) -> ReadingSettings) {

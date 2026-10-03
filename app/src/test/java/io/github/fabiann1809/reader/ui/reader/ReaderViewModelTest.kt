@@ -104,6 +104,10 @@ class ReaderViewModelTest {
 
         override fun currentLocation(bookId: Long): String? = location
 
+        var chapter: String? = "Texto del capítulo"
+
+        override suspend fun chapterText(bookId: Long, href: String): String? = chapter
+
         override fun close(bookId: Long) = Unit
     }
 
@@ -288,6 +292,35 @@ class ReaderViewModelTest {
         assertEquals(ReadingTheme.NIGHT, session.readingSettings.value.theme)
         viewModel.hideTextSettings()
         assertFalse(ready(viewModel).textSettingsVisible)
+    }
+
+    @Test
+    fun aQuizAboutTheOpenChapterIsAskedFromTheMenu() = runTest {
+        val session = FakeSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.2, href = "c1.xhtml", position = 4)
+        viewModel.showMenu()
+        assertTrue(ready(viewModel).menuVisible)
+
+        viewModel.startChapterQuiz(count = 5)
+
+        assertEquals(ChapterQuiz("Texto del capítulo", 5, "Capítulo 1"), ready(viewModel).chapterQuiz)
+        assertFalse(ready(viewModel).menuVisible)
+        viewModel.chapterQuizStarted()
+        assertEquals(null, ready(viewModel).chapterQuiz)
+    }
+
+    @Test
+    fun anUnreadableChapterIsSaidInTheMenu() = runTest {
+        val session = FakeSession().apply { chapter = null }
+        val viewModel = viewModel(bookId = 1, session = session)
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.2, href = "c1.xhtml", position = 4)
+        viewModel.showMenu()
+
+        viewModel.startChapterQuiz(count = 3)
+
+        assertTrue(ready(viewModel).chapterUnreadable)
+        assertTrue(ready(viewModel).menuVisible)
     }
 
     @Test

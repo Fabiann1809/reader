@@ -42,6 +42,7 @@ import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 @Composable
 fun InterpretationScreen(
     onNavigateUp: () -> Unit,
+    onQuiz: (source: String, count: Int, title: String) -> Unit = { _, _, _ -> },
     viewModel: InterpretationViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -50,6 +51,7 @@ fun InterpretationScreen(
         onOwnWordsChange = viewModel::onOwnWordsChange,
         onAnalyze = viewModel::analyze,
         onNavigateUp = onNavigateUp,
+        onQuiz = { title -> onQuiz(uiState.sourceText, PARAGRAPH_QUIZ_SIZE, title) },
     )
 }
 
@@ -61,6 +63,7 @@ fun InterpretationContent(
     onAnalyze: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
+    onQuiz: (title: String) -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
@@ -94,11 +97,22 @@ fun InterpretationContent(
                 modifier = Modifier.fillMaxWidth(),
             )
             AnalysisSection(uiState.analysis)
-            OutlineButton(
-                text = stringResource(R.string.interpretation_close),
-                onClick = onNavigateUp,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (uiState.analysis is AnalysisState.Done) {
+                    val title = stringResource(R.string.quiz_title_paragraph)
+                    AiButton(
+                        text = stringResource(R.string.quiz_try_me),
+                        onClick = { onQuiz(title) },
+                        icon = null,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                OutlineButton(
+                    text = stringResource(R.string.interpretation_close),
+                    onClick = onNavigateUp,
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
     }
 }
@@ -131,6 +145,9 @@ private fun AnalysisSection(analysis: AnalysisState) {
 }
 
 private const val OWN_WORDS_MIN_LINES = 5
+
+// One paragraph is enough for a short quiz only.
+private const val PARAGRAPH_QUIZ_SIZE = 3
 
 @Preview(showBackground = true)
 @Composable

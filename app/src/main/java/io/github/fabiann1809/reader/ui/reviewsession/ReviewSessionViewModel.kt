@@ -29,7 +29,13 @@ sealed interface ReviewSessionUiState {
      * Every card was answered (T14.5's summary): [correct] counts the "Bien" and "Fácil" ones, and
      * [nextReviewAt] is when the next card is due (null while it is being looked up, or without cards).
      */
-    data class Finished(val reviewed: Int, val correct: Int, val nextReviewAt: Long? = null) : ReviewSessionUiState
+    data class Finished(
+        val reviewed: Int,
+        val correct: Int,
+        val nextReviewAt: Long? = null,
+        // The reviewed cards as text, for "Ponme a prueba" (T15.3).
+        val quizSource: String = "",
+    ) : ReviewSessionUiState
 }
 
 /**
@@ -77,11 +83,14 @@ class ReviewSessionViewModel(
         _uiState.value = if (next < state.cards.size) {
             state.copy(index = next, flipped = false)
         } else {
-            ReviewSessionUiState.Finished(reviewed = state.cards.size, correct = correct)
+            ReviewSessionUiState.Finished(reviewed = state.cards.size, correct = correct, quizSource = state.cards.asQuizSource())
         }
         saves += viewModelScope.launch { flashcardRepository.updateFlashcard(state.current.card.reviewed(grade, now())) }
         if (next == state.cards.size) showNextReview()
     }
+
+    private fun List<DueCard>.asQuizSource(): String =
+        joinToString(separator = "\n") { "${it.card.front} — ${it.card.back}" }
 
     private fun showNextReview() {
         viewModelScope.launch {

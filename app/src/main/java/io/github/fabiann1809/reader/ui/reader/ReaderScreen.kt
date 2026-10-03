@@ -11,6 +11,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,8 @@ fun ReaderScreen(
     onCreateFlashcard: (source: String, page: Int?) -> Unit = { _, _ -> },
     // "Ahora tú" after an explanation (T15.1).
     onNowYou: (source: String) -> Unit = {},
+    // "Ponme a prueba" in the menu: a quiz about the open chapter (T15.3).
+    onQuiz: (source: String, count: Int, title: String) -> Unit = { _, _, _ -> },
     viewModel: ReaderViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -110,7 +113,22 @@ fun ReaderScreen(
                     // In a PDF, "IA" marks a zone to explain (T11.14); EPUB text is selected instead.
                     onAi = if (state.format == BookFormat.PDF) viewModel::startZonePicking else ({}),
                     onRecord = viewModel::startVoiceNote,
+                    onMenu = viewModel::showMenu,
                 )
+                if (state.menuVisible) {
+                    ReaderMenuSheet(
+                        isPdf = state.format == BookFormat.PDF,
+                        chapterUnreadable = state.chapterUnreadable,
+                        onQuiz = viewModel::startChapterQuiz,
+                        onDismiss = viewModel::hideMenu,
+                    )
+                }
+                state.chapterQuiz?.let { quiz ->
+                    LaunchedEffect(quiz) {
+                        viewModel.chapterQuizStarted()
+                        onQuiz(quiz.text, quiz.count, quiz.title)
+                    }
+                }
                 state.zonePicking?.let { picking ->
                     ZonePicker(
                         state = picking,
