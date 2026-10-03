@@ -18,7 +18,8 @@ sealed interface ReaderUiState {
      * the page, which shows the selection capsule, and [explaining] the text in the explainer sheet.
      * [zonePicking] is set while a zone of a PDF page is being marked to explain it, and
      * [recordingVoice] while the "Grabar" sheet is open. [menuVisible] is the ⋮ sheet, and
-     * [chapterQuiz] a quiz about the open chapter that is ready to start (T15.3).
+     * [chapterQuiz] a quiz about the open chapter that is ready to start (T15.3). [chapterEnd] is a
+     * chapter just finished, whose discreet suggestion shows (T15.5).
      */
     data class Ready(
         val bookId: Long,
@@ -42,6 +43,7 @@ sealed interface ReaderUiState {
         val menuVisible: Boolean = false,
         val chapterQuiz: ChapterQuiz? = null,
         val chapterUnreadable: Boolean = false,
+        val chapterEnd: ChapterEnd? = null,
     ) : ReaderUiState {
         /** True when the open page has a bookmark: the top bar shows it filled. */
         val pageIsBookmarked: Boolean get() = bookmarks.atPosition(position).isNotEmpty()

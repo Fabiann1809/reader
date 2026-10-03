@@ -362,6 +362,9 @@
     <string name="tab_progress">Progreso</string>
     <string name="tab_more">Más</string>
     <string name="quiz_try_me">Ponme a prueba</string>
+    <string name="chapter_end_question">Terminaste «%s». ¿Quieres repasar o probarte?</string>
+    <string name="chapter_end_review">Repasar</string>
+    <string name="chapter_end_dismiss">Ahora no</string>
     <string name="reader_quiz_about_chapter">Responde unas preguntas sobre este capítulo para comprobar lo que entendiste.</string>
     <string name="reader_quiz_questions">%d preguntas</string>
     <string name="reader_quiz_start">Empezar</string>

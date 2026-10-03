@@ -84,6 +84,7 @@ object AppViewModelProvider {
                 readingPreferences = readerApplication().container.readingPreferences,
                 textRecognizer = readerApplication().container.textRecognizer,
                 session = readerApplication().container.readerSession,
+                chapterSuggestions = readerApplication().container.chapterSuggestions,
             )
         }
         initializer {

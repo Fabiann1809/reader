@@ -287,7 +287,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T15.2 Generar quiz.** `AiProvider.generateQuiz` con 3, 5 o 10 preguntas de 4 opciones, en JSON con esquema; el contexto es el capítulo (lector) o las notas y capturas (libro físico). *Hecho cuando:* devuelve un quiz válido.
 - [x] **T15.3 Pantalla de quiz.** Opción elegida, correcta o incorrecta, explicación, enlace a la página y salir con diálogo. *Hecho cuando:* coincide con la lámina 1h. Se abre con "Ponme a prueba" desde el resumen de repaso (sobre las fichas repasadas), desde "Ahora tú" (3 preguntas sobre el párrafo) y desde el menú del lector (el capítulo, 3, 5 o 10 preguntas; solo EPUB), según decidió el usuario (2026-10-02). Sin enlace "Ver en la página": las preguntas no traen página.
 - [x] **T15.4 Resultado.** Puntaje, temas fuertes y débiles, y "Crear fichas de lo que falló". *Hecho cuando:* crea las fichas. Los temas salen de un campo "tema" que la IA pone a cada pregunta; las fichas van al libro del quiz (en el repaso, el libro con más fichas de la sesión).
-- [ ] **T15.5 Sugerencia al terminar un capítulo.** Discreta y descartable, nunca modal. *Hecho cuando:* aparece una vez por capítulo.
+- [x] **T15.5 Sugerencia al terminar un capítulo.** Discreta y descartable, nunca modal. *Hecho cuando:* aparece una vez por capítulo. Cuenta como terminado pasar al capítulo siguiente del índice (solo EPUB); la tarjeta ofrece «Repasar» y «Ponme a prueba» (3 preguntas) y se oculta sola.
 
 ### Fase 16 — Progreso y metas (B10)
 - [ ] **T16.1 Sesiones de lectura.** Entidad `ReadingSession`, registrada sola desde el lector; en libros físicos, al actualizar el progreso. *Hecho cuando:* se registran las sesiones.

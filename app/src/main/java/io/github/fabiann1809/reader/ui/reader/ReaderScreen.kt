@@ -48,6 +48,8 @@ fun ReaderScreen(
     onNowYou: (source: String) -> Unit = {},
     // "Ponme a prueba" in the menu: a quiz about the open chapter (T15.3).
     onQuiz: (source: String, count: Int, title: String) -> Unit = { _, _, _ -> },
+    // "Repasar" in the end-of-chapter suggestion (T15.5).
+    onReview: () -> Unit = {},
     viewModel: ReaderViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -121,6 +123,18 @@ fun ReaderScreen(
                         chapterUnreadable = state.chapterUnreadable,
                         onQuiz = viewModel::startChapterQuiz,
                         onDismiss = viewModel::hideMenu,
+                    )
+                }
+                state.chapterEnd?.let { end ->
+                    ChapterEndSuggestion(
+                        end,
+                        onReview = {
+                            viewModel.dismissChapterEnd()
+                            onReview()
+                        },
+                        onQuiz = viewModel::quizFinishedChapter,
+                        onDismiss = viewModel::dismissChapterEnd,
+                        modifier = pageModifier.align(Alignment.BottomCenter),
                     )
                 }
                 state.chapterQuiz?.let { quiz ->

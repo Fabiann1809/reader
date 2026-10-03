@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fabiann1809.reader.ai.MAX_QUIZ_TEXT_LENGTH
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.bookmark.Bookmark
@@ -11,6 +12,7 @@ import io.github.fabiann1809.reader.data.bookmark.BookmarkRepository
 import io.github.fabiann1809.reader.data.highlight.Highlight
 import io.github.fabiann1809.reader.data.highlight.HighlightColor
 import io.github.fabiann1809.reader.data.highlight.HighlightRepository
+import io.github.fabiann1809.reader.data.prefs.ChapterSuggestions
 import io.github.fabiann1809.reader.data.prefs.ReadingPreferences
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import io.github.fabiann1809.reader.data.reader.OpenProblem
@@ -35,6 +37,7 @@ class ReaderViewModel(
     private val readingPreferences: ReadingPreferences,
     private val textRecognizer: TextRecognizer,
     private val session: ReaderSession,
+    private val chapterSuggestions: ChapterSuggestions,
     // A place to open the book at (e.g. a note's), instead of where the reader left off.
     private val startAt: String? = null,
     // Injected so tests control time.
@@ -68,6 +71,7 @@ class ReaderViewModel(
         }
         viewModelScope.launch {
             session.position.filterNotNull().filter { it.bookId == bookId }.collect { position ->
+                (_uiState.value as? ReaderUiState.Ready)?.let { suggestIfChapterEnded(it, position.href) }
                 updateReady {
                     it.copy(
                         chapter = position.chapter,
@@ -233,6 +237,29 @@ class ReaderViewModel(
     /** The reader opened the quiz. */
     fun chapterQuizStarted() = updateReady { it.copy(chapterQuiz = null) }
 
+    /** "Ponme a prueba" in the end-of-chapter suggestion: a quiz about the chapter just finished. */
+    fun quizFinishedChapter() {
+        val end = (_uiState.value as? ReaderUiState.Ready)?.chapterEnd ?: return
+        dismissChapterEnd()
+        viewModelScope.launch {
+            val text = session.chapterText(bookId, end.href)?.take(MAX_QUIZ_TEXT_LENGTH) ?: return@launch
+            updateReady { it.copy(chapterQuiz = ChapterQuiz(text, CHAPTER_END_QUIZ_SIZE, end.title)) }
+        }
+    }
+
+    fun dismissChapterEnd() = updateReady { it.copy(chapterEnd = null) }
+
+    // Once per chapter (T15.5), and only in EPUBs, whose chapters have text for the quiz.
+    private fun suggestIfChapterEnded(state: ReaderUiState.Ready, newHref: String?) {
+        if (state.format != BookFormat.EPUB) return
+        val end = state.tableOfContents.finishedChapter(state.href, newHref) ?: return
+        viewModelScope.launch {
+            if (chapterSuggestions.wasSuggested(bookId, end.href)) return@launch
+            chapterSuggestions.markSuggested(bookId, end.href)
+            updateReady { it.copy(chapterEnd = end) }
+        }
+    }
+
     /** Saves a change from the "Aa" sheet; the page shows it at once. A new size replaces a pinch's. */
     fun updateReadingSettings(change: (ReadingSettings) -> ReadingSettings) {
         val state = _uiState.value as? ReaderUiState.Ready ?: return
@@ -285,3 +312,6 @@ class ReaderViewModel(
         session.close(bookId)
     }
 }
+
+// The end-of-chapter suggestion's quiz: short, it interrupts reading.
+private const val CHAPTER_END_QUIZ_SIZE = 3

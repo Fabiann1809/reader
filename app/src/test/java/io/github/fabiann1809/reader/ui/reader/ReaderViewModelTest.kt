@@ -21,6 +21,7 @@ import io.github.fabiann1809.reader.testing.FakeHighlightRepository
 import io.github.fabiann1809.reader.testing.FakeReadingPreferences
 import io.github.fabiann1809.reader.testing.FakeTextRecognizer
 import io.github.fabiann1809.reader.testing.FakeBookRepository
+import io.github.fabiann1809.reader.testing.FakeChapterSuggestions
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +55,7 @@ class ReaderViewModelTest {
         val jumpedToChapters = mutableListOf<TocEntry>()
         val jumpedToLocations = mutableListOf<String>()
         var location: String? = "{\"href\":\"c1.xhtml\"}"
-        val toc = listOf(TocEntry(index = 0, title = "Capítulo 1", level = 0, href = "c1.xhtml"))
+        var toc = listOf(TocEntry(index = 0, title = "Capítulo 1", level = 0, href = "c1.xhtml"))
         override val locations = MutableSharedFlow<ReadingLocation>(extraBufferCapacity = 8)
         override val position = MutableStateFlow<ReadingPosition?>(null)
         override val jumps = MutableSharedFlow<Locator>()
@@ -116,6 +117,8 @@ class ReaderViewModelTest {
     private val ocr = FakeTextRecognizer(Result.success(RecognizedText("Lo esencial es invisible a los ojos.")))
     private val readingPreferences = FakeReadingPreferences(ReadingSettings(theme = ReadingTheme.SEPIA))
 
+    private val chapterSuggestions = FakeChapterSuggestions()
+
     private fun viewModel(bookId: Long, session: ReaderSession, startAt: String? = null) = ReaderViewModel(
         bookId = bookId,
         bookRepository = books,
@@ -124,6 +127,7 @@ class ReaderViewModelTest {
         readingPreferences = readingPreferences,
         textRecognizer = ocr,
         session = session,
+        chapterSuggestions = chapterSuggestions,
         startAt = startAt,
         now = { 5_000L },
     )
@@ -321,6 +325,44 @@ class ReaderViewModelTest {
 
         assertTrue(ready(viewModel).chapterUnreadable)
         assertTrue(ready(viewModel).menuVisible)
+    }
+
+    private fun twoChapterSession() = FakeSession().apply {
+        toc = listOf(
+            TocEntry(index = 0, title = "Capítulo 1", level = 0, href = "c1.xhtml"),
+            TocEntry(index = 1, title = "Capítulo 2", level = 0, href = "c2.xhtml#inicio"),
+        )
+    }
+
+    @Test
+    fun movingOnToTheNextChapterSuggestsAQuizOnceAboutTheFinishedOne() = runTest {
+        val session = twoChapterSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.4, href = "c1.xhtml")
+
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 2", progression = 0.5, href = "c2.xhtml")
+        assertEquals(ChapterEnd("c1.xhtml", "Capítulo 1"), ready(viewModel).chapterEnd)
+
+        viewModel.quizFinishedChapter()
+        assertNull(ready(viewModel).chapterEnd)
+        assertEquals(ChapterQuiz("Texto del capítulo", 3, "Capítulo 1"), ready(viewModel).chapterQuiz)
+
+        // Back and forth again: already suggested for that chapter.
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.4, href = "c1.xhtml")
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 2", progression = 0.5, href = "c2.xhtml")
+        assertNull(ready(viewModel).chapterEnd)
+    }
+
+    @Test
+    fun goingBackToAnEarlierChapterSuggestsNothing() = runTest {
+        val session = twoChapterSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 2", progression = 0.5, href = "c2.xhtml")
+
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.4, href = "c1.xhtml")
+
+        assertNull(ready(viewModel).chapterEnd)
+        assertTrue(chapterSuggestions.suggested.isEmpty())
     }
 
     @Test
