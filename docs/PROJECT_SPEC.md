@@ -291,7 +291,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 
 ### Fase 16 — Progreso y metas (B10)
 - [x] **T16.1 Sesiones de lectura.** Entidad `ReadingSession`, registrada sola desde el lector; en libros físicos, al actualizar el progreso. *Hecho cuando:* se registran las sesiones.
-- [ ] **T16.2 Pestaña Progreso.** Anillo de meta diaria, racha, gráfica semanal y libros terminados del año. *Hecho cuando:* coincide con la lámina 1i.
+- [x] **T16.2 Pestaña Progreso.** Anillo de meta diaria, racha, gráfica semanal y libros terminados del año. *Hecho cuando:* coincide con la lámina 1i.
 - [ ] **T16.3 Meta y recordatorio.** Meta diaria en minutos o páginas, con recordatorio de lectura. *Hecho cuando:* el anillo usa la meta.
 - [ ] **T16.4 Detalle con pestañas.** Resumen, Notas y resaltados, Fichas y Sesiones; páginas restantes y tiempo estimado para terminar. *Hecho cuando:* cada pestaña muestra sus datos.
 - [ ] **T16.5 Racha animada.** La llama se anima una vez al cumplir la meta. *Hecho cuando:* se anima solo al cumplir.

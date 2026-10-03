@@ -10,7 +10,18 @@ fun Book.isNew(now: Long = System.currentTimeMillis()): Boolean =
     status == BookStatus.TO_READ && currentPage == 0 && lastOpenedAt == null && now - createdAt < NEW_BOOK_WINDOW_MILLIS
 
 /** Finished, with the progress moved to the last page when the page count is known. */
-fun Book.markedAsRead(): Book = copy(status = BookStatus.FINISHED, currentPage = totalPages ?: currentPage)
+fun Book.markedAsRead(now: Long = System.currentTimeMillis()): Book =
+    withStatus(BookStatus.FINISHED, now).copy(currentPage = totalPages ?: currentPage)
+
+/** The book with [status]; finishing it records when ([now]), and leaving "Terminado" forgets it. */
+fun Book.withStatus(status: BookStatus, now: Long = System.currentTimeMillis()): Book = copy(
+    status = status,
+    finishedAt = when {
+        status != BookStatus.FINISHED -> null
+        this.status == BookStatus.FINISHED -> finishedAt
+        else -> now
+    },
+)
 
 /**
  * The book "Continuar leyendo" opens: the digital book read most recently, unless it is finished.

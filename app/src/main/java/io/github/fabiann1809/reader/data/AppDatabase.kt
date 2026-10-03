@@ -23,7 +23,7 @@ import io.github.fabiann1809.reader.data.session.ReadingSessionDao
 
 @Database(
     entities = [Book::class, Note::class, Collection::class, BookCollectionCrossRef::class, Bookmark::class, Highlight::class, Flashcard::class, ReadingSession::class],
-    version = 11,
+    version = 12,
     exportSchema = true,
     autoMigrations = [
         // 1 → 2: new optional Book columns (kind, format, filePath, coverPath, language, lastOpenedAt).
@@ -46,6 +46,8 @@ import io.github.fabiann1809.reader.data.session.ReadingSessionDao
         AutoMigration(from = 9, to = 10),
         // 10 → 11: the reading_sessions table.
         AutoMigration(from = 10, to = 11),
+        // 11 → 12: Book.finishedAt, for the books finished each year.
+        AutoMigration(from = 11, to = 12),
     ],
 )
 abstract class AppDatabase : RoomDatabase() {

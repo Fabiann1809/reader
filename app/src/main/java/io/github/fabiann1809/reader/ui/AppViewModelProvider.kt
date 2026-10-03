@@ -30,6 +30,7 @@ import io.github.fabiann1809.reader.ui.navigation.ReaderRoute
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
 import io.github.fabiann1809.reader.ui.notes.AllNotesViewModel
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingViewModel
+import io.github.fabiann1809.reader.ui.progress.ProgressViewModel
 import io.github.fabiann1809.reader.ui.quiz.QuizViewModel
 import io.github.fabiann1809.reader.ui.reader.ReaderViewModel
 import io.github.fabiann1809.reader.ui.review.PendingReviewsViewModel
@@ -159,6 +160,12 @@ object AppViewModelProvider {
         }
         initializer {
             PendingReviewsViewModel(readerApplication().container.flashcardRepository)
+        }
+        initializer {
+            ProgressViewModel(
+                sessionRepository = readerApplication().container.readingSessionRepository,
+                bookRepository = readerApplication().container.bookRepository,
+            )
         }
         initializer {
             ReviewSessionViewModel(

@@ -411,6 +411,17 @@
     <string name="flashcard_suggesting">Pensando la ficha…</string>
     <string name="flashcard_field_front">Frente: pregunta o concepto</string>
     <string name="flashcard_field_back">Reverso: respuesta</string>
+    <string name="progress_goal_of">de %d min</string>
+    <plurals name="progress_streak_days">
+        <item quantity="one">día seguido\nleyendo</item>
+        <item quantity="other">días seguidos\nleyendo</item>
+    </plurals>
+    <string name="progress_this_week">Esta semana</string>
+    <string name="progress_week_summary">%1$s esta semana · %2$d min de media</string>
+    <string name="progress_hours_minutes">%1$d h %2$d m</string>
+    <string name="progress_minutes">%d min</string>
+    <string name="progress_finished_books">Libros terminados</string>
+    <string name="progress_in_year">En %d</string>
     <string name="review_mode_today">Hoy</string>
     <string name="review_mode_by_book">Por libro</string>
     <string name="review_mode_by_tag">Por etiqueta</string>

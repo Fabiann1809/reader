@@ -37,4 +37,7 @@ data class Book(
     // "Mis favoritos" is this flag (a smart collection), not a stored collection.
     @ColumnInfo(defaultValue = "0")
     val isFavorite: Boolean = false,
+    // Epoch milliseconds when it was marked finished, for "Libros terminados" of the year (T16.2).
+    // Null while not finished, and for books finished before version 12.
+    val finishedAt: Long? = null,
 )

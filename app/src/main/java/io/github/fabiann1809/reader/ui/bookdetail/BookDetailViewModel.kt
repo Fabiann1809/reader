@@ -6,6 +6,7 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.BookRepository
+import io.github.fabiann1809.reader.data.book.withStatus
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
@@ -82,7 +83,7 @@ class BookDetailViewModel(
         viewModelScope.launch {
             // Read the stored book rather than the UI state so a stale screen can't overwrite newer data.
             val book = bookRepository.getBook(bookId) ?: return@launch
-            bookRepository.updateBook(book.copy(currentPage = currentPage, status = status))
+            bookRepository.updateBook(book.withStatus(status, now()).copy(currentPage = currentPage))
             // A paper book is read outside the app: moving its page forward records what was read (T16.1).
             val pagesRead = currentPage - book.currentPage
             if (book.kind == BookKind.PHYSICAL && pagesRead > 0) {

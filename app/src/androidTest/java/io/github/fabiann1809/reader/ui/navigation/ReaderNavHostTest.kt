@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -64,7 +65,8 @@ class ReaderNavHostTest {
         composeRule.onNodeWithText(string(R.string.review_mode_today)).assertIsDisplayed()
 
         composeRule.onNodeWithText(string(R.string.tab_progress)).performClick()
-        composeRule.onNodeWithText(string(R.string.progress_empty_title)).assertIsDisplayed()
+        // The device may have reading sessions or not: the tab's title shows either way (and its tab).
+        composeRule.onAllNodesWithText(string(R.string.tab_progress)).assertCountEquals(2)
 
         composeRule.onNodeWithText(string(R.string.tab_more)).performClick()
         composeRule.onNodeWithText(string(R.string.all_notes_title)).assertIsDisplayed()
