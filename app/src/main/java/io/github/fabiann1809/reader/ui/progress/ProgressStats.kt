@@ -2,6 +2,8 @@ package io.github.fabiann1809.reader.ui.progress
 
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
+import io.github.fabiann1809.reader.data.prefs.GoalUnit
+import io.github.fabiann1809.reader.data.prefs.ReadingGoal
 import io.github.fabiann1809.reader.data.session.ReadingSession
 import java.time.DayOfWeek
 import java.time.Instant
@@ -15,7 +17,8 @@ data class DayMinutes(val day: DayOfWeek, val minutes: Int)
 /** What the Progreso tab shows (lámina 1i). */
 data class ProgressStats(
     val todayMinutes: Int,
-    val goalMinutes: Int,
+    val todayPages: Int,
+    val goal: ReadingGoal,
     val streakDays: Int,
     val week: List<DayMinutes>,
     val finishedThisYear: Int,
@@ -27,8 +30,11 @@ data class ProgressStats(
     val weekAverageMinutes: Int
         get() = week.filter { it.minutes > 0 }.let { days -> if (days.isEmpty()) 0 else weekMinutes / days.size }
 
+    /** Today's minutes or pages, whichever the goal counts. */
+    val todayAmount: Int get() = if (goal.unit == GoalUnit.PAGES) todayPages else todayMinutes
+
     /** How much of today's goal is done, from 0 to 1. */
-    val goalProgress: Float get() = if (goalMinutes <= 0) 0f else (todayMinutes.toFloat() / goalMinutes).coerceIn(0f, 1f)
+    val goalProgress: Float get() = if (goal.amount <= 0) 0f else (todayAmount.toFloat() / goal.amount).coerceIn(0f, 1f)
 }
 
 /**
@@ -38,7 +44,7 @@ data class ProgressStats(
 fun progressStats(
     sessions: List<ReadingSession>,
     books: List<Book>,
-    goalMinutes: Int,
+    goal: ReadingGoal,
     now: Long,
     zone: ZoneId = ZoneId.systemDefault(),
 ): ProgressStats {
@@ -50,7 +56,8 @@ fun progressStats(
     val monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
     return ProgressStats(
         todayMinutes = minutesByDay[today] ?: 0,
-        goalMinutes = goalMinutes,
+        todayPages = sessions.filter { it.startedAt.toDate(zone) == today }.sumOf { it.pagesRead },
+        goal = goal,
         streakDays = streak(daysRead, today),
         week = (0L..6L).map { offset ->
             val day = monday.plusDays(offset)

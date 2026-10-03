@@ -165,6 +165,7 @@ object AppViewModelProvider {
             ProgressViewModel(
                 sessionRepository = readerApplication().container.readingSessionRepository,
                 bookRepository = readerApplication().container.bookRepository,
+                goalStore = readerApplication().container.readingGoalStore,
             )
         }
         initializer {

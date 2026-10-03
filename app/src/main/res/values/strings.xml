@@ -412,6 +412,12 @@
     <string name="flashcard_field_front">Frente: pregunta o concepto</string>
     <string name="flashcard_field_back">Reverso: respuesta</string>
     <string name="progress_goal_of">de %d min</string>
+    <string name="progress_goal_of_pages">de %d págs.</string>
+    <string name="goal_title">Meta diaria</string>
+    <string name="goal_minutes">Minutos</string>
+    <string name="goal_pages">Páginas</string>
+    <string name="goal_minutes_a_day">Minutos al día</string>
+    <string name="goal_pages_a_day">Páginas al día</string>
     <plurals name="progress_streak_days">
         <item quantity="one">día seguido\nleyendo</item>
         <item quantity="other">días seguidos\nleyendo</item>

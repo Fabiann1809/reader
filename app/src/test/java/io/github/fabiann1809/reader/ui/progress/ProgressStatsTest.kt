@@ -2,6 +2,8 @@ package io.github.fabiann1809.reader.ui.progress
 
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
+import io.github.fabiann1809.reader.data.prefs.GoalUnit
+import io.github.fabiann1809.reader.data.prefs.ReadingGoal
 import io.github.fabiann1809.reader.data.session.ReadingSession
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -32,7 +34,7 @@ class ProgressStatsTest {
                 session("2026-10-02T19:30:00", minutes = 14),
             ),
             books = emptyList(),
-            goalMinutes = 30,
+            goal = ReadingGoal(GoalUnit.MINUTES, 30),
             now = now,
             zone = zone,
         )
@@ -54,7 +56,7 @@ class ProgressStatsTest {
             session("2026-10-01T08:00:00", minutes = 20),
         )
 
-        val stats = progressStats(sessions, emptyList(), goalMinutes = 30, now = now, zone = zone)
+        val stats = progressStats(sessions, emptyList(), goal = ReadingGoal(GoalUnit.MINUTES, 30), now = now, zone = zone)
 
         assertEquals(2, stats.streakDays)
         assertEquals(0, stats.todayMinutes)
@@ -70,9 +72,23 @@ class ProgressStatsTest {
             Book(id = 4, title = "D", author = "", status = BookStatus.READING),
         )
 
-        val stats = progressStats(emptyList(), books, goalMinutes = 30, now = now, zone = zone)
+        val stats = progressStats(emptyList(), books, goal = ReadingGoal(GoalUnit.MINUTES, 30), now = now, zone = zone)
 
         assertEquals(1, stats.finishedThisYear)
         assertEquals(2026, stats.year)
+    }
+
+    @Test
+    fun aGoalInPagesCountsTodaysPages() {
+        val sessions = listOf(
+            session("2026-10-02T07:00:00", minutes = 10, pages = 6),
+            session("2026-10-02T19:00:00", minutes = 0, pages = 9),
+            session("2026-10-01T19:00:00", minutes = 30, pages = 40),
+        )
+
+        val stats = progressStats(sessions, emptyList(), goal = ReadingGoal(GoalUnit.PAGES, 20), now = now, zone = zone)
+
+        assertEquals(15, stats.todayAmount)
+        assertEquals(0.75f, stats.goalProgress, 0.001f)
     }
 }

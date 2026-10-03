@@ -11,6 +11,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.data.prefs.ReadingGoal
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.components.StatusMessage
@@ -28,12 +32,13 @@ fun ProgressScreen(
     viewModel: ProgressViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ProgressContent(uiState, modifier)
+    ProgressContent(uiState, onGoalChange = viewModel::setGoal, modifier = modifier)
 }
 
 /** "Progreso" tab (lámina 1i): the goal and streak, this week, and the books finished this year. */
 @Composable
-fun ProgressContent(uiState: ProgressUiState, modifier: Modifier = Modifier) {
+fun ProgressContent(uiState: ProgressUiState, modifier: Modifier = Modifier, onGoalChange: (ReadingGoal) -> Unit = {}) {
+    var editingGoal by rememberSaveable { mutableStateOf(false) }
     Scaffold(
         modifier = modifier,
         topBar = { ReaderTopAppBar(title = stringResource(R.string.tab_progress)) },
@@ -57,10 +62,21 @@ fun ProgressContent(uiState: ProgressUiState, modifier: Modifier = Modifier) {
                     .verticalScroll(rememberScrollState())
                     .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp),
             ) {
-                GoalCard(stats)
+                GoalCard(stats, onEditGoal = { editingGoal = true })
                 WeekCard(stats)
                 FinishedBooksCard(stats)
             }
         }
+    }
+    val goal = uiState.stats?.goal
+    if (editingGoal && goal != null) {
+        GoalDialog(
+            goal = goal,
+            onSave = { newGoal ->
+                onGoalChange(newGoal)
+                editingGoal = false
+            },
+            onDismiss = { editingGoal = false },
+        )
     }
 }

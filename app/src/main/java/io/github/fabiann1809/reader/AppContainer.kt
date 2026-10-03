@@ -54,7 +54,9 @@ import io.github.fabiann1809.reader.data.session.DefaultReadingSessionRepository
 import io.github.fabiann1809.reader.data.session.ReadingSessionRepository
 import io.github.fabiann1809.reader.data.session.ReadingSessionTracker
 import io.github.fabiann1809.reader.data.prefs.DataStoreChapterSuggestions
+import io.github.fabiann1809.reader.data.prefs.DataStoreReadingGoalStore
 import io.github.fabiann1809.reader.data.prefs.DataStoreReadingPreferences
+import io.github.fabiann1809.reader.data.prefs.ReadingGoalStore
 import io.github.fabiann1809.reader.data.prefs.ReadingPreferences
 import io.github.fabiann1809.reader.data.reader.ReaderSession
 import io.github.fabiann1809.reader.data.reader.ReadiumReaderSession
@@ -154,6 +156,8 @@ class AppContainer(context: Context) {
     val readingPreferences: ReadingPreferences by lazy { DataStoreReadingPreferences(appContext) }
 
     val chapterSuggestions: ChapterSuggestions by lazy { DataStoreChapterSuggestions(appContext) }
+
+    val readingGoalStore: ReadingGoalStore by lazy { DataStoreReadingGoalStore(appContext) }
 
     val textRecognizer: TextRecognizer by lazy { MlKitTextRecognizer(appContext) }
 
