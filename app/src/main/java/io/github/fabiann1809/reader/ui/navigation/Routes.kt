@@ -58,6 +58,10 @@ data class FlashcardEditorRoute(
     val tag: String? = null,
 )
 
+/** "Ahora tú" (T15.1): writing in one's own words what [sourceText] means. */
+@Serializable
+data class InterpretationRoute(val sourceText: String)
+
 @Serializable
 data class CaptureRoute(val bookId: Long)
 

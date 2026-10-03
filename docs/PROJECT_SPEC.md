@@ -283,7 +283,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [ ] **T14.6 Recordatorio diario.** Notificación de repaso con WorkManager y permiso de notificaciones. *Hecho cuando:* llega a la hora elegida. **Pospuesta** (decisión del usuario, 2026-10-02): por ahora no se implementa el recordatorio.
 
 ### Fase 15 — Comprensión y quiz (B6, B7)
-- [ ] **T15.1 Ahora tú.** El usuario escribe su interpretación y `AiProvider.analyzeInterpretation` devuelve qué está bien, incompleto o confuso, con referencia al texto. *Hecho cuando:* coincide con la lámina 1i.
+- [x] **T15.1 Ahora tú.** El usuario escribe su interpretación y `AiProvider.analyzeInterpretation` devuelve qué está bien, incompleto o confuso, con referencia al texto. *Hecho cuando:* coincide con la lámina 1i. La referencia al texto es una cita del párrafo explicado (no hay número de página que enlazar); "Ponme a prueba" llega con el quiz (T15.3).
 - [ ] **T15.2 Generar quiz.** `AiProvider.generateQuiz` con 3, 5 o 10 preguntas de 4 opciones, en JSON con esquema; el contexto es el capítulo (lector) o las notas y capturas (libro físico). *Hecho cuando:* devuelve un quiz válido.
 - [ ] **T15.3 Pantalla de quiz.** Opción elegida, correcta o incorrecta, explicación, enlace a la página y salir con diálogo. *Hecho cuando:* coincide con la lámina 1h.
 - [ ] **T15.4 Resultado.** Puntaje, temas fuertes y débiles, y "Crear fichas de lo que falló". *Hecho cuando:* crea las fichas.

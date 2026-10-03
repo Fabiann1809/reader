@@ -284,6 +284,20 @@ class GeminiProviderTest {
     }
 
     @Test
+    fun analysesAnInterpretationLeavingEmptyPartsOut() = runTest {
+        enqueueAnswer("""{"understood":"Captas el desorden.","incomplete":"  ","confused":null}""")
+
+        val analysis = provider.analyzeInterpretation("La entropía mide el desorden.", "Habla del orden").getOrThrow()
+
+        assertEquals("Captas el desorden.", analysis.understood)
+        assertNull(analysis.incomplete)
+        assertNull(analysis.confused)
+        val body = server.takeRequest().body!!.utf8()
+        assertTrue(body, body.contains("Lo que entendió la persona"))
+        assertTrue(body, body.contains("Habla del orden"))
+    }
+
+    @Test
     fun malformedJsonMapsToUnknown() = runTest {
         enqueue(200, "not json")
 

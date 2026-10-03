@@ -43,6 +43,8 @@ fun ReaderScreen(
     onWriteNote: (sourceText: String, location: String) -> Unit,
     // "Crear ficha" on a selection or an explanation (T14.2): the text and the page it is on.
     onCreateFlashcard: (source: String, page: Int?) -> Unit = { _, _ -> },
+    // "Ahora tú" after an explanation (T15.1).
+    onNowYou: (source: String) -> Unit = {},
     viewModel: ReaderViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -139,6 +141,10 @@ fun ReaderScreen(
                         onCreateFlashcard = { source ->
                             viewModel.closeExplanation()
                             onCreateFlashcard(source, state.position)
+                        },
+                        onNowYou = { source ->
+                            viewModel.closeExplanation()
+                            onNowYou(source)
                         },
                     )
                 }

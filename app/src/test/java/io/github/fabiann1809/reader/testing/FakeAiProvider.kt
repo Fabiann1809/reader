@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.testing
 import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.Explanation
 import io.github.fabiann1809.reader.ai.FlashcardDraft
+import io.github.fabiann1809.reader.ai.InterpretationAnalysis
 
 /**
  * Configurable AiProvider for tests: returns [result] and records every text it was asked to explain.
@@ -32,5 +33,15 @@ class FakeAiProvider(
     override suspend fun makeFlashcard(text: String): Result<FlashcardDraft> {
         flashcardRequests += text
         return flashcard
+    }
+
+    var analysis: Result<InterpretationAnalysis> = Result.success(
+        InterpretationAnalysis(understood = "Captas la idea del desorden.", incomplete = "Falta el sistema aislado."),
+    )
+    val interpretationRequests = mutableListOf<Pair<String, String>>()
+
+    override suspend fun analyzeInterpretation(text: String, interpretation: String): Result<InterpretationAnalysis> {
+        interpretationRequests += text to interpretation
+        return analysis
     }
 }

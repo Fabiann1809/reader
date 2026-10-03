@@ -5,6 +5,8 @@ import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.Explanation
 import io.github.fabiann1809.reader.ai.FlashcardDraft
 import io.github.fabiann1809.reader.ai.FlashcardPrompt
+import io.github.fabiann1809.reader.ai.InterpretationAnalysis
+import io.github.fabiann1809.reader.ai.InterpretationPrompt
 import io.github.fabiann1809.reader.ai.TranscriptionPrompt
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +28,7 @@ import java.util.Base64
  * `x-goog-api-key` header. Nothing here logs requests, headers or the key.
  * An explanation is requested as JSON with [ExplanationSchema] and decoded into an [Explanation];
  * a transcription sends the audio inline, with [transcriptionInstruction], and gets plain text;
- * a card proposal is JSON with [FlashcardSchema].
+ * a card proposal is JSON with [FlashcardSchema], and an interpretation's analysis with [InterpretationSchema].
  * Every failure is reported as an [AiError]. When [model] is overloaded (5xx), the request is
  * retried once with [fallbackModel] so the user still gets an answer.
  */
@@ -35,6 +37,7 @@ class GeminiProvider(
     private val systemInstruction: String,
     private val transcriptionInstruction: String = TranscriptionPrompt.SYSTEM_INSTRUCTION,
     private val flashcardInstruction: String = FlashcardPrompt.SYSTEM_INSTRUCTION,
+    private val interpretationInstruction: String = InterpretationPrompt.SYSTEM_INSTRUCTION,
     private val httpClient: OkHttpClient,
     private val baseUrl: String = DEFAULT_BASE_URL,
     private val model: String = DEFAULT_MODEL,
@@ -89,6 +92,31 @@ class GeminiProvider(
             json.decodeFromString<FlashcardDraft>(answer.requireText()).let { FlashcardDraft(it.front.trim(), it.back.trim()) }
         }
     }
+
+    override suspend fun analyzeInterpretation(text: String, interpretation: String): Result<InterpretationAnalysis> {
+        val request = GenerateContentRequest(
+            systemInstruction = Content(parts = listOf(Part(text = interpretationInstruction))),
+            contents = listOf(
+                Content(role = "user", parts = listOf(Part(text = InterpretationPrompt.userMessage(text, interpretation)))),
+            ),
+            generationConfig = GenerationConfig(
+                temperature = TEMPERATURE,
+                responseMimeType = "application/json",
+                responseSchema = InterpretationSchema,
+            ),
+        )
+        return generate(request) { answer ->
+            val analysis = json.decodeFromString<InterpretationAnalysis>(answer.requireText())
+            // Models sometimes write "" instead of leaving a part out.
+            InterpretationAnalysis(
+                understood = analysis.understood.orBlankAsNull(),
+                incomplete = analysis.incomplete.orBlankAsNull(),
+                confused = analysis.confused.orBlankAsNull(),
+            )
+        }
+    }
+
+    private fun String?.orBlankAsNull(): String? = this?.trim()?.takeIf { it.isNotEmpty() }
 
     /** Sends [request], falling back to [fallbackModel] when [model] is overloaded, and [parse]s the answer. */
     private suspend fun <T> generate(request: GenerateContentRequest, parse: (String) -> T): Result<T> {

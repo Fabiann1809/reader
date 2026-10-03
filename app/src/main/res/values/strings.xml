@@ -361,6 +361,16 @@
     <string name="tab_review">Repasar</string>
     <string name="tab_progress">Progreso</string>
     <string name="tab_more">Más</string>
+    <string name="interpretation_title">Ahora tú</string>
+    <string name="interpretation_prompt">Escribe con tus palabras lo que has entendido del párrafo.</string>
+    <string name="interpretation_field">Lo que entendí</string>
+    <string name="interpretation_analyze">Analizar</string>
+    <string name="interpretation_analyzing">Leyendo lo que escribiste…</string>
+    <string name="interpretation_analysis">Análisis</string>
+    <string name="interpretation_understood">Bien entendido</string>
+    <string name="interpretation_incomplete">Incompleto</string>
+    <string name="interpretation_confused">Confuso</string>
+    <string name="interpretation_close">Cerrar</string>
     <string name="flashcard_new_title">Nueva ficha</string>
     <string name="flashcard_new">Nueva ficha</string>
     <string name="flashcard_create">Crear ficha</string>

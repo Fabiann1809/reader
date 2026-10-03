@@ -7,6 +7,7 @@ import io.github.fabiann1809.reader.data.voice.VoicePlayer
 import io.github.fabiann1809.reader.data.voice.VoiceRecorder
 import android.content.Context
 import io.github.fabiann1809.reader.ai.AiProvider
+import io.github.fabiann1809.reader.ai.AnalyzeInterpretation
 import io.github.fabiann1809.reader.ai.ExplainText
 import io.github.fabiann1809.reader.ai.MakeFlashcard
 import io.github.fabiann1809.reader.ai.TranscribeAudio
@@ -170,4 +171,6 @@ class AppContainer(context: Context) {
     val transcribeAudio: TranscribeAudio by lazy { TranscribeAudio(aiProvider, voiceFiles) }
 
     val makeFlashcard: MakeFlashcard by lazy { MakeFlashcard(aiProvider) }
+
+    val analyzeInterpretation: AnalyzeInterpretation by lazy { AnalyzeInterpretation(aiProvider) }
 }

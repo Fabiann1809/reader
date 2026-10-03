@@ -48,6 +48,7 @@ import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.Explanation
 import io.github.fabiann1809.reader.ai.KeyTerm
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
+import io.github.fabiann1809.reader.ui.components.AiButton
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.components.TonalButton
@@ -60,6 +61,8 @@ fun ExplanationScreen(
     onNoteSaved: () -> Unit,
     // "Crear ficha" (T14.2), with the explained text as the card's source.
     onCreateFlashcard: (source: String) -> Unit = {},
+    // "Ahora tú" (T15.1), with the explained text to write about.
+    onNowYou: (source: String) -> Unit = {},
     viewModel: ExplanationViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -72,6 +75,7 @@ fun ExplanationScreen(
         onSaveAsNote = viewModel::saveAsNote,
         onNavigateUp = onNavigateUp,
         onCreateFlashcard = { onCreateFlashcard(uiState.sourceText) },
+        onNowYou = { onNowYou(uiState.sourceText) },
     )
 }
 
@@ -83,6 +87,7 @@ fun ExplanationContent(
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
     onCreateFlashcard: (() -> Unit)? = null,
+    onNowYou: (() -> Unit)? = null,
 ) {
     Scaffold(
         modifier = modifier,
@@ -99,6 +104,7 @@ fun ExplanationContent(
             onRetry = onRetry,
             onSaveAsNote = onSaveAsNote,
             onCreateFlashcard = onCreateFlashcard,
+            onNowYou = onNowYou,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -120,12 +126,14 @@ fun ExplanationBody(
     modifier: Modifier = Modifier,
     // Shown under "Guardar como nota" when the caller can open the card editor (T14.2).
     onCreateFlashcard: (() -> Unit)? = null,
+    // "Ahora tú" (T15.1), under the other actions.
+    onNowYou: (() -> Unit)? = null,
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(20.dp)) {
         SourceText(uiState.sourceText)
         when (val state = uiState.explanation) {
             ExplanationState.Loading -> Loading()
-            is ExplanationState.Success -> ExplanationBlocks(state.explanation, uiState, onSaveAsNote, onCreateFlashcard)
+            is ExplanationState.Success -> ExplanationBlocks(state.explanation, uiState, onSaveAsNote, onCreateFlashcard, onNowYou)
             is ExplanationState.Failed -> Failed(state.error, onRetry)
         }
     }
@@ -202,6 +210,7 @@ private fun ExplanationBlocks(
     uiState: ExplanationUiState,
     onSaveAsNote: () -> Unit,
     onCreateFlashcard: (() -> Unit)?,
+    onNowYou: (() -> Unit)?,
 ) {
     // Selectable so the user can copy parts of the explanation.
     SelectionContainer {
@@ -222,13 +231,23 @@ private fun ExplanationBlocks(
         icon = R.drawable.ic_bookmark_simple,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = if (onCreateFlashcard == null) 16.dp else 0.dp),
+            .padding(bottom = if (onCreateFlashcard == null && onNowYou == null) 16.dp else 0.dp),
     )
     onCreateFlashcard?.let { onClick ->
         TonalButton(
             text = stringResource(R.string.flashcard_create),
             onClick = onClick,
             icon = R.drawable.ic_cards_three,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = if (onNowYou == null) 16.dp else 0.dp),
+        )
+    }
+    // Design 7.x: "Ahora tú" is a full-width AI button.
+    onNowYou?.let { onClick ->
+        AiButton(
+            text = stringResource(R.string.interpretation_title),
+            onClick = onClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),

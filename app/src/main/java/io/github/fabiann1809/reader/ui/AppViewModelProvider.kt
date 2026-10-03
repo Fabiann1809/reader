@@ -16,12 +16,14 @@ import io.github.fabiann1809.reader.ui.explanation.ExplanationLabels
 import io.github.fabiann1809.reader.ui.explanation.ExplanationViewModel
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextViewModel
 import io.github.fabiann1809.reader.ui.flashcardeditor.FlashcardEditorViewModel
+import io.github.fabiann1809.reader.ui.interpretation.InterpretationViewModel
 import io.github.fabiann1809.reader.ui.library.LibraryViewModel
 import io.github.fabiann1809.reader.ui.library.WatchedFolderViewModel
 import io.github.fabiann1809.reader.ui.navigation.BookDetailRoute
 import io.github.fabiann1809.reader.ui.navigation.ExplanationRoute
 import io.github.fabiann1809.reader.ui.navigation.ExtractedTextRoute
 import io.github.fabiann1809.reader.ui.navigation.FlashcardEditorRoute
+import io.github.fabiann1809.reader.ui.navigation.InterpretationRoute
 import io.github.fabiann1809.reader.ui.navigation.NoteEditorRoute
 import io.github.fabiann1809.reader.ui.navigation.ReaderRoute
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
@@ -101,6 +103,12 @@ object AppViewModelProvider {
                 source = route.source,
                 page = route.page.takeIf { it > 0 },
                 tag = route.tag?.let { name -> NoteTag.entries.find { it.name == name } },
+            )
+        }
+        initializer {
+            InterpretationViewModel(
+                sourceText = createSavedStateHandle().toRoute<InterpretationRoute>().sourceText,
+                analyzeInterpretation = readerApplication().container.analyzeInterpretation,
             )
         }
         initializer {

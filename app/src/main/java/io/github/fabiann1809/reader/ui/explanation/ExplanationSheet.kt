@@ -32,6 +32,7 @@ fun ExplanationSheet(
     onSaveAsNote: () -> Unit,
     onDismiss: () -> Unit,
     onCreateFlashcard: (() -> Unit)? = null,
+    onNowYou: (() -> Unit)? = null,
 ) {
     // Expanded right away: the explanation is long, and a half sheet would hide most of it.
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
@@ -50,7 +51,13 @@ fun ExplanationSheet(
                 )
                 AiGeneratedChip()
             }
-            ExplanationBody(uiState = uiState, onRetry = onRetry, onSaveAsNote = onSaveAsNote, onCreateFlashcard = onCreateFlashcard)
+            ExplanationBody(
+                uiState = uiState,
+                onRetry = onRetry,
+                onSaveAsNote = onSaveAsNote,
+                onCreateFlashcard = onCreateFlashcard,
+                onNowYou = onNowYou,
+            )
         }
     }
 }

@@ -28,6 +28,7 @@ import io.github.fabiann1809.reader.ui.capture.CaptureScreen
 import io.github.fabiann1809.reader.ui.explanation.ExplanationScreen
 import io.github.fabiann1809.reader.ui.extractedtext.ExtractedTextScreen
 import io.github.fabiann1809.reader.ui.flashcardeditor.FlashcardEditorScreen
+import io.github.fabiann1809.reader.ui.interpretation.InterpretationScreen
 import io.github.fabiann1809.reader.ui.library.LibraryScreen
 import io.github.fabiann1809.reader.ui.more.AboutScreen
 import io.github.fabiann1809.reader.ui.more.BackupScreen
@@ -198,6 +199,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                     navController.navigate(NoteEditorRoute(bookId, sourceText = text, location = location))
                 },
                 onCreateFlashcard = { source, page -> navController.navigate(FlashcardEditorRoute(bookId, source, page ?: 0)) },
+                onNowYou = { source -> navController.navigate(InterpretationRoute(source)) },
             )
         }
         composable<BookDetailRoute> { entry ->
@@ -227,6 +229,9 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onFinished = { navController.navigateUp() },
             )
         }
+        composable<InterpretationRoute> {
+            InterpretationScreen(onNavigateUp = { navController.navigateUp() })
+        }
         composable<FlashcardEditorRoute> {
             FlashcardEditorScreen(onNavigateUp = { navController.navigateUp() })
         }
@@ -251,6 +256,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 // Back to the book, dropping the capture screens so "back" doesn't walk through them again.
                 onNoteSaved = { navController.popBackStack<BookDetailRoute>(inclusive = false) },
                 onCreateFlashcard = { source -> navController.navigate(FlashcardEditorRoute(bookId, source)) },
+                onNowYou = { source -> navController.navigate(InterpretationRoute(source)) },
             )
         }
         composable<SettingsRoute> {

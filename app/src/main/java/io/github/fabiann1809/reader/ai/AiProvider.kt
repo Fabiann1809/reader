@@ -22,4 +22,7 @@ interface AiProvider {
 
     /** Proposes a review card (front and back) about [text] (T14.2); failures are [AiError]s. */
     suspend fun makeFlashcard(text: String): Result<FlashcardDraft>
+
+    /** Compares the reader's [interpretation] with the [text] it is about ("Ahora tú", T15.1). */
+    suspend fun analyzeInterpretation(text: String, interpretation: String): Result<InterpretationAnalysis>
 }
