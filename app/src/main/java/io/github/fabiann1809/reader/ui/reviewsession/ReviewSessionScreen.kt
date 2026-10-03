@@ -32,7 +32,7 @@ fun ReviewSessionScreen(
     onNavigateUp: () -> Unit,
     onFinished: () -> Unit,
     // "Ponme a prueba" in the summary: a quiz about the reviewed cards.
-    onQuiz: (source: String, count: Int, title: String) -> Unit = { _, _, _ -> },
+    onQuiz: (bookId: Long, source: String, count: Int, title: String) -> Unit = { _, _, _, _ -> },
     viewModel: ReviewSessionViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -59,7 +59,7 @@ fun ReviewSessionContent(
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
     onDone: () -> Unit = {},
-    onQuiz: (source: String, count: Int, title: String) -> Unit = { _, _, _ -> },
+    onQuiz: (bookId: Long, source: String, count: Int, title: String) -> Unit = { _, _, _, _ -> },
 ) {
     val reviewing = uiState as? ReviewSessionUiState.Reviewing
     Scaffold(
@@ -79,7 +79,7 @@ fun ReviewSessionContent(
                 finished,
                 onDone = onDone,
                 // A few cards make a short quiz; many, a longer one.
-                onQuiz = { onQuiz(finished.quizSource, if (finished.reviewed >= 5) 5 else 3, reviewTitle) },
+                onQuiz = { onQuiz(finished.quizBookId, finished.quizSource, if (finished.reviewed >= 5) 5 else 3, reviewTitle) },
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),

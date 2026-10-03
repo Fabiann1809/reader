@@ -200,8 +200,8 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                     navController.navigate(NoteEditorRoute(bookId, sourceText = text, location = location))
                 },
                 onCreateFlashcard = { source, page -> navController.navigate(FlashcardEditorRoute(bookId, source, page ?: 0)) },
-                onNowYou = { source -> navController.navigate(InterpretationRoute(source)) },
-                onQuiz = { source, count, title -> navController.navigate(QuizRoute(source, count, title)) },
+                onNowYou = { source -> navController.navigate(InterpretationRoute(bookId, source)) },
+                onQuiz = { source, count, title -> navController.navigate(QuizRoute(bookId, source, count, title)) },
             )
         }
         composable<BookDetailRoute> { entry ->
@@ -230,15 +230,16 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onNavigateUp = { navController.navigateUp() },
                 onFinished = { navController.navigateUp() },
                 // The quiz replaces the summary: closing it goes back to the Repasar tab.
-                onQuiz = { source, count, title ->
-                    navController.navigate(QuizRoute(source, count, title)) { popUpTo<ReviewSessionRoute> { inclusive = true } }
+                onQuiz = { bookId, source, count, title ->
+                    navController.navigate(QuizRoute(bookId, source, count, title)) { popUpTo<ReviewSessionRoute> { inclusive = true } }
                 },
             )
         }
-        composable<InterpretationRoute> {
+        composable<InterpretationRoute> { entry ->
+            val bookId = entry.toRoute<InterpretationRoute>().bookId
             InterpretationScreen(
                 onNavigateUp = { navController.navigateUp() },
-                onQuiz = { source, count, title -> navController.navigate(QuizRoute(source, count, title)) },
+                onQuiz = { source, count, title -> navController.navigate(QuizRoute(bookId, source, count, title)) },
             )
         }
         composable<QuizRoute> { entry ->
@@ -268,7 +269,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 // Back to the book, dropping the capture screens so "back" doesn't walk through them again.
                 onNoteSaved = { navController.popBackStack<BookDetailRoute>(inclusive = false) },
                 onCreateFlashcard = { source -> navController.navigate(FlashcardEditorRoute(bookId, source)) },
-                onNowYou = { source -> navController.navigate(InterpretationRoute(source)) },
+                onNowYou = { source -> navController.navigate(InterpretationRoute(bookId, source)) },
             )
         }
         composable<SettingsRoute> {

@@ -18,6 +18,8 @@ data class QuizQuestion(
     val correctIndex: Int,
     /** Why the right option is right, according to the text. */
     val explanation: String,
+    /** A two or three word name of the idea it asks about, grouping the result's topics (T15.4). */
+    val topic: String = "",
 )
 
 /** Questions per quiz the reader can ask for (design 01: 3, 5 or 10). */

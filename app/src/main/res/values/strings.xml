@@ -377,7 +377,15 @@
     <string name="quiz_next">Siguiente</string>
     <string name="quiz_see_result">Ver resultado</string>
     <string name="quiz_finished_title">¡Terminaste!</string>
-    <string name="quiz_finished_score">%1$d de %2$d correctas</string>
+    <string name="quiz_result_score">%1$d/%2$d</string>
+    <string name="quiz_result_correct_label">respuestas correctas</string>
+    <string name="quiz_result_strong">Lo tienes claro</string>
+    <string name="quiz_result_weak">Para reforzar</string>
+    <string name="quiz_result_create_cards">Crear fichas de lo que falló</string>
+    <plurals name="quiz_result_cards_created">
+        <item quantity="one">%d ficha creada</item>
+        <item quantity="other">%d fichas creadas</item>
+    </plurals>
     <string name="quiz_close">Cerrar</string>
     <string name="quiz_leave_title">Salir del quiz</string>
     <string name="quiz_leave_message">Si sales ahora, se pierden tus respuestas.</string>

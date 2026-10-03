@@ -33,8 +33,9 @@ sealed interface ReviewSessionUiState {
         val reviewed: Int,
         val correct: Int,
         val nextReviewAt: Long? = null,
-        // The reviewed cards as text, for "Ponme a prueba" (T15.3).
+        // The reviewed cards as text, for "Ponme a prueba" (T15.3), and the book most of them came from.
         val quizSource: String = "",
+        val quizBookId: Long = 0,
     ) : ReviewSessionUiState
 }
 
@@ -83,7 +84,12 @@ class ReviewSessionViewModel(
         _uiState.value = if (next < state.cards.size) {
             state.copy(index = next, flipped = false)
         } else {
-            ReviewSessionUiState.Finished(reviewed = state.cards.size, correct = correct, quizSource = state.cards.asQuizSource())
+            ReviewSessionUiState.Finished(
+                reviewed = state.cards.size,
+                correct = correct,
+                quizSource = state.cards.asQuizSource(),
+                quizBookId = state.cards.groupingBy { it.card.bookId }.eachCount().maxBy { it.value }.key,
+            )
         }
         saves += viewModelScope.launch { flashcardRepository.updateFlashcard(state.current.card.reviewed(grade, now())) }
         if (next == state.cards.size) showNextReview()

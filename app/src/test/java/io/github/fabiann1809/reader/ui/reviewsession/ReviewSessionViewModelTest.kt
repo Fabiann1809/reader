@@ -67,6 +67,7 @@ class ReviewSessionViewModelTest {
                 correct = 1,
                 nextReviewAt = now + 1.minutes.inWholeMilliseconds,
                 quizSource = "¿Uno? — 1\n¿Dos? — 2",
+                quizBookId = 1,
             ),
             viewModel.uiState.value,
         )

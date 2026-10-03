@@ -60,11 +60,14 @@ data class FlashcardEditorRoute(
 
 /** "Ahora tú" (T15.1): writing in one's own words what [sourceText] means. */
 @Serializable
-data class InterpretationRoute(val sourceText: String)
+data class InterpretationRoute(val bookId: Long, val sourceText: String)
 
-/** A quiz of [count] questions about [source] (T15.3); [title] heads it (a chapter, "Repaso"...). */
+/**
+ * A quiz of [count] questions about [source] (T15.3); [title] heads it (a chapter, "Repaso"...). The
+ * cards made from its mistakes (T15.4) go to [bookId].
+ */
 @Serializable
-data class QuizRoute(val source: String, val count: Int, val title: String)
+data class QuizRoute(val bookId: Long, val source: String, val count: Int, val title: String)
 
 @Serializable
 data class CaptureRoute(val bookId: Long)

@@ -25,12 +25,13 @@ internal val QuizSchema: JsonObject = buildJsonObject {
                     }
                     putJsonObject("correctIndex") { put("type", "INTEGER") }
                     putJsonObject("explanation") { put("type", "STRING") }
+                    putJsonObject("topic") { put("type", "STRING") }
                 }
                 putJsonArray("required") {
-                    listOf("question", "options", "correctIndex", "explanation").forEach { add(it) }
+                    listOf("question", "options", "correctIndex", "explanation", "topic").forEach { add(it) }
                 }
                 putJsonArray("propertyOrdering") {
-                    listOf("question", "options", "correctIndex", "explanation").forEach { add(it) }
+                    listOf("question", "options", "correctIndex", "explanation", "topic").forEach { add(it) }
                 }
             }
         }

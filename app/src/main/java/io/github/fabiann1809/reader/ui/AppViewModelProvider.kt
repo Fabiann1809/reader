@@ -115,7 +115,13 @@ object AppViewModelProvider {
         }
         initializer {
             val route = createSavedStateHandle().toRoute<QuizRoute>()
-            QuizViewModel(route.source, route.count, readerApplication().container.generateQuiz)
+            QuizViewModel(
+                bookId = route.bookId,
+                source = route.source,
+                questionCount = route.count,
+                generateQuiz = readerApplication().container.generateQuiz,
+                flashcardRepository = readerApplication().container.flashcardRepository,
+            )
         }
         initializer {
             ExtractedTextViewModel(

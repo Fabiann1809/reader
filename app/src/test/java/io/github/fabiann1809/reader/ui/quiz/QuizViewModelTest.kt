@@ -2,7 +2,9 @@ package io.github.fabiann1809.reader.ui.quiz
 
 import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.GenerateQuiz
+import io.github.fabiann1809.reader.ai.Quiz
 import io.github.fabiann1809.reader.testing.FakeAiProvider
+import io.github.fabiann1809.reader.testing.FakeFlashcardRepository
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import io.github.fabiann1809.reader.testing.testQuiz
 import org.junit.Assert.assertEquals
@@ -17,10 +19,19 @@ class QuizViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val aiProvider = FakeAiProvider()
+    private val cards = FakeFlashcardRepository()
 
-    private fun viewModel(count: Int = 3) = QuizViewModel("Un capítulo", count, GenerateQuiz(aiProvider))
+    private fun viewModel(count: Int = 3) = QuizViewModel(bookId = 7, "Un capítulo", count, GenerateQuiz(aiProvider), cards)
 
     private fun answering(viewModel: QuizViewModel) = viewModel.uiState.value as QuizUiState.Answering
+
+    private fun finished(viewModel: QuizViewModel) = viewModel.uiState.value as QuizUiState.Finished
+
+    /** Answers the test quiz's questions in order; its right answer is always option 1. */
+    private fun answer(viewModel: QuizViewModel, vararg options: Int) = options.forEach { option ->
+        viewModel.choose(option)
+        viewModel.next()
+    }
 
     @Test
     fun eachAnswerIsShownAtOnceAndCountedOnce() {
@@ -30,20 +41,57 @@ class QuizViewModelTest {
         viewModel.next()
         assertEquals(0, answering(viewModel).index)
 
-        // The right answer of the test quiz is always the second option.
         viewModel.choose(1)
         viewModel.choose(0)
         assertEquals(1, answering(viewModel).chosen)
-        assertEquals(1, answering(viewModel).correctSoFar)
+        viewModel.next()
+        answer(viewModel, 3, 1)
 
-        viewModel.next()
-        viewModel.choose(3)
-        viewModel.next()
-        viewModel.choose(1)
-        assertTrue(answering(viewModel).isLast)
-        viewModel.next()
+        assertEquals(2, finished(viewModel).result.correct)
+        assertEquals(3, finished(viewModel).result.total)
+    }
 
-        assertEquals(QuizUiState.Finished(correct = 2, total = 3), viewModel.uiState.value)
+    @Test
+    fun theMissedQuestionsBecomeCardsOfTheBookOnce() {
+        val viewModel = viewModel()
+        answer(viewModel, 1, 0, 2)
+
+        viewModel.createCardsFromMistakes()
+        viewModel.createCardsFromMistakes()
+
+        assertTrue(finished(viewModel).cardsCreated)
+        assertEquals(listOf("¿Pregunta 2?", "¿Pregunta 3?"), cards.currentCards.map { it.front })
+        assertTrue(cards.currentCards.all { it.bookId == 7L && it.back == "B. Porque lo dice el texto." })
+    }
+
+    @Test
+    fun anAnswerEndingInAPeriodDoesNotGetTwo() {
+        aiProvider.quiz = Result.success(Quiz(testQuiz(3).questions.map { it.copy(options = listOf("A.", "B.", "C.", "D.")) }))
+        val viewModel = viewModel()
+        answer(viewModel, 0, 1, 1)
+
+        viewModel.createCardsFromMistakes()
+
+        assertEquals("B. Porque lo dice el texto.", cards.currentCards.single().back)
+    }
+
+    @Test
+    fun theResultSplitsTopicsIntoStrongAndWeak() {
+        val questions = testQuiz(4).questions
+        val quiz = Quiz(
+            listOf(
+                questions[0].copy(topic = "Entropía"),
+                questions[1].copy(topic = "Entropía"),
+                questions[2].copy(topic = "Calor"),
+                questions[3].copy(topic = ""),
+            ),
+        )
+
+        val result = QuizResult.of(quiz, answers = listOf(1, 1, 0, 0))
+
+        assertEquals(listOf("Entropía"), result.strongTopics)
+        assertEquals(listOf("Calor"), result.weakTopics)
+        assertEquals(2, result.missed.size)
     }
 
     @Test

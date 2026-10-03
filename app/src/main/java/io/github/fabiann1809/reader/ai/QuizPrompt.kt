@@ -14,6 +14,7 @@ object QuizPrompt {
         - options: exactamente 4 respuestas posibles, todas creíbles y de largo parecido; solo una es correcta.
         - correctIndex: la posición (0 a 3) de la respuesta correcta; varía la posición entre preguntas.
         - explanation: por qué es la correcta según el texto, en una o dos frases.
+        - topic: el tema de la pregunta en dos o tres palabras (por ejemplo, "Segundo principio"); preguntas sobre la misma idea comparten tema.
 
         Reglas:
         - Pregunta por ideas y relaciones, no por detalles triviales ni por datos que no estén en el texto.

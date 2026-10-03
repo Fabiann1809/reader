@@ -61,6 +61,7 @@ fun QuizScreen(
         onRetry = viewModel::retry,
         onLeave = leave,
         onClose = onClose,
+        onCreateCards = viewModel::createCardsFromMistakes,
     )
     if (askingToLeave) {
         AlertDialog(
@@ -87,6 +88,7 @@ fun QuizContent(
     onLeave: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    onCreateCards: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -111,14 +113,7 @@ fun QuizContent(
                     PrimaryButton(text = stringResource(R.string.quiz_retry), onClick = onRetry)
                 }
                 is QuizUiState.Answering -> QuestionPage(uiState, onChoose, onNext)
-                is QuizUiState.Finished -> Centered {
-                    Text(stringResource(R.string.quiz_finished_title), style = MaterialTheme.typography.headlineSmall)
-                    Text(
-                        stringResource(R.string.quiz_finished_score, uiState.correct, uiState.total),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    PrimaryButton(text = stringResource(R.string.quiz_close), onClick = onClose)
-                }
+                is QuizUiState.Finished -> QuizResultView(uiState, onCreateCards = onCreateCards, onClose = onClose)
             }
         }
     }

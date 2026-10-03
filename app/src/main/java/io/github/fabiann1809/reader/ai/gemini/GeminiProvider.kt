@@ -138,6 +138,7 @@ class GeminiProvider(
                         question = question.question.trim(),
                         options = question.options.map { it.trim() },
                         explanation = question.explanation.trim(),
+                        topic = question.topic.trim(),
                     )
                 },
             )

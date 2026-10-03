@@ -42,6 +42,7 @@ class QuizLiveTest {
             assertEquals(QUIZ_OPTIONS, question.options.size)
             assertTrue(question.correctIndex in 0..3)
             assertTrue(question.toString(), question.options.distinct().size == QUIZ_OPTIONS)
+            assertTrue(question.toString(), question.topic.isNotBlank())
         }
         assertEquals(3, quiz.questions.map { it.question }.distinct().size)
     }
