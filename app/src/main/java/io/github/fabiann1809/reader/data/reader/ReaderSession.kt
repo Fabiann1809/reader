@@ -56,6 +56,8 @@ data class ReadingPosition(
     val progression: Double?,
     val href: String? = null,
     val position: Int? = null,
+    // How far into the chapter (0 to 1); unlike [progression], it changes on every screen.
+    val chapterProgression: Double? = null,
 )
 
 /** Opens a book for reading, keeps it while it is read and reports where the reader is. */
@@ -191,6 +193,7 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
             progression = locator.locations.totalProgression,
             href = locator.href.fileHref(),
             position = locator.locations.position,
+            chapterProgression = locator.locations.progression,
         )
         if (locator == lastLocator) return
         lastLocator = locator

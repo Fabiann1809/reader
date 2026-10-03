@@ -18,10 +18,12 @@ import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.CollectionDao
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteDao
+import io.github.fabiann1809.reader.data.session.ReadingSession
+import io.github.fabiann1809.reader.data.session.ReadingSessionDao
 
 @Database(
-    entities = [Book::class, Note::class, Collection::class, BookCollectionCrossRef::class, Bookmark::class, Highlight::class, Flashcard::class],
-    version = 10,
+    entities = [Book::class, Note::class, Collection::class, BookCollectionCrossRef::class, Bookmark::class, Highlight::class, Flashcard::class, ReadingSession::class],
+    version = 11,
     exportSchema = true,
     autoMigrations = [
         // 1 → 2: new optional Book columns (kind, format, filePath, coverPath, language, lastOpenedAt).
@@ -42,6 +44,8 @@ import io.github.fabiann1809.reader.data.note.NoteDao
         AutoMigration(from = 8, to = 9),
         // 9 → 10: the flashcards table.
         AutoMigration(from = 9, to = 10),
+        // 10 → 11: the reading_sessions table.
+        AutoMigration(from = 10, to = 11),
     ],
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -57,6 +61,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun highlightDao(): HighlightDao
 
     abstract fun flashcardDao(): FlashcardDao
+
+    abstract fun readingSessionDao(): ReadingSessionDao
 
     companion object {
         private const val DATABASE_NAME = "reader.db"

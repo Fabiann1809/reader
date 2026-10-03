@@ -18,6 +18,7 @@ import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.data.reader.ReaderSession
 import io.github.fabiann1809.reader.data.reader.TocEntry
+import io.github.fabiann1809.reader.data.session.ReadingSessionTracker
 import io.github.fabiann1809.reader.ocr.TextRecognizer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,6 +39,7 @@ class ReaderViewModel(
     private val textRecognizer: TextRecognizer,
     private val session: ReaderSession,
     private val chapterSuggestions: ChapterSuggestions,
+    private val sessionTracker: ReadingSessionTracker,
     // A place to open the book at (e.g. a note's), instead of where the reader left off.
     private val startAt: String? = null,
     // Injected so tests control time.
@@ -72,6 +74,7 @@ class ReaderViewModel(
         viewModelScope.launch {
             session.position.filterNotNull().filter { it.bookId == bookId }.collect { position ->
                 (_uiState.value as? ReaderUiState.Ready)?.let { suggestIfChapterEnded(it, position.href) }
+                sessionTracker.moved(position.progression, position.chapterProgression)
                 updateReady {
                     it.copy(
                         chapter = position.chapter,
@@ -280,6 +283,7 @@ class ReaderViewModel(
         val format = book.format
         if (problem != null || format == null) return ReaderUiState.CannotOpen(problem ?: OpenProblem.NO_FILE)
         markOpened()
+        sessionTracker.start(bookId)
         return ReaderUiState.Ready(
             bookId,
             format,
@@ -308,7 +312,16 @@ class ReaderViewModel(
     }
 
     // Leaving the reader frees the book; a rotation keeps this ViewModel, so the book stays open.
+    /** The app went to the background (or the screen off): the reading session ends there (T16.1). */
+    fun pauseReading() = sessionTracker.stop()
+
+    /** Back in the reader: a new session starts. */
+    fun resumeReading() {
+        if (_uiState.value is ReaderUiState.Ready) sessionTracker.start(bookId)
+    }
+
     override fun onCleared() {
+        sessionTracker.stop()
         session.close(bookId)
     }
 }

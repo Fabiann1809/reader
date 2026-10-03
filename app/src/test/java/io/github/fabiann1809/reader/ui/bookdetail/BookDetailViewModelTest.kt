@@ -4,6 +4,7 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.highlight.Highlight
 import io.github.fabiann1809.reader.data.highlight.HighlightColor
 import io.github.fabiann1809.reader.data.book.BookOrganizer
+import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
@@ -11,6 +12,7 @@ import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.FakeCollectionRepository
 import io.github.fabiann1809.reader.testing.FakeHighlightRepository
+import io.github.fabiann1809.reader.testing.FakeReadingSessionRepository
 import io.github.fabiann1809.reader.testing.FakeNoteRepository
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.collect
@@ -36,6 +38,7 @@ class BookDetailViewModelTest {
     private val noteRepository = FakeNoteRepository()
     private val collectionRepository = FakeCollectionRepository(bookRepository)
     private val highlightRepository = FakeHighlightRepository()
+    private val sessionRepository = FakeReadingSessionRepository()
     // Lazy so it is built after MainDispatcherRule swaps Dispatchers.Main (viewModelScope needs it).
     private val viewModel by lazy {
         BookDetailViewModel(
@@ -45,6 +48,8 @@ class BookDetailViewModelTest {
             collectionRepository = collectionRepository,
             highlightRepository = highlightRepository,
             organizer = BookOrganizer(bookRepository, collectionRepository),
+            sessionRepository = sessionRepository,
+            now = { 9_000L },
         )
     }
 
@@ -161,5 +166,18 @@ class BookDetailViewModelTest {
         viewModel.createCollectionWithBook("   ")
 
         assertTrue(collectionRepository.observeCollections().first().isEmpty())
+    }
+
+    @Test
+    fun movingAPaperBookForwardRecordsTheTimeRead() = runTest {
+        bookRepository.updateBook(bookRepository.getBook(1)!!.copy(kind = BookKind.PHYSICAL, currentPage = 10))
+
+        viewModel.updateProgress(currentPage = 25, status = BookStatus.READING)
+        viewModel.updateProgress(currentPage = 20, status = BookStatus.READING)
+
+        val session = sessionRepository.currentSessions.single()
+        assertEquals(15, session.pagesRead)
+        assertEquals(9_000L, session.startedAt)
+        assertEquals(0L, session.durationMillis)
     }
 }

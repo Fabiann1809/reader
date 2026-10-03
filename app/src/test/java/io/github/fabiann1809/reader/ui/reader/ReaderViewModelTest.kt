@@ -22,6 +22,8 @@ import io.github.fabiann1809.reader.testing.FakeReadingPreferences
 import io.github.fabiann1809.reader.testing.FakeTextRecognizer
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.FakeChapterSuggestions
+import io.github.fabiann1809.reader.testing.FakeReadingSessionRepository
+import io.github.fabiann1809.reader.data.session.ReadingSessionTracker
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -118,6 +120,8 @@ class ReaderViewModelTest {
     private val readingPreferences = FakeReadingPreferences(ReadingSettings(theme = ReadingTheme.SEPIA))
 
     private val chapterSuggestions = FakeChapterSuggestions()
+    private val sessionRepository = FakeReadingSessionRepository()
+    private var clock = 0L
 
     private fun viewModel(bookId: Long, session: ReaderSession, startAt: String? = null) = ReaderViewModel(
         bookId = bookId,
@@ -128,6 +132,7 @@ class ReaderViewModelTest {
         textRecognizer = ocr,
         session = session,
         chapterSuggestions = chapterSuggestions,
+        sessionTracker = ReadingSessionTracker(sessionRepository, mainDispatcherRule.testScope(), now = { clock }),
         startAt = startAt,
         now = { 5_000L },
     )
@@ -363,6 +368,29 @@ class ReaderViewModelTest {
 
         assertNull(ready(viewModel).chapterEnd)
         assertTrue(chapterSuggestions.suggested.isEmpty())
+    }
+
+    @Test
+    fun readingIsTimedWhileTheReaderIsOnScreen() = runTest {
+        val session = FakeSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.1, href = "c1.xhtml", position = 3)
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.11, href = "c1.xhtml", position = 3)
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.12, href = "c1.xhtml", position = 4)
+        clock += 5 * 60_000L
+
+        viewModel.pauseReading()
+
+        val saved = sessionRepository.currentSessions.single()
+        assertEquals(1, saved.bookId)
+        assertEquals(2, saved.pagesRead)
+        assertEquals(5 * 60_000L, saved.durationMillis)
+
+        // Back in the app: a new session starts from the page shown.
+        viewModel.resumeReading()
+        clock += 60_000L
+        viewModel.pauseReading()
+        assertEquals(2, sessionRepository.currentSessions.size)
     }
 
     @Test

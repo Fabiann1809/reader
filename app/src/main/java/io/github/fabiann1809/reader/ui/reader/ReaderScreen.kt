@@ -25,6 +25,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import androidx.fragment.compose.AndroidFragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
@@ -63,6 +65,9 @@ fun ReaderScreen(
             ReaderUiState.Loading -> CircularProgressIndicator()
             is ReaderUiState.Ready -> {
                 ImmersiveMode()
+                // A reading session lasts while the reader is on screen (T16.1).
+                LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.pauseReading() }
+                LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.resumeReading() }
                 SystemBrightnessOnLeave()
                 // While the controls are hidden, the first "Atrás" shows them; with them shown, it leaves.
                 BackHandler(enabled = !state.controlsVisible, onBack = viewModel::showControls)

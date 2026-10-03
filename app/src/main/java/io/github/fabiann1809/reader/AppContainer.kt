@@ -50,6 +50,9 @@ import io.github.fabiann1809.reader.data.note.NoteRepository
 import io.github.fabiann1809.reader.data.prefs.AppPreferences
 import io.github.fabiann1809.reader.data.prefs.DataStoreAppPreferences
 import io.github.fabiann1809.reader.data.prefs.ChapterSuggestions
+import io.github.fabiann1809.reader.data.session.DefaultReadingSessionRepository
+import io.github.fabiann1809.reader.data.session.ReadingSessionRepository
+import io.github.fabiann1809.reader.data.session.ReadingSessionTracker
 import io.github.fabiann1809.reader.data.prefs.DataStoreChapterSuggestions
 import io.github.fabiann1809.reader.data.prefs.DataStoreReadingPreferences
 import io.github.fabiann1809.reader.data.prefs.ReadingPreferences
@@ -130,6 +133,13 @@ class AppContainer(context: Context) {
     val highlightRepository: HighlightRepository by lazy { DefaultHighlightRepository(database.highlightDao()) }
 
     val flashcardRepository: FlashcardRepository by lazy { DefaultFlashcardRepository(database.flashcardDao()) }
+
+    val readingSessionRepository: ReadingSessionRepository by lazy {
+        DefaultReadingSessionRepository(database.readingSessionDao())
+    }
+
+    // One per reader: it saves in the app's scope, so leaving the reader doesn't lose the session.
+    fun newReadingSessionTracker(): ReadingSessionTracker = ReadingSessionTracker(readingSessionRepository, applicationScope)
 
     val collectionRepository: CollectionRepository by lazy {
         DefaultCollectionRepository(database.collectionDao(), database.bookDao())

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookOrganizer
+import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.collection.Collection
@@ -12,6 +13,8 @@ import io.github.fabiann1809.reader.data.highlight.Highlight
 import io.github.fabiann1809.reader.data.highlight.HighlightRepository
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteRepository
+import io.github.fabiann1809.reader.data.session.ReadingSession
+import io.github.fabiann1809.reader.data.session.ReadingSessionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -45,6 +48,8 @@ class BookDetailViewModel(
     collectionRepository: CollectionRepository,
     highlightRepository: HighlightRepository,
     private val organizer: BookOrganizer,
+    private val sessionRepository: ReadingSessionRepository,
+    private val now: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
 
     // Notes are already sorted newest first by the query.
@@ -78,6 +83,12 @@ class BookDetailViewModel(
             // Read the stored book rather than the UI state so a stale screen can't overwrite newer data.
             val book = bookRepository.getBook(bookId) ?: return@launch
             bookRepository.updateBook(book.copy(currentPage = currentPage, status = status))
+            // A paper book is read outside the app: moving its page forward records what was read (T16.1).
+            val pagesRead = currentPage - book.currentPage
+            if (book.kind == BookKind.PHYSICAL && pagesRead > 0) {
+                val at = now()
+                sessionRepository.addSession(ReadingSession(bookId = bookId, startedAt = at, endedAt = at, pagesRead = pagesRead))
+            }
         }
     }
 

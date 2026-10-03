@@ -290,7 +290,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T15.5 Sugerencia al terminar un capítulo.** Discreta y descartable, nunca modal. *Hecho cuando:* aparece una vez por capítulo. Cuenta como terminado pasar al capítulo siguiente del índice (solo EPUB); la tarjeta ofrece «Repasar» y «Ponme a prueba» (3 preguntas) y se oculta sola.
 
 ### Fase 16 — Progreso y metas (B10)
-- [ ] **T16.1 Sesiones de lectura.** Entidad `ReadingSession`, registrada sola desde el lector; en libros físicos, al actualizar el progreso. *Hecho cuando:* se registran las sesiones.
+- [x] **T16.1 Sesiones de lectura.** Entidad `ReadingSession`, registrada sola desde el lector; en libros físicos, al actualizar el progreso. *Hecho cuando:* se registran las sesiones.
 - [ ] **T16.2 Pestaña Progreso.** Anillo de meta diaria, racha, gráfica semanal y libros terminados del año. *Hecho cuando:* coincide con la lámina 1i.
 - [ ] **T16.3 Meta y recordatorio.** Meta diaria en minutos o páginas, con recordatorio de lectura. *Hecho cuando:* el anillo usa la meta.
 - [ ] **T16.4 Detalle con pestañas.** Resumen, Notas y resaltados, Fichas y Sesiones; páginas restantes y tiempo estimado para terminar. *Hecho cuando:* cada pestaña muestra sus datos.

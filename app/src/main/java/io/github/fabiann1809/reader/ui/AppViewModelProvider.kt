@@ -71,6 +71,7 @@ object AppViewModelProvider {
                 collectionRepository = readerApplication().container.collectionRepository,
                 highlightRepository = readerApplication().container.highlightRepository,
                 organizer = readerApplication().container.bookOrganizer,
+                sessionRepository = readerApplication().container.readingSessionRepository,
             )
         }
         initializer {
@@ -85,6 +86,7 @@ object AppViewModelProvider {
                 textRecognizer = readerApplication().container.textRecognizer,
                 session = readerApplication().container.readerSession,
                 chapterSuggestions = readerApplication().container.chapterSuggestions,
+                sessionTracker = readerApplication().container.newReadingSessionTracker(),
             )
         }
         initializer {

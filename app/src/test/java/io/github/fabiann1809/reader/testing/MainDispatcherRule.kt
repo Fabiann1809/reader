@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.testing
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
@@ -17,4 +18,7 @@ class MainDispatcherRule(
     override fun starting(description: Description) = Dispatchers.setMain(testDispatcher)
 
     override fun finished(description: Description) = Dispatchers.resetMain()
+
+    /** A scope on the test dispatcher, for code that saves outside a ViewModel (like the app's scope). */
+    fun testScope(): CoroutineScope = CoroutineScope(testDispatcher)
 }
