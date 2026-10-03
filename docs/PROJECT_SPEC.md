@@ -280,7 +280,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T14.3 Pestaña Repasar.** Hoy, Por libro y Por etiqueta; punto de aviso cuando hay pendientes; estado vacío "Sin fichas por repasar". *Hecho cuando:* muestra las fichas pendientes.
 - [x] **T14.4 Sesión de repaso.** Volteo 3D y 4 botones con el intervalo debajo; algoritmo SM-2 simplificado con pruebas unitarias. *Hecho cuando:* las fechas de repaso se recalculan bien.
 - [x] **T14.5 Resumen de sesión.** Repasadas, aciertos y próxima revisión, con "Ponme a prueba" opcional. *Hecho cuando:* aparece al terminar. "Ponme a prueba" se agrega con el quiz (T15.3), para no mostrar un botón que aún no hace nada.
-- [ ] **T14.6 Recordatorio diario.** Notificación de repaso con WorkManager y permiso de notificaciones. *Hecho cuando:* llega a la hora elegida.
+- [ ] **T14.6 Recordatorio diario.** Notificación de repaso con WorkManager y permiso de notificaciones. *Hecho cuando:* llega a la hora elegida. **Pospuesta** (decisión del usuario, 2026-10-02): por ahora no se implementa el recordatorio.
 
 ### Fase 15 — Comprensión y quiz (B6, B7)
 - [ ] **T15.1 Ahora tú.** El usuario escribe su interpretación y `AiProvider.analyzeInterpretation` devuelve qué está bien, incompleto o confuso, con referencia al texto. *Hecho cuando:* coincide con la lámina 1i.
