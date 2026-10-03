@@ -5,12 +5,15 @@ import io.github.fabiann1809.reader.data.highlight.Highlight
 import io.github.fabiann1809.reader.data.highlight.HighlightColor
 import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookKind
+import io.github.fabiann1809.reader.data.session.ReadingSession
+import io.github.fabiann1809.reader.data.flashcard.Flashcard
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.testing.FakeBookRepository
 import io.github.fabiann1809.reader.testing.FakeCollectionRepository
+import io.github.fabiann1809.reader.testing.FakeFlashcardRepository
 import io.github.fabiann1809.reader.testing.FakeHighlightRepository
 import io.github.fabiann1809.reader.testing.FakeReadingSessionRepository
 import io.github.fabiann1809.reader.testing.FakeNoteRepository
@@ -39,6 +42,7 @@ class BookDetailViewModelTest {
     private val collectionRepository = FakeCollectionRepository(bookRepository)
     private val highlightRepository = FakeHighlightRepository()
     private val sessionRepository = FakeReadingSessionRepository()
+    private val flashcardRepository = FakeFlashcardRepository()
     // Lazy so it is built after MainDispatcherRule swaps Dispatchers.Main (viewModelScope needs it).
     private val viewModel by lazy {
         BookDetailViewModel(
@@ -49,6 +53,7 @@ class BookDetailViewModelTest {
             highlightRepository = highlightRepository,
             organizer = BookOrganizer(bookRepository, collectionRepository),
             sessionRepository = sessionRepository,
+            flashcardRepository = flashcardRepository,
             now = { 9_000L },
         )
     }
@@ -179,5 +184,21 @@ class BookDetailViewModelTest {
         assertEquals(15, session.pagesRead)
         assertEquals(9_000L, session.startedAt)
         assertEquals(0L, session.durationMillis)
+    }
+
+    @Test
+    fun theStudyTabsGetTheBooksCardsAndSessions() = runTest {
+        flashcardRepository.addFlashcard(Flashcard(bookId = 1, front = "¿Qué?", back = "Esto", nextReviewAt = 8_000))
+        flashcardRepository.addFlashcard(Flashcard(bookId = 1, front = "¿Luego?", back = "Aquello", nextReviewAt = 9_000_000_000))
+        flashcardRepository.addFlashcard(Flashcard(bookId = 2, front = "Otro libro", back = "", nextReviewAt = 0))
+        sessionRepository.addSession(ReadingSession(bookId = 1, startedAt = 1_000, endedAt = 61_000, pagesRead = 2))
+        noteRepository.addNote(Note(bookId = 1, content = "Una nota"))
+        collectUiState()
+
+        val state = viewModel.uiState.value as BookDetailUiState.Success
+        assertEquals(2, state.flashcards.size)
+        assertEquals(1, state.dueCards)
+        assertEquals(1, state.sessions.size)
+        assertEquals(true, state.quizSource.contains("Una nota") && state.quizSource.contains("¿Qué? — Esto"))
     }
 }

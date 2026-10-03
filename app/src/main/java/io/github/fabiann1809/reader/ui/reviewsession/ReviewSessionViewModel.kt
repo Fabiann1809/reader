@@ -6,6 +6,7 @@ import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.flashcard.FlashcardRepository
 import io.github.fabiann1809.reader.data.flashcard.ReviewGrade
 import io.github.fabiann1809.reader.data.flashcard.reviewed
+import io.github.fabiann1809.reader.ui.navigation.ReviewSessionRoute
 import io.github.fabiann1809.reader.ui.review.DueCard
 import io.github.fabiann1809.reader.util.endOfDay
 import kotlinx.coroutines.Job
@@ -44,6 +45,8 @@ sealed interface ReviewSessionUiState {
  * reschedules it with the simplified SM-2 and moves on.
  */
 class ReviewSessionViewModel(
+    // A book's cards only, or every book's (ReviewSessionRoute.ALL_BOOKS).
+    private val bookId: Long,
     private val flashcardRepository: FlashcardRepository,
     private val bookRepository: BookRepository,
     private val now: () -> Long = System::currentTimeMillis,
@@ -61,6 +64,7 @@ class ReviewSessionViewModel(
         viewModelScope.launch {
             // Taken once: a card answered "Otra vez" comes back later today, not again in this session.
             val cards = flashcardRepository.observeDue(endOfDay(now())).first()
+                .filter { bookId == ReviewSessionRoute.ALL_BOOKS || it.bookId == bookId }
             val titles = bookRepository.observeBooks().first().associate { it.id to it.title }
             _uiState.value = if (cards.isEmpty()) {
                 ReviewSessionUiState.Finished(reviewed = 0, correct = 0)

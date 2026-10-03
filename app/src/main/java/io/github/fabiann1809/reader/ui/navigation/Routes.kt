@@ -16,9 +16,13 @@ data object LibraryRoute
 @Serializable
 data object ReviewRoute
 
-/** A review session of today's cards (T14.4). */
+/** A review session of today's cards (T14.4); only [bookId]'s when set ("Repasa este libro", T16.4). */
 @Serializable
-data object ReviewSessionRoute
+data class ReviewSessionRoute(val bookId: Long = ALL_BOOKS) {
+    companion object {
+        const val ALL_BOOKS = 0L
+    }
+}
 
 @Serializable
 data object ProgressRoute

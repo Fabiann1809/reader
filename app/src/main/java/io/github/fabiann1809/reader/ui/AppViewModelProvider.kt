@@ -27,6 +27,7 @@ import io.github.fabiann1809.reader.ui.navigation.InterpretationRoute
 import io.github.fabiann1809.reader.ui.navigation.QuizRoute
 import io.github.fabiann1809.reader.ui.navigation.NoteEditorRoute
 import io.github.fabiann1809.reader.ui.navigation.ReaderRoute
+import io.github.fabiann1809.reader.ui.navigation.ReviewSessionRoute
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
 import io.github.fabiann1809.reader.ui.notes.AllNotesViewModel
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingViewModel
@@ -73,6 +74,7 @@ object AppViewModelProvider {
                 highlightRepository = readerApplication().container.highlightRepository,
                 organizer = readerApplication().container.bookOrganizer,
                 sessionRepository = readerApplication().container.readingSessionRepository,
+                flashcardRepository = readerApplication().container.flashcardRepository,
             )
         }
         initializer {
@@ -170,6 +172,7 @@ object AppViewModelProvider {
         }
         initializer {
             ReviewSessionViewModel(
+                bookId = createSavedStateHandle().toRoute<ReviewSessionRoute>().bookId,
                 flashcardRepository = readerApplication().container.flashcardRepository,
                 bookRepository = readerApplication().container.bookRepository,
             )

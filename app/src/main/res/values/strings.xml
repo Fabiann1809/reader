@@ -411,6 +411,35 @@
     <string name="flashcard_suggesting">Pensando la ficha…</string>
     <string name="flashcard_field_front">Frente: pregunta o concepto</string>
     <string name="flashcard_field_back">Reverso: respuesta</string>
+    <string name="detail_tab_summary">Resumen</string>
+    <string name="detail_tab_notes">Notas</string>
+    <string name="detail_tab_cards">Fichas</string>
+    <string name="detail_tab_sessions">Sesiones</string>
+    <plurals name="detail_pages_left">
+        <item quantity="one">%d página restante</item>
+        <item quantity="other">%d páginas restantes</item>
+    </plurals>
+    <string name="detail_estimated">%1$s · %2$s estimadas</string>
+    <string name="detail_fact_time">Tiempo leído</string>
+    <string name="detail_fact_sessions">Sesiones</string>
+    <string name="detail_fact_notes">Notas</string>
+    <string name="detail_fact_cards">Fichas</string>
+    <string name="detail_ai_title">Con IA, si quieres</string>
+    <plurals name="detail_review_book">
+        <item quantity="one">Repasa este libro (%d ficha)</item>
+        <item quantity="other">Repasa este libro (%d fichas)</item>
+    </plurals>
+    <string name="detail_quiz_needs_notes">Para un quiz de este libro, guarda antes alguna nota o ficha.</string>
+    <string name="detail_cards_empty">Sin fichas de este libro</string>
+    <string name="detail_cards_empty_message">Crea fichas desde sus notas, explicaciones o con «Nueva ficha».</string>
+    <string name="detail_session_short">Menos de 1 min</string>
+    <string name="detail_card_next">Próximo repaso: %s</string>
+    <string name="detail_sessions_empty">Aún no hay sesiones</string>
+    <string name="detail_sessions_empty_message">Se registran solas al leer, o al actualizar el progreso de un libro en papel.</string>
+    <plurals name="detail_session_pages">
+        <item quantity="one">%d página</item>
+        <item quantity="other">%d páginas</item>
+    </plurals>
     <string name="progress_goal_of">de %d min</string>
     <string name="progress_goal_of_pages">de %d págs.</string>
     <string name="goal_title">Meta diaria</string>

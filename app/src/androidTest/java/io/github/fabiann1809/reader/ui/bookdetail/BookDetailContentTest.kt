@@ -1,5 +1,11 @@
 package io.github.fabiann1809.reader.ui.bookdetail
 
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.performScrollToNode
+import io.github.fabiann1809.reader.data.flashcard.Flashcard
+import io.github.fabiann1809.reader.data.session.ReadingSession
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -33,6 +39,8 @@ class BookDetailContentTest {
     private fun setContent(
         notes: List<Note>,
         book: Book = this.book,
+        flashcards: List<Flashcard> = emptyList(),
+        sessions: List<ReadingSession> = emptyList(),
         onCapturePage: () -> Unit = {},
         onDeleteBook: () -> Unit = {},
         collections: List<Collection> = emptyList(),
@@ -42,7 +50,7 @@ class BookDetailContentTest {
         composeRule.setContent {
             ReaderTheme {
                 BookDetailContent(
-                    uiState = BookDetailUiState.Success(book, notes, collections),
+                    uiState = BookDetailUiState.Success(book, notes, collections, flashcards = flashcards, sessions = sessions),
                     onNavigateUp = {},
                     onUpdateProgress = { _, _ -> },
                     onDeleteBook = onDeleteBook,
@@ -57,9 +65,16 @@ class BookDetailContentTest {
         }
     }
 
+    /** Opens a tab (its label can also be elsewhere, so the clickable one) and scrolls to [text]. */
+    private fun openTabAndFind(tab: Int, text: String) {
+        composeRule.onNode(hasText(string(tab)) and hasClickAction()).performClick()
+        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText(text))
+    }
+
     @Test
     fun showsEmptyNotesMessage() {
         setContent(notes = emptyList())
+        openTabAndFind(R.string.detail_tab_notes, string(R.string.notes_empty))
 
         composeRule.onNodeWithText(composeRule.activity.getString(R.string.notes_empty)).assertIsDisplayed()
     }
@@ -72,6 +87,7 @@ class BookDetailContentTest {
                 Note(id = 2, bookId = 1, content = "Idea central", type = NoteType.EXPLANATION),
             ),
         )
+        openTabAndFind(R.string.detail_tab_notes, "Idea central")
 
         composeRule.onNodeWithText("Somos polvo de estrellas").assertIsDisplayed()
         composeRule.onNodeWithText(composeRule.activity.getString(R.string.note_page, 12)).assertIsDisplayed()
@@ -88,6 +104,36 @@ class BookDetailContentTest {
     }
 
     private fun string(id: Int) = composeRule.activity.getString(id)
+
+    @Test
+    fun theSummaryShowsTheTimeLeftAndTheOptionalAiBlock() {
+        setContent(
+            notes = emptyList(),
+            book = book.copy(currentPage = 100, totalPages = 300),
+            sessions = listOf(ReadingSession(id = 1, bookId = 1, startedAt = 0, endedAt = 20 * 60_000L, pagesRead = 10)),
+        )
+
+        // 200 pages at 2 minutes a page.
+        composeRule.onNodeWithText("200 páginas restantes · 6 h 40 m estimadas").assertIsDisplayed()
+        // Without notes or cards there's nothing to ask about yet.
+        composeRule.onNode(hasScrollAction()).performScrollToNode(hasText(string(R.string.detail_quiz_needs_notes)))
+        composeRule.onNodeWithText(string(R.string.detail_quiz_needs_notes)).assertIsDisplayed()
+    }
+
+    @Test
+    fun theCardsAndSessionsTabsListTheirItems() {
+        setContent(
+            notes = emptyList(),
+            flashcards = listOf(Flashcard(id = 1, bookId = 1, front = "¿Quién escribió Cosmos?", back = "Carl Sagan")),
+            sessions = listOf(ReadingSession(id = 1, bookId = 1, startedAt = 0, endedAt = 25 * 60_000L, pagesRead = 12)),
+        )
+
+        openTabAndFind(R.string.detail_tab_cards, "¿Quién escribió Cosmos?")
+        composeRule.onNodeWithText("Carl Sagan").assertIsDisplayed()
+
+        openTabAndFind(R.string.detail_tab_sessions, "12 páginas")
+        composeRule.onNodeWithText("25 min").assertIsDisplayed()
+    }
 
     @Test
     fun captureIsThePrimaryAction() {

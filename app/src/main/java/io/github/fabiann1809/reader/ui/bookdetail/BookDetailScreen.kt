@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -74,6 +76,9 @@ fun BookDetailScreen(
     onOpenNoteInBook: (Note) -> Unit = {},
     onCapturePage: () -> Unit,
     onRead: () -> Unit = {},
+    // "Con IA, si quieres" (T16.4): this book's due cards, and a quiz about its notes and cards.
+    onReviewBook: () -> Unit = {},
+    onQuizBook: (source: String, title: String) -> Unit = { _, _ -> },
     viewModel: BookDetailViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -98,6 +103,8 @@ fun BookDetailScreen(
         onCapturePage = onCapturePage,
         onRead = onRead,
         voiceNotes = rememberVoiceNoteControls(),
+        onReviewBook = onReviewBook,
+        onQuizBook = onQuizBook,
     )
 }
 
@@ -119,6 +126,8 @@ fun BookDetailContent(
     modifier: Modifier = Modifier,
     onRead: () -> Unit = {},
     voiceNotes: VoiceNoteControls = VoiceNoteControls(),
+    onReviewBook: () -> Unit = {},
+    onQuizBook: (source: String, title: String) -> Unit = { _, _ -> },
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     var showProgressDialog by rememberSaveable { mutableStateOf(false) }
@@ -160,9 +169,7 @@ fun BookDetailContent(
                 )
             }
             is BookDetailUiState.Success -> BookDetailBody(
-                book = uiState.book,
-                notes = uiState.notes,
-                highlights = uiState.highlights,
+                state = uiState,
                 onUpdateProgressClick = { showProgressDialog = true },
                 onCapturePage = onCapturePage,
                 onRead = onRead,
@@ -171,6 +178,8 @@ fun BookDetailContent(
                 onNoteClick = onNoteClick,
                 onOpenNoteInBook = onOpenNoteInBook,
                 voiceNotes = voiceNotes,
+                onReviewBook = onReviewBook,
+                onQuizBook = { onQuizBook(uiState.quizSource, uiState.book.title) },
                 modifier = contentModifier,
             )
         }
@@ -274,9 +283,7 @@ private fun MoreMenu(onAddToCollectionClick: () -> Unit, onDeleteClick: () -> Un
 
 @Composable
 private fun BookDetailBody(
-    book: Book,
-    notes: List<Note>,
-    highlights: List<Highlight>,
+    state: BookDetailUiState.Success,
     onUpdateProgressClick: () -> Unit,
     onCapturePage: () -> Unit,
     onRead: () -> Unit,
@@ -286,19 +293,22 @@ private fun BookDetailBody(
     // A note written on a passage opens the book there (T11.13).
     onOpenNoteInBook: (Note) -> Unit = {},
     voiceNotes: VoiceNoteControls = VoiceNoteControls(),
+    onReviewBook: () -> Unit = {},
+    onQuizBook: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    var tab by rememberSaveable { mutableStateOf(DetailTab.SUMMARY) }
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item(key = "book") {
-            BookHeader(book = book)
+            BookHeader(book = state.book, remaining = state.remaining)
         }
         item(key = "actions") {
             BookDetailActions(
-                book = book,
+                book = state.book,
                 onRead = onRead,
                 onCapturePage = onCapturePage,
                 onUpdateProgressClick = onUpdateProgressClick,
@@ -306,36 +316,48 @@ private fun BookDetailBody(
                 onAddFlashcard = onAddFlashcard,
             )
         }
-        item(key = "notes_header") {
-            Text(
-                text = stringResource(R.string.notes_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 12.dp),
+        item(key = "tabs") {
+            DetailTabRow(selected = tab, onSelect = { tab = it })
+        }
+        when (tab) {
+            DetailTab.SUMMARY -> summaryTab(state, onReviewBook = onReviewBook, onQuizBook = onQuizBook)
+            DetailTab.NOTES -> notesTab(state.notes, state.highlights, onNoteClick, onOpenNoteInBook, voiceNotes)
+            DetailTab.CARDS -> cardsTab(state.flashcards)
+            DetailTab.SESSIONS -> sessionsTab(state.sessions)
+        }
+    }
+}
+
+/** "Notas y resaltados": the book's notes, then its highlights (T11.12). */
+private fun LazyListScope.notesTab(
+    notes: List<Note>,
+    highlights: List<Highlight>,
+    onNoteClick: (Long) -> Unit,
+    onOpenNoteInBook: (Note) -> Unit,
+    voiceNotes: VoiceNoteControls,
+) {
+    if (notes.isEmpty()) {
+        item(key = "notes_empty") {
+            EmptyNotes()
+        }
+    } else {
+        items(notes, key = { it.id }) { note ->
+            NoteItem(
+                note = note,
+                onClick = { onNoteClick(note.id) },
+                onOpenInBook = { onOpenNoteInBook(note) },
+                isPlaying = voiceNotes.isPlaying(note),
+                playbackFailed = voiceNotes.failed(note),
+                onTogglePlayback = { voiceNotes.onToggle(note) },
             )
         }
-        if (notes.isEmpty()) {
-            item(key = "notes_empty") {
-                EmptyNotes()
-            }
-        } else {
-            items(notes, key = { it.id }) { note ->
-                NoteItem(
-                    note = note,
-                    onClick = { onNoteClick(note.id) },
-                    onOpenInBook = { onOpenNoteInBook(note) },
-                    isPlaying = voiceNotes.isPlaying(note),
-                    playbackFailed = voiceNotes.failed(note),
-                    onTogglePlayback = { voiceNotes.onToggle(note) },
-                )
-            }
-        }
-        highlightsSection(highlights)
     }
+    highlightsSection(highlights)
 }
 
 /** Cover, title and reading progress, centered as in the design (10.2). */
 @Composable
-private fun BookHeader(book: Book, modifier: Modifier = Modifier) {
+private fun BookHeader(book: Book, remaining: RemainingReading?, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -354,6 +376,7 @@ private fun BookHeader(book: Book, modifier: Modifier = Modifier) {
         )
         Spacer(Modifier.height(4.dp))
         ReadingProgress(book)
+        remaining?.let { RemainingText(it) }
     }
 }
 
@@ -387,6 +410,19 @@ private fun ReadingProgress(book: Book) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+/** "186 páginas restantes · 3 h 20 m estimadas" (design 1g). */
+@Composable
+private fun RemainingText(remaining: RemainingReading) {
+    val pages = pluralStringResource(R.plurals.detail_pages_left, remaining.pages, remaining.pages)
+    val minutes = remaining.minutes
+    Text(
+        text = if (minutes != null && remaining.pages > 0) stringResource(R.string.detail_estimated, pages, durationText(minutes)) else pages,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 @Composable

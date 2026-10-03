@@ -28,7 +28,7 @@ class ReviewSessionViewModelTest {
         ),
     )
 
-    private fun viewModel() = ReviewSessionViewModel(cards, books, now = { now })
+    private fun viewModel(bookId: Long = 0) = ReviewSessionViewModel(bookId, cards, books, now = { now })
 
     private fun reviewing(viewModel: ReviewSessionViewModel) = viewModel.uiState.value as ReviewSessionUiState.Reviewing
 
@@ -77,8 +77,17 @@ class ReviewSessionViewModelTest {
 
     @Test
     fun withNothingDueTheSessionIsAlreadyOver() {
-        val viewModel = ReviewSessionViewModel(FakeFlashcardRepository(), books, now = { now })
+        val viewModel = ReviewSessionViewModel(0, FakeFlashcardRepository(), books, now = { now })
 
         assertEquals(ReviewSessionUiState.Finished(reviewed = 0, correct = 0), viewModel.uiState.value)
+    }
+
+    @Test
+    fun aBooksSessionOnlyHasThatBooksCards() {
+        // Both test cards belong to book 1.
+        val viewModel = viewModel(bookId = 2)
+
+        assertEquals(ReviewSessionUiState.Finished(reviewed = 0, correct = 0), viewModel.uiState.value)
+        assertEquals(2, reviewing(viewModel(bookId = 1)).cards.size)
     }
 }

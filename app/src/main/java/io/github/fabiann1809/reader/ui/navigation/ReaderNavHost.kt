@@ -155,7 +155,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
             )
         }
         composable<ReviewRoute> {
-            ReviewScreen(onStartSession = { navController.navigate(ReviewSessionRoute) })
+            ReviewScreen(onStartSession = { navController.navigate(ReviewSessionRoute()) })
         }
         composable<ProgressRoute> {
             ProgressScreen()
@@ -215,6 +215,8 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onOpenNoteInBook = { note -> navController.navigate(ReaderRoute(bookId, note.location)) },
                 onCapturePage = { navController.navigate(CaptureRoute(bookId)) },
                 onRead = { navController.navigate(ReaderRoute(bookId)) },
+                onReviewBook = { navController.navigate(ReviewSessionRoute(bookId)) },
+                onQuizBook = { source, title -> navController.navigate(QuizRoute(bookId, source, BOOK_QUIZ_SIZE, title)) },
             )
         }
         composable<NoteEditorRoute> { entry ->
@@ -286,3 +288,6 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
 }
 
 private const val FADE_MILLIS = 200
+
+// A quiz about a book's notes and cards (T16.4): a few questions, like the review's.
+private const val BOOK_QUIZ_SIZE = 5
