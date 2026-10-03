@@ -295,7 +295,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T16.3 Meta y recordatorio.** Meta diaria en minutos o páginas, con recordatorio de lectura. *Hecho cuando:* el anillo usa la meta. Solo la meta (se cambia tocando el anillo); el recordatorio de lectura queda **pospuesto** junto con T14.6, para hacer ambos con WorkManager más adelante (decisión del usuario, 2026-10-03).
 - [x] **T16.4 Detalle con pestañas.** Resumen, Notas y resaltados, Fichas y Sesiones; páginas restantes y tiempo estimado para terminar. *Hecho cuando:* cada pestaña muestra sus datos.
 - [x] **T16.5 Racha animada.** La llama se anima una vez al cumplir la meta. *Hecho cuando:* se anima solo al cumplir.
-- [ ] **T16.6 Progreso de libros digitales.** Calcular porcentaje y página/total desde la posición guardada (`Locator`) y mostrarlos en el detalle, la lista y la portada, en lugar de "Página 0". *Hecho cuando:* un EPUB a medio leer muestra su progreso real.
+- [x] **T16.6 Progreso de libros digitales.** Calcular porcentaje y página/total desde la posición guardada (`Locator`) y mostrarlos en el detalle, la lista y la portada, en lugar de "Página 0". *Hecho cuando:* un EPUB a medio leer muestra su progreso real. La página es la posición de Readium (unas mil letras) y el total, las posiciones del libro; se guardan al leer, así que un libro abierto antes de este cambio se actualiza la próxima vez que se lee.
 
 ### Fase 17 — Ajustes, respaldo y accesibilidad (B8)
 - [ ] **T17.1 Ajustes completos.** Apariencia (tema claro, oscuro o del sistema; vista por defecto; libros por estante), lectura por defecto, voz, IA (activar o desactivar funciones) y notificaciones. *Hecho cuando:* cada ajuste persiste y se aplica.

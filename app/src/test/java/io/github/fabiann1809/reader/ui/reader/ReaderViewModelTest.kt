@@ -394,6 +394,19 @@ class ReaderViewModelTest {
     }
 
     @Test
+    fun aDigitalBooksPageIsItsReadiumPosition() = runTest {
+        val session = FakeSession()
+        viewModel(bookId = 1, session = session)
+        session.position.value = ReadingPosition(bookId = 1, chapter = "Capítulo 1", progression = 0.3, href = "c1.xhtml", position = 12)
+
+        session.locations.emit(ReadingLocation(1, "{\"href\":\"c1.xhtml\"}"))
+
+        val book = books.getBook(1)!!
+        assertEquals(12, book.currentPage)
+        assertEquals(session.positionCount(1), book.totalPages)
+    }
+
+    @Test
     fun grabarOpensAndClosesTheVoiceSheet() = runTest {
         val viewModel = viewModel(bookId = 1, session = FakeSession())
 

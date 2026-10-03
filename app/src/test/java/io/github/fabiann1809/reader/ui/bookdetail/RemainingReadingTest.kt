@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.ui.bookdetail
 
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.session.ReadingSession
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -30,5 +31,16 @@ class RemainingReadingTest {
     @Test
     fun withoutAPageCountNothingIsKnown() {
         assertNull(remainingReading(book.copy(totalPages = null), listOf(session(10, 5))))
+    }
+
+    @Test
+    fun aDigitalBookIsEstimatedFromTheTimeForTheShareRead() {
+        // A quarter read in 40 minutes: three quarters left, 2 hours.
+        val epub = book.copy(kind = BookKind.DIGITAL, currentPage = 10, totalPages = 40)
+
+        val remaining = remainingReading(epub, listOf(session(25, 300), session(15, 0)))!!
+
+        assertEquals(30, remaining.pages)
+        assertEquals(120, remaining.minutes)
     }
 }

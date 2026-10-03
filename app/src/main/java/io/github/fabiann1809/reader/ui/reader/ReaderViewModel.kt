@@ -68,7 +68,17 @@ class ReaderViewModel(
         }
         viewModelScope.launch {
             session.locations.filter { it.bookId == bookId }.collect { location ->
-                updateBook { it.copy(readingLocation = location.json) }
+                // A digital book's page is Readium's position, out of the book's positions (T16.6):
+                // the detail, the shelf and the cover then show its real progress instead of "Página 0".
+                val position = session.position.value?.takeIf { it.bookId == bookId }?.position
+                val total = session.positionCount(bookId)
+                updateBook { book ->
+                    book.copy(
+                        readingLocation = location.json,
+                        currentPage = position ?: book.currentPage,
+                        totalPages = total ?: book.totalPages,
+                    )
+                }
             }
         }
         viewModelScope.launch {
