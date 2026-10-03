@@ -26,6 +26,12 @@ class ProgressViewModelTest {
         override suspend fun setGoal(goal: ReadingGoal) {
             this.goal.value = goal
         }
+
+        override val lastCelebratedDay = MutableStateFlow<Long?>(null)
+
+        override suspend fun markCelebrated(epochDay: Long) {
+            lastCelebratedDay.value = epochDay
+        }
     }
 
     private val now = 1_790_900_000_000L
@@ -54,5 +60,22 @@ class ProgressViewModelTest {
         viewModel.uiState.launchIn(backgroundScope)
 
         assertTrue(viewModel.uiState.value.isEmpty)
+    }
+
+    @Test
+    fun theFlameCelebratesOnlyOnceTheGoalIsMetAndOnceADay() = runTest(mainDispatcherRule.testDispatcher) {
+        val sessions = FakeReadingSessionRepository(
+            listOf(ReadingSession(id = 1, bookId = 1, startedAt = now - 20 * 60_000L, endedAt = now, pagesRead = 6)),
+        )
+        val viewModel = ProgressViewModel(sessions, FakeBookRepository(), goalStore, now = { now })
+        viewModel.uiState.launchIn(backgroundScope)
+        // 20 of 30 minutes: not yet.
+        assertEquals(false, viewModel.uiState.value.celebrate)
+
+        viewModel.setGoal(ReadingGoal(GoalUnit.MINUTES, 20))
+        assertEquals(true, viewModel.uiState.value.celebrate)
+
+        viewModel.celebrated()
+        assertEquals(false, viewModel.uiState.value.celebrate)
     }
 }

@@ -13,10 +13,15 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 
-/** Null [stats] while loading; [isEmpty] when nothing was read yet ("Empieza tu primera sesión"). */
-data class ProgressUiState(val stats: ProgressStats? = null, val isEmpty: Boolean = false)
+/**
+ * Null [stats] while loading; [isEmpty] when nothing was read yet ("Empieza tu primera sesión").
+ * [celebrate] once today's goal is met and the flame hasn't celebrated it yet (T16.5).
+ */
+data class ProgressUiState(val stats: ProgressStats? = null, val isEmpty: Boolean = false, val celebrate: Boolean = false)
 
 /** The Progreso tab (T16.2): today's goal, the streak, this week and the books finished this year. */
 class ProgressViewModel(
@@ -30,10 +35,21 @@ class ProgressViewModel(
     private val sessions = flow { emitAll(sessionRepository.observeSince(now() - STREAK_LOOKBACK_MILLIS)) }
 
     val uiState: StateFlow<ProgressUiState> =
-        combine(sessions, bookRepository.observeBooks(), goalStore.goal) { sessions, books, goal ->
+        combine(sessions, bookRepository.observeBooks(), goalStore.goal, goalStore.lastCelebratedDay) { sessions, books, goal, celebrated ->
             val stats = progressStats(sessions, books, goal, now())
-            ProgressUiState(stats, isEmpty = sessions.isEmpty() && stats.finishedThisYear == 0)
+            ProgressUiState(
+                stats,
+                isEmpty = sessions.isEmpty() && stats.finishedThisYear == 0,
+                celebrate = stats.goalProgress >= 1f && celebrated != today(),
+            )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), ProgressUiState())
+
+    /** The flame finished celebrating today's goal: not again until tomorrow's. */
+    fun celebrated() {
+        viewModelScope.launch { goalStore.markCelebrated(today()) }
+    }
+
+    private fun today(): Long = Instant.ofEpochMilli(now()).atZone(ZoneId.systemDefault()).toLocalDate().toEpochDay()
 
     /** The goal chosen in the goal dialog (T16.3). */
     fun setGoal(goal: ReadingGoal) {

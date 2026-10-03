@@ -32,12 +32,17 @@ fun ProgressScreen(
     viewModel: ProgressViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ProgressContent(uiState, onGoalChange = viewModel::setGoal, modifier = modifier)
+    ProgressContent(uiState, onGoalChange = viewModel::setGoal, onCelebrated = viewModel::celebrated, modifier = modifier)
 }
 
 /** "Progreso" tab (lámina 1i): the goal and streak, this week, and the books finished this year. */
 @Composable
-fun ProgressContent(uiState: ProgressUiState, modifier: Modifier = Modifier, onGoalChange: (ReadingGoal) -> Unit = {}) {
+fun ProgressContent(
+    uiState: ProgressUiState,
+    modifier: Modifier = Modifier,
+    onGoalChange: (ReadingGoal) -> Unit = {},
+    onCelebrated: () -> Unit = {},
+) {
     var editingGoal by rememberSaveable { mutableStateOf(false) }
     Scaffold(
         modifier = modifier,
@@ -62,7 +67,7 @@ fun ProgressContent(uiState: ProgressUiState, modifier: Modifier = Modifier, onG
                     .verticalScroll(rememberScrollState())
                     .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp),
             ) {
-                GoalCard(stats, onEditGoal = { editingGoal = true })
+                GoalCard(stats, celebrate = uiState.celebrate, onCelebrated = onCelebrated, onEditGoal = { editingGoal = true })
                 WeekCard(stats)
                 FinishedBooksCard(stats)
             }

@@ -55,18 +55,13 @@ private fun ProgressCard(modifier: Modifier = Modifier, onClick: (() -> Unit)? =
  * it changes the goal ([onEditGoal], T16.3).
  */
 @Composable
-fun GoalCard(stats: ProgressStats, onEditGoal: () -> Unit = {}) {
+fun GoalCard(stats: ProgressStats, celebrate: Boolean = false, onCelebrated: () -> Unit = {}, onEditGoal: () -> Unit = {}) {
     ProgressCard(onClick = onEditGoal) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(20.dp)) {
             GoalRing(stats)
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Icon(
-                        painterResource(R.drawable.ic_flame_fill),
-                        contentDescription = null,
-                        tint = ReaderTheme.colors.warning,
-                        modifier = Modifier.size(22.dp),
-                    )
+                    StreakFlame(celebrate = celebrate, onCelebrated = onCelebrated)
                     Text(stats.streakDays.toString(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                 }
                 Text(
