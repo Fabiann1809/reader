@@ -521,6 +521,17 @@
     <string name="backup_export">Exportar respaldo</string>
     <string name="backup_exporting">Preparando el respaldo…</string>
     <string name="backup_exported">Respaldo guardado: %1$d libros, %2$d notas, %3$d fichas y %4$d archivos.</string>
+    <string name="backup_import_title">Importar respaldo</string>
+    <string name="backup_import_message">Restaura un respaldo en este teléfono, por ejemplo al cambiar de celular. Reemplaza tu biblioteca actual por la del archivo.</string>
+    <string name="backup_import">Importar respaldo</string>
+    <string name="backup_import_confirm_title">¿Reemplazar tu biblioteca?</string>
+    <string name="backup_import_confirm_message">Tus libros, notas, fichas y sesiones actuales se cambiarán por los del respaldo. Esto no se puede deshacer.</string>
+    <string name="backup_import_confirm">Reemplazar</string>
+    <string name="backup_importing">Restaurando el respaldo…</string>
+    <string name="backup_imported">Respaldo restaurado: %1$d libros, %2$d notas, %3$d fichas y %4$d archivos.</string>
+    <string name="backup_import_not_a_backup">Ese archivo no es un respaldo de Reader, o está dañado. No se cambió nada.</string>
+    <string name="backup_import_newer">Ese respaldo es de una versión más nueva de Reader. Actualiza la app para restaurarlo.</string>
+    <string name="backup_import_unreadable">No se pudo leer el archivo. No se cambió nada.</string>
     <string name="backup_export_failed">No se pudo guardar el respaldo. Prueba en otra carpeta.</string>
     <string name="about_title">Acerca de</string>
     <string name="about_version">Versión %1$s</string>

@@ -10,6 +10,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface BookDao {
 
+    /** Deletes every book, and with them (cascade) their notes, cards, sessions...: an import replaces all (T17.3). */
+    @Query("DELETE FROM books")
+    suspend fun deleteAll()
+
     /** Every row, for a backup (T17.2). */
     @Query("SELECT * FROM books")
     suspend fun getAll(): List<Book>

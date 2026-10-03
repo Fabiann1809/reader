@@ -12,6 +12,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CollectionDao {
 
+    /** Deletes every collection (and their links): an import replaces all (T17.3). */
+    @Query("DELETE FROM collections")
+    suspend fun deleteAll()
+
     /** Every collection, for a backup (T17.2). */
     @Query("SELECT * FROM collections")
     suspend fun getAll(): List<Collection>

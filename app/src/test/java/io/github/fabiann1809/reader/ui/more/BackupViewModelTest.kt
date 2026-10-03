@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ui.more
 
+import io.github.fabiann1809.reader.data.backup.BackupError
 import io.github.fabiann1809.reader.data.backup.BackupRepository
 import io.github.fabiann1809.reader.data.backup.BackupSummary
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
@@ -22,6 +23,14 @@ class BackupViewModelTest {
         override suspend fun export(uri: String): Result<BackupSummary> {
             exportedTo += uri
             return result
+        }
+
+        var importResult: Result<BackupSummary> = result
+        val importedFrom = mutableListOf<String>()
+
+        override suspend fun import(uri: String): Result<BackupSummary> {
+            importedFrom += uri
+            return importResult
         }
     }
 
@@ -47,5 +56,39 @@ class BackupViewModelTest {
         viewModel.exportTo("content://x")
 
         assertTrue(viewModel.export.value is ExportState.Failed)
+    }
+
+    @Test
+    fun importingAsksFirstAndOnlyThenReplaces() {
+        val repository = FakeBackupRepository(Result.success(summary))
+        val viewModel = BackupViewModel(repository, now = { now })
+
+        viewModel.pickedBackup("content://drive/backup.zip")
+        assertEquals(ImportState.Confirming("content://drive/backup.zip"), viewModel.import.value)
+        assertTrue(repository.importedFrom.isEmpty())
+
+        viewModel.confirmImport()
+
+        assertEquals(listOf("content://drive/backup.zip"), repository.importedFrom)
+        assertEquals(ImportState.Done(summary), viewModel.import.value)
+    }
+
+    @Test
+    fun cancellingImportsNothingAndEachFailureIsTold() {
+        val repository = FakeBackupRepository(Result.success(summary))
+        val viewModel = BackupViewModel(repository, now = { now })
+        viewModel.pickedBackup("content://x")
+        viewModel.cancelImport()
+        assertEquals(ImportState.Idle, viewModel.import.value)
+
+        repository.importResult = Result.failure(BackupError.NewerVersion(2))
+        viewModel.pickedBackup("content://x")
+        viewModel.confirmImport()
+        assertEquals(ImportState.Failed(ImportFailure.NEWER_VERSION), viewModel.import.value)
+
+        repository.importResult = Result.failure(BackupError.InvalidFile())
+        viewModel.pickedBackup("content://x")
+        viewModel.confirmImport()
+        assertEquals(ImportState.Failed(ImportFailure.NOT_A_BACKUP), viewModel.import.value)
     }
 }
