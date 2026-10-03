@@ -85,7 +85,8 @@ class ReaderNavHostTest {
     @Test
     fun opensSettingsFromMoreAndComesBack() {
         openMore(R.string.settings_title)
-        composeRule.onNodeWithText(string(R.string.settings_guide_title)).assertIsDisplayed()
+        // The first section; the API key's guide is further down since T17.1.
+        composeRule.onNodeWithText(string(R.string.settings_appearance)).assertIsDisplayed()
         // The bottom bar is hidden on inner screens.
         composeRule.onNodeWithText(string(R.string.tab_review)).assertDoesNotExist()
 
