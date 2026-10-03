@@ -9,6 +9,7 @@ import android.content.Context
 import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.AnalyzeInterpretation
 import io.github.fabiann1809.reader.ai.ExplainText
+import io.github.fabiann1809.reader.ai.GenerateQuiz
 import io.github.fabiann1809.reader.ai.MakeFlashcard
 import io.github.fabiann1809.reader.ai.TranscribeAudio
 import io.github.fabiann1809.reader.ai.ExplainerPrompt
@@ -173,4 +174,6 @@ class AppContainer(context: Context) {
     val makeFlashcard: MakeFlashcard by lazy { MakeFlashcard(aiProvider) }
 
     val analyzeInterpretation: AnalyzeInterpretation by lazy { AnalyzeInterpretation(aiProvider) }
+
+    val generateQuiz: GenerateQuiz by lazy { GenerateQuiz(aiProvider) }
 }

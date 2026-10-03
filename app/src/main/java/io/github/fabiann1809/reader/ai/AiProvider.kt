@@ -25,4 +25,7 @@ interface AiProvider {
 
     /** Compares the reader's [interpretation] with the [text] it is about ("Ahora tú", T15.1). */
     suspend fun analyzeInterpretation(text: String, interpretation: String): Result<InterpretationAnalysis>
+
+    /** A multiple choice quiz of [questionCount] questions about [text] (T15.2). */
+    suspend fun generateQuiz(text: String, questionCount: Int): Result<Quiz>
 }

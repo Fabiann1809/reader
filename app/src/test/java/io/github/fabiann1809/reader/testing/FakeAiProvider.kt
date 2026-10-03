@@ -4,6 +4,7 @@ import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.Explanation
 import io.github.fabiann1809.reader.ai.FlashcardDraft
 import io.github.fabiann1809.reader.ai.InterpretationAnalysis
+import io.github.fabiann1809.reader.ai.Quiz
 
 /**
  * Configurable AiProvider for tests: returns [result] and records every text it was asked to explain.
@@ -43,5 +44,13 @@ class FakeAiProvider(
     override suspend fun analyzeInterpretation(text: String, interpretation: String): Result<InterpretationAnalysis> {
         interpretationRequests += text to interpretation
         return analysis
+    }
+
+    var quiz: Result<Quiz> = Result.success(testQuiz(3))
+    val quizRequests = mutableListOf<Pair<String, Int>>()
+
+    override suspend fun generateQuiz(text: String, questionCount: Int): Result<Quiz> {
+        quizRequests += text to questionCount
+        return quiz
     }
 }

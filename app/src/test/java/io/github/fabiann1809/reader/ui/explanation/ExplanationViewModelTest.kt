@@ -6,6 +6,7 @@ import io.github.fabiann1809.reader.ai.ExplainText
 import io.github.fabiann1809.reader.ai.Explanation
 import io.github.fabiann1809.reader.ai.FlashcardDraft
 import io.github.fabiann1809.reader.ai.InterpretationAnalysis
+import io.github.fabiann1809.reader.ai.Quiz
 import io.github.fabiann1809.reader.data.note.NoteType
 import io.github.fabiann1809.reader.testing.FakeAiProvider
 import io.github.fabiann1809.reader.testing.FakeNoteRepository
@@ -43,6 +44,8 @@ class ExplanationViewModelTest {
 
             override suspend fun analyzeInterpretation(text: String, interpretation: String) =
                 Result.success(InterpretationAnalysis())
+
+            override suspend fun generateQuiz(text: String, questionCount: Int) = Result.success(Quiz(emptyList()))
         }
 
         val viewModel = viewModel(slowProvider)

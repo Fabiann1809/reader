@@ -7,6 +7,8 @@ import io.github.fabiann1809.reader.ai.FlashcardDraft
 import io.github.fabiann1809.reader.ai.FlashcardPrompt
 import io.github.fabiann1809.reader.ai.InterpretationAnalysis
 import io.github.fabiann1809.reader.ai.InterpretationPrompt
+import io.github.fabiann1809.reader.ai.Quiz
+import io.github.fabiann1809.reader.ai.QuizPrompt
 import io.github.fabiann1809.reader.ai.TranscriptionPrompt
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +30,8 @@ import java.util.Base64
  * `x-goog-api-key` header. Nothing here logs requests, headers or the key.
  * An explanation is requested as JSON with [ExplanationSchema] and decoded into an [Explanation];
  * a transcription sends the audio inline, with [transcriptionInstruction], and gets plain text;
- * a card proposal is JSON with [FlashcardSchema], and an interpretation's analysis with [InterpretationSchema].
+ * a card proposal is JSON with [FlashcardSchema], an interpretation's analysis with [InterpretationSchema]
+ * and a quiz with [QuizSchema].
  * Every failure is reported as an [AiError]. When [model] is overloaded (5xx), the request is
  * retried once with [fallbackModel] so the user still gets an answer.
  */
@@ -38,6 +41,7 @@ class GeminiProvider(
     private val transcriptionInstruction: String = TranscriptionPrompt.SYSTEM_INSTRUCTION,
     private val flashcardInstruction: String = FlashcardPrompt.SYSTEM_INSTRUCTION,
     private val interpretationInstruction: String = InterpretationPrompt.SYSTEM_INSTRUCTION,
+    private val quizInstruction: String = QuizPrompt.SYSTEM_INSTRUCTION,
     private val httpClient: OkHttpClient,
     private val baseUrl: String = DEFAULT_BASE_URL,
     private val model: String = DEFAULT_MODEL,
@@ -112,6 +116,30 @@ class GeminiProvider(
                 understood = analysis.understood.orBlankAsNull(),
                 incomplete = analysis.incomplete.orBlankAsNull(),
                 confused = analysis.confused.orBlankAsNull(),
+            )
+        }
+    }
+
+    override suspend fun generateQuiz(text: String, questionCount: Int): Result<Quiz> {
+        val request = GenerateContentRequest(
+            systemInstruction = Content(parts = listOf(Part(text = quizInstruction))),
+            contents = listOf(Content(role = "user", parts = listOf(Part(text = QuizPrompt.userMessage(text, questionCount))))),
+            generationConfig = GenerationConfig(
+                temperature = TEMPERATURE,
+                responseMimeType = "application/json",
+                responseSchema = QuizSchema,
+            ),
+        )
+        return generate(request) { answer ->
+            val quiz = json.decodeFromString<Quiz>(answer.requireText())
+            Quiz(
+                quiz.questions.map { question ->
+                    question.copy(
+                        question = question.question.trim(),
+                        options = question.options.map { it.trim() },
+                        explanation = question.explanation.trim(),
+                    )
+                },
             )
         }
     }

@@ -298,6 +298,21 @@ class GeminiProviderTest {
     }
 
     @Test
+    fun generatesAQuizAskingForTheNumberOfQuestions() = runTest {
+        enqueueAnswer(
+            """{"questions":[{"question":" ¿Qué mide la entropía? ","options":["El orden","El desorden","El calor","La masa"],"correctIndex":1,"explanation":"Lo dice el texto."}]}""",
+        )
+
+        val quiz = provider.generateQuiz("La entropía mide el desorden.", questionCount = 3).getOrThrow()
+
+        assertEquals("¿Qué mide la entropía?", quiz.questions.single().question)
+        assertEquals(1, quiz.questions.single().correctIndex)
+        val body = server.takeRequest().body!!.utf8()
+        assertTrue(body, body.contains("Haz 3 preguntas"))
+        assertTrue(body, body.contains("correctIndex"))
+    }
+
+    @Test
     fun malformedJsonMapsToUnknown() = runTest {
         enqueue(200, "not json")
 
