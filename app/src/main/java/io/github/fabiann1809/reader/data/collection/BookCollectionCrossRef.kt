@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.data.collection
 
+import kotlinx.serialization.Serializable
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -22,6 +23,7 @@ import io.github.fabiann1809.reader.data.book.Book
     // bookId is covered by the primary key; collectionId needs its own index for "books in a collection".
     indices = [Index("collectionId")],
 )
+@Serializable
 data class BookCollectionCrossRef(
     val bookId: Long,
     val collectionId: Long,

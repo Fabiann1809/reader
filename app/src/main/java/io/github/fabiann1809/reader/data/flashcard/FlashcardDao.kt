@@ -10,6 +10,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FlashcardDao {
 
+    /** Every row, for a backup (T17.2). */
+    @Query("SELECT * FROM flashcards")
+    suspend fun getAll(): List<Flashcard>
+
     // The most overdue first, so a short session reviews what is most likely forgotten.
     @Query("SELECT * FROM flashcards WHERE nextReviewAt <= :now ORDER BY nextReviewAt ASC, id ASC")
     fun observeDue(now: Long): Flow<List<Flashcard>>

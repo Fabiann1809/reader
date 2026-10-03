@@ -12,6 +12,14 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CollectionDao {
 
+    /** Every collection, for a backup (T17.2). */
+    @Query("SELECT * FROM collections")
+    suspend fun getAll(): List<Collection>
+
+    /** Every book–collection link, for a backup (T17.2). */
+    @Query("SELECT * FROM book_collections")
+    suspend fun getAllLinks(): List<BookCollectionCrossRef>
+
     @Query("SELECT * FROM collections ORDER BY name COLLATE NOCASE")
     fun observeAll(): Flow<List<Collection>>
 

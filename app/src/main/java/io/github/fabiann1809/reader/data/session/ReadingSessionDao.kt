@@ -8,6 +8,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ReadingSessionDao {
 
+    /** Every row, for a backup (T17.2). */
+    @Query("SELECT * FROM reading_sessions")
+    suspend fun getAll(): List<ReadingSession>
+
     /** Returns the generated id of the new session. */
     @Insert
     suspend fun insert(session: ReadingSession): Long

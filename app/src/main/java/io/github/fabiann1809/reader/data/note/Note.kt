@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.data.note
 
+import kotlinx.serialization.Serializable
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -20,6 +21,7 @@ import io.github.fabiann1809.reader.data.book.Book
     // Indexed because notes are always queried by book, and Room warns about unindexed foreign keys.
     indices = [Index("bookId")],
 )
+@Serializable
 data class Note(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

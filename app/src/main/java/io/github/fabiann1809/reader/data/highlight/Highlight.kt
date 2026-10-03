@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.data.highlight
 
+import kotlinx.serialization.Serializable
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -23,6 +24,7 @@ enum class HighlightColor { YELLOW, GREEN, BLUE, PINK }
     ],
     indices = [Index("bookId")],
 )
+@Serializable
 data class Highlight(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.data.bookmark
 
+import kotlinx.serialization.Serializable
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -20,6 +21,7 @@ import io.github.fabiann1809.reader.data.book.Book
     ],
     indices = [Index("bookId")],
 )
+@Serializable
 data class Bookmark(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

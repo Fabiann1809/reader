@@ -515,8 +515,13 @@
     <!-- More -->
     <string name="all_notes_title">Todas las notas</string>
     <string name="backup_title">Respaldo</string>
-    <string name="backup_coming_title">Respaldo de tus datos</string>
-    <string name="backup_coming_message">Aquí podrás exportar tus libros y notas a un archivo y restaurarlos en otro teléfono. Llegará en una próxima versión.</string>
+    <string name="backup_export_title">Exportar respaldo</string>
+    <string name="backup_export_message">Guarda en un archivo tus libros, notas, resaltados, fichas y sesiones, con los archivos de los libros y las notas de voz. Elige dónde: en el teléfono o en Google Drive.</string>
+    <string name="backup_no_key">Tu clave de IA nunca se incluye: se queda en este teléfono.</string>
+    <string name="backup_export">Exportar respaldo</string>
+    <string name="backup_exporting">Preparando el respaldo…</string>
+    <string name="backup_exported">Respaldo guardado: %1$d libros, %2$d notas, %3$d fichas y %4$d archivos.</string>
+    <string name="backup_export_failed">No se pudo guardar el respaldo. Prueba en otra carpeta.</string>
     <string name="about_title">Acerca de</string>
     <string name="about_version">Versión %1$s</string>
     <string name="about_tagline">Tu biblioteca, tu progreso y un tutor que te ayuda a entender lo que lees.</string>

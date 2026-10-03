@@ -1,10 +1,12 @@
 package io.github.fabiann1809.reader.data.book
 
+import kotlinx.serialization.Serializable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "books")
+@Serializable
 data class Book(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

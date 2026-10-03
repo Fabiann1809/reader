@@ -10,6 +10,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface BookDao {
 
+    /** Every row, for a backup (T17.2). */
+    @Query("SELECT * FROM books")
+    suspend fun getAll(): List<Book>
+
     // Newest first, so a freshly added book appears at the top of the library.
     @Query("SELECT * FROM books ORDER BY createdAt DESC")
     fun observeAll(): Flow<List<Book>>

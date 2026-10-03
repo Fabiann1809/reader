@@ -109,7 +109,7 @@ class ReaderNavHostTest {
         pressBack()
 
         composeRule.onNodeWithText(string(R.string.backup_title)).performClick()
-        composeRule.onNodeWithText(string(R.string.backup_coming_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.backup_no_key)).assertIsDisplayed()
         pressBack()
 
         composeRule.onNodeWithText(string(R.string.settings_privacy)).performClick()

@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.data.session
 
+import kotlinx.serialization.Serializable
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -24,6 +25,7 @@ import io.github.fabiann1809.reader.data.book.Book
     ],
     indices = [Index("bookId"), Index("startedAt")],
 )
+@Serializable
 data class ReadingSession(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

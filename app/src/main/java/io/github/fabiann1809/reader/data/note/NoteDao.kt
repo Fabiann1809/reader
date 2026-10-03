@@ -10,6 +10,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface NoteDao {
 
+    /** Every row, for a backup (T17.2). */
+    @Query("SELECT * FROM notes")
+    suspend fun getAll(): List<Note>
+
     // Newest first; id breaks ties between notes created in the same millisecond.
     @Query("SELECT * FROM notes WHERE bookId = :bookId ORDER BY createdAt DESC, id DESC")
     fun observeByBook(bookId: Long): Flow<List<Note>>

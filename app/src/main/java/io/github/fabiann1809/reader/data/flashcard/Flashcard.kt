@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.data.flashcard
 
+import kotlinx.serialization.Serializable
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -25,6 +26,7 @@ import io.github.fabiann1809.reader.data.note.NoteTag
     ],
     indices = [Index("bookId"), Index("nextReviewAt")],
 )
+@Serializable
 data class Flashcard(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

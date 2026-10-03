@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface HighlightDao {
 
+    /** Every row, for a backup (T17.2). */
+    @Query("SELECT * FROM highlights")
+    suspend fun getAll(): List<Highlight>
+
     // In reading order; the oldest first between highlights at the same point.
     @Query("SELECT * FROM highlights WHERE bookId = :bookId ORDER BY progression ASC, createdAt ASC, id ASC")
     fun observeByBook(bookId: Long): Flow<List<Highlight>>
