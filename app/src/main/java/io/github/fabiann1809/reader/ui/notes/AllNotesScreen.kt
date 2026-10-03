@@ -19,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.note.Note
+import io.github.fabiann1809.reader.data.note.NoteType
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.NoteItem
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
@@ -41,6 +42,8 @@ fun AllNotesScreen(
         onNoteClick = onNoteClick,
         onOpenNoteInBook = onOpenNoteInBook,
         voiceNotes = rememberVoiceNoteControls(),
+        onSearch = viewModel::search,
+        onType = viewModel::showType,
     )
 }
 
@@ -53,6 +56,8 @@ fun AllNotesContent(
     onOpenNoteInBook: (Note) -> Unit = {},
     modifier: Modifier = Modifier,
     voiceNotes: VoiceNoteControls = VoiceNoteControls(),
+    onSearch: (String) -> Unit = {},
+    onType: (NoteType?) -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
@@ -65,7 +70,7 @@ fun AllNotesContent(
             uiState.isLoading -> Box(contentModifier, contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
-            uiState.notes.isEmpty() -> Box(contentModifier, contentAlignment = Alignment.Center) {
+            !uiState.hasNotes -> Box(contentModifier, contentAlignment = Alignment.Center) {
                 StatusMessage(
                     icon = R.drawable.ic_note_pencil,
                     title = stringResource(R.string.notes_empty),
@@ -77,6 +82,18 @@ fun AllNotesContent(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                item(key = "filters") {
+                    NotesFilters(uiState.query, uiState.type, onSearch = onSearch, onType = onType)
+                }
+                if (uiState.notes.isEmpty()) {
+                    item(key = "no_match") {
+                        StatusMessage(
+                            icon = R.drawable.ic_magnifying_glass,
+                            title = stringResource(R.string.notes_no_match),
+                            message = stringResource(R.string.notes_no_match_message),
+                        )
+                    }
+                }
                 items(uiState.notes, key = { it.note.id }) { item ->
                     NoteItem(
                         note = item.note,

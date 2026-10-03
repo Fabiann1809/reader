@@ -301,7 +301,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T17.1 Ajustes completos.** Apariencia (tema claro, oscuro o del sistema; vista por defecto; libros por estante), lectura por defecto, voz, IA (activar o desactivar funciones) y notificaciones. *Hecho cuando:* cada ajuste persiste y se aplica. Hecho solo con lo que ya existe (decisión del usuario, 2026-10-03): apariencia, lectura por defecto (la hoja «Aa») e IA (transcripción automática y sugerencia al terminar un capítulo; explicar y los quiz ya son a pedido). Voz y notificaciones se agregan cuando se retomen T11.15, T14.6 y el recordatorio de T16.3.
 - [x] **T17.2 Exportar respaldo.** ZIP con los datos en JSON, archivos de libros y audios, guardado con SAF. Nunca incluye la clave de API. *Hecho cuando:* se genera el archivo.
 - [x] **T17.3 Importar respaldo.** Con confirmación y validación de versión. *Hecho cuando:* restaura en una instalación limpia. Reemplaza toda la biblioteca tras confirmar (decisión del usuario, 2026-10-03); verificado con una prueba que restaura en una base y una carpeta vacías, sin desinstalar la app para no borrar la clave.
-- [ ] **T17.4 Todas las notas.** Lista global con búsqueda y filtro por tipo. *Hecho cuando:* encuentra una nota por texto.
+- [x] **T17.4 Todas las notas.** Lista global con búsqueda y filtro por tipo. *Hecho cuando:* encuentra una nota por texto.
 - [ ] **T17.6 Widget y accesos directos.** Widget con Glance (Continuar o Grabar nota) y accesos directos del ícono (Continuar, Captura, Nota de voz). *Hecho cuando:* abren el destino correcto. **Pospuesta** (decisión del usuario, 2026-10-02).
 
 ### Fase 18 — Nube (requiere decisiones; ver riesgos)

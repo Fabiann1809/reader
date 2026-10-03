@@ -413,6 +413,13 @@
     <string name="flashcard_suggesting">Pensando la ficha…</string>
     <string name="flashcard_field_front">Frente: pregunta o concepto</string>
     <string name="flashcard_field_back">Reverso: respuesta</string>
+    <string name="notes_search_hint">Buscar en tus notas</string>
+    <string name="notes_filter_all">Todas</string>
+    <string name="notes_filter_written">Escritas</string>
+    <string name="notes_filter_explanations">Explicaciones</string>
+    <string name="notes_filter_voice">De voz</string>
+    <string name="notes_no_match">Ninguna nota coincide</string>
+    <string name="notes_no_match_message">Prueba con otras palabras o con otro tipo de nota.</string>
     <string name="settings_appearance">Apariencia</string>
     <string name="settings_theme">Tema de la app</string>
     <string name="settings_theme_system">Del sistema</string>
