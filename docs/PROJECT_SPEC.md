@@ -197,7 +197,7 @@ Cada tarea debe poder completarse en una sesión corta.
   - [x] **T7.2f Respuesta estructurada de la IA.** La IA devuelve los bloques del explicador (idea central, explicación sencilla, analogía, términos clave) en formato estructurado. *Hecho cuando:* se prueba con textos reales y se evalúa su comportamiento.
   - [x] **T7.2g Explicador por bloques.** Bloques del diseño, etiqueta "Generado con IA", texto original colapsable, estados de carga y sin conexión. *Hecho cuando:* la explicación se ve por bloques.
   - [x] **T7.2h Ajustes, privacidad y revisión de estados.** *Hecho cuando:* no hay pantallas sin manejo de estado.
-- [ ] **T7.3 Ícono y nombre de la app.** *Hecho cuando:* se ven en el lanzador.
+- [x] **T7.3 Ícono y nombre de la app.** *Hecho cuando:* se ven en el lanzador.
 - [ ] **T7.4 Build de release.** Firmar y generar el APK. *Hecho cuando:* el APK se instala y funciona en un teléfono real.
 - [ ] **T7.5 README.** Cómo compilar, cómo obtener una clave de API y cómo instalar el APK. *Hecho cuando:* otra persona puede seguirlo.
 
