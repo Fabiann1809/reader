@@ -1,3 +1,5 @@
+import java.util.Properties
+
 // AGP 9 compiles Kotlin natively, so the kotlin-android plugin is not needed.
 plugins {
     alias(libs.plugins.android.application)
@@ -26,9 +28,28 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Release signing data lives in keystore.properties, which is never committed.
+    // Without that file the release build is produced unsigned.
+    val keystorePropertiesFile = rootProject.file("keystore.properties")
+    val releaseSigning = if (keystorePropertiesFile.exists()) {
+        val keystoreProperties = Properties().apply {
+            keystorePropertiesFile.inputStream().use { load(it) }
+        }
+        signingConfigs.create("release") {
+            storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+            storePassword = keystoreProperties.getProperty("storePassword")
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+        }
+    } else {
+        null
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            signingConfig = releaseSigning
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
