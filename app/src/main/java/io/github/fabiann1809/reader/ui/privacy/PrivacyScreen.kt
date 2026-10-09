@@ -2,7 +2,16 @@ package io.github.fabiann1809.reader.ui.privacy
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -24,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ai.MAX_TEXT_LENGTH
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
-import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 private const val GEMINI_TERMS_URL = "https://ai.google.dev/gemini-api/terms"
 
@@ -42,10 +50,10 @@ fun PrivacyScreen(onNavigateUp: () -> Unit, modifier: Modifier = Modifier) {
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+                .padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 40.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text(stringResource(R.string.privacy_intro), style = MaterialTheme.typography.bodyLarge)
+            IntroCard()
             Section(R.string.privacy_sent_title) {
                 Paragraph(stringResource(R.string.privacy_sent_body, MAX_TEXT_LENGTH))
             }
@@ -63,10 +71,33 @@ fun PrivacyScreen(onNavigateUp: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
+/** The green summary on top: nothing leaves the phone but the fragment you ask to explain. */
+@Composable
+private fun IntroCard() {
+    val colors = ReaderTheme.colors
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(colors.successContainer, RoundedCornerShape(22.dp))
+            .padding(16.dp),
+    ) {
+        Icon(painterResource(R.drawable.ic_shield_check), contentDescription = null, tint = colors.success, modifier = Modifier.size(24.dp))
+        Text(stringResource(R.string.privacy_intro), style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+/** A card with a heading and its text. */
 @Composable
 private fun Section(@StringRes title: Int, content: @Composable () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(24.dp))
+            .padding(16.dp),
+    ) {
+        Text(stringResource(title), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.ExtraBold))
         content()
     }
 }
