@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,6 +33,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import io.github.fabiann1809.reader.ui.components.ReaderFilterChip
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ai.KeyTerm
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
@@ -111,15 +110,10 @@ fun KeyTermsBlock(terms: List<KeyTerm>) {
         )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             terms.forEach { keyTerm ->
-                FilterChip(
+                ReaderFilterChip(
                     selected = selected == keyTerm.term,
                     onClick = { selected = keyTerm.term.takeIf { it != selected } },
                     label = { Text(keyTerm.term) },
-                    shape = MaterialTheme.shapes.small,
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                    ),
                 )
             }
         }

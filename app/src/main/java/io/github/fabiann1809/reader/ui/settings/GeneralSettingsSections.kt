@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import io.github.fabiann1809.reader.ui.components.ReaderFilterChip
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.prefs.AppTheme
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
@@ -108,15 +107,10 @@ private fun Choice(@StringRes label: Int, chips: @Composable () -> Unit) {
 
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit) {
-    FilterChip(
+    ReaderFilterChip(
         selected = selected,
         onClick = onClick,
         label = { Text(label) },
-        shape = MaterialTheme.shapes.small,
-        colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        ),
     )
 }
 

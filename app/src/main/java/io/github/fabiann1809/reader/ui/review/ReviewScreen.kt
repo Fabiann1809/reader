@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.fabiann1809.reader.ui.components.ReaderFilterChip
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
@@ -88,15 +87,10 @@ private fun ModeChips(selected: ReviewMode, onSelect: (ReviewMode) -> Unit) {
         modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
     ) {
         ReviewMode.entries.forEach { mode ->
-            FilterChip(
+            ReaderFilterChip(
                 selected = mode == selected,
                 onClick = { onSelect(mode) },
                 label = { Text(stringResource(mode.label())) },
-                shape = MaterialTheme.shapes.small,
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                ),
             )
         }
     }

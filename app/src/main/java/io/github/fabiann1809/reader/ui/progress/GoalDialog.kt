@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -19,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import io.github.fabiann1809.reader.ui.components.ReaderFilterChip
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.prefs.GoalUnit
 import io.github.fabiann1809.reader.data.prefs.ReadingGoal
@@ -38,15 +37,10 @@ fun GoalDialog(goal: ReadingGoal, onSave: (ReadingGoal) -> Unit, onDismiss: () -
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     GoalUnit.entries.forEach { option ->
-                        FilterChip(
+                        ReaderFilterChip(
                             selected = option == unit,
                             onClick = { unit = option },
                             label = { Text(stringResource(if (option == GoalUnit.MINUTES) R.string.goal_minutes else R.string.goal_pages)) },
-                            shape = MaterialTheme.shapes.small,
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            ),
                         )
                     }
                 }

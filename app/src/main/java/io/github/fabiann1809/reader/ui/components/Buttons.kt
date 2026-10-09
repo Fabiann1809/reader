@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -19,10 +20,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
 
-// Button styles from the design (04-system-design.md, 7.4): 48 dp tall, 12 dp corners.
+// Button styles of the redesign: 54 dp tall pills.
 // Only one PrimaryButton per screen; AI actions always use AiButton (lavender).
 
-private val ButtonMinHeight = 48.dp
+private val ButtonMinHeight = 54.dp
 
 @Composable
 fun PrimaryButton(
@@ -74,7 +75,7 @@ fun OutlineButton(
     OutlinedButton(
         onClick = onClick,
         enabled = enabled,
-        shape = MaterialTheme.shapes.medium,
+        shape = CircleShape,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
         modifier = modifier.heightIn(min = ButtonMinHeight),
@@ -95,7 +96,7 @@ private fun FilledButton(
     Button(
         onClick = onClick,
         enabled = enabled,
-        shape = MaterialTheme.shapes.medium,
+        shape = CircleShape,
         colors = colors,
         modifier = modifier.heightIn(min = ButtonMinHeight),
     ) {

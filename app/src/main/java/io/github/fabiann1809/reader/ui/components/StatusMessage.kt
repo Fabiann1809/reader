@@ -1,11 +1,14 @@
 package io.github.fabiann1809.reader.ui.components
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,7 +21,7 @@ import androidx.compose.ui.unit.dp
 
 /**
  * Centered empty or error state: soft icon, title, optional message and optional action
- * (design 7.22: calm states that never blame the user).
+ * (calm states that never blame the user).
  */
 @Composable
 fun StatusMessage(
@@ -35,14 +38,19 @@ fun StatusMessage(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Icon(
-            painter = painterResource(icon),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        Box(
+            contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(40.dp)
-                .padding(bottom = 4.dp),
-        )
+                .size(72.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape),
+        ) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp),
+            )
+        }
         Text(text = title, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
         message?.let {
             Text(

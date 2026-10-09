@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -19,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import io.github.fabiann1809.reader.ui.components.ReaderFilterChip
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ai.QUIZ_SIZES
 import io.github.fabiann1809.reader.ui.components.AiButton
@@ -44,15 +43,10 @@ fun ReaderMenuSheet(isPdf: Boolean, chapterUnreadable: Boolean, onQuiz: (count: 
             Text(stringResource(R.string.reader_quiz_about_chapter), style = MaterialTheme.typography.bodyMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 QUIZ_SIZES.forEach { size ->
-                    FilterChip(
+                    ReaderFilterChip(
                         selected = size == count,
                         onClick = { count = size },
                         label = { Text(stringResource(R.string.reader_quiz_questions, size)) },
-                        shape = MaterialTheme.shapes.small,
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        ),
                     )
                 }
             }
