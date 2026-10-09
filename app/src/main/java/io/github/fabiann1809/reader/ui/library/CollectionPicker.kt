@@ -91,7 +91,7 @@ fun CollectionPickerSheet(
                 val filter = LibraryFilter.Custom(collection.id)
                 CollectionRow(
                     name = collection.name,
-                    dot = PastelDots[(collection.id % PastelDots.size).toInt()],
+                    dot = collectionDot(collection),
                     count = countOf(filter),
                     isSelected = selected == filter,
                     onClick = { onSelect(filter) },

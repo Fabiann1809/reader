@@ -145,7 +145,7 @@ fun AddSelectionToCollectionSheet(
                 onClick = onFavorites,
             )
             collections.forEach { collection ->
-                CollectionRow(collection.name, collectionDot(collection.id), count = null, isSelected = false) {
+                CollectionRow(collection.name, collectionDot(collection), count = null, isSelected = false) {
                     onCollection(collection.id)
                 }
             }

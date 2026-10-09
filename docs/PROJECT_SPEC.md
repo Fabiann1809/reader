@@ -329,7 +329,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T19.10b Vista Colecciones.** Reemplaza a la cuadrícula (decisión del usuario 2026-10-08): por colección, pila de portadas en abanico bajo una banda pastel, nombre y conteo; botones ＋ (añadir libros a la colección, función nueva) y ⋯ (renombrar y eliminar) solo en las colecciones propias, y "Nueva colección" arriba. Inteligentes y propias. *Hecho cuando:* coincide con el prototipo y tocar una colección la abre.
 - [x] **T19.11 Búsqueda y filtros.** Campo de búsqueda con contador y hoja de ordenar y filtrar. *Hecho cuando:* coinciden con el prototipo.
 - [x] **T19.12a Selector de colecciones y selección.** Hoja de colecciones con punto de color, conteo y marca; barra de selección clara con botones circulares. *Hecho cuando:* coinciden con el prototipo.
-- [ ] **T19.12b Color de colección.** Cada colección guarda su color (uno de los cuatro pasteles; migración de base de datos con prueba y respaldo compatible); las existentes conservan el que tenían. *Hecho cuando:* la banda y el punto usan el color guardado.
+- [x] **T19.12b Color de colección.** Cada colección guarda su color (uno de los cuatro pasteles; migración de base de datos con prueba y respaldo compatible); las existentes conservan el que tenían. *Hecho cuando:* la banda y el punto usan el color guardado.
 - [ ] **T19.12c Pantalla Nueva colección.** Pantalla completa con vista previa en abanico, nombre, color y elección de libros (decisión del usuario 2026-10-08). *Hecho cuando:* coincide con el prototipo y crea la colección con sus libros y su color.
 - [ ] **T19.13 Importación.** Estados "Importando 3 de 7…" y error con Reintentar/Descartar. *Hecho cuando:* coinciden con el prototipo.
 

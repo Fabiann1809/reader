@@ -134,7 +134,7 @@ private fun CollectionCard(group: CollectionGroup, actions: CollectionsActions) 
 
 private fun pastelIndex(group: CollectionGroup): Int = when {
     group.smart != null -> SmartCollection.entries.indexOf(group.smart)
-    else -> ((group.collection?.id ?: 0L) % PastelDots.size).toInt()
+    else -> group.collection?.colorIndex ?: 0
 }.mod(PastelDots.size)
 
 @Composable

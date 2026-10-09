@@ -95,6 +95,24 @@ class MigrationTest {
         }
     }
 
+    @Test
+    fun collectionsKeepTheColorTheirIdPickedWhenGainingAColorColumn() {
+        helper.createDatabase(TEST_DB, 12).apply {
+            execSQL("INSERT INTO collections (id, name, createdAt) VALUES (5, 'Clásicos', 1000)")
+            execSQL("INSERT INTO collections (id, name, createdAt) VALUES (8, 'Viaje', 2000)")
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TEST_DB, 13, true, MIGRATION_12_13)
+
+        db.query("SELECT id, colorIndex FROM collections ORDER BY id").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(1, cursor.getInt(1))
+            assertTrue(cursor.moveToNext())
+            assertEquals(0, cursor.getInt(1))
+        }
+    }
+
     private companion object {
         const val TEST_DB = "migration-test.db"
     }

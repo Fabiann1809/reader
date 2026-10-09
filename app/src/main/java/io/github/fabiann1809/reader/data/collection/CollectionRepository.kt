@@ -21,8 +21,8 @@ interface CollectionRepository {
     /** Every book-collection link, for views that group the whole library. */
     fun observeLinks(): Flow<List<BookCollectionCrossRef>>
 
-    /** Returns the id of the new collection. */
-    suspend fun createCollection(name: String): Long
+    /** Returns the id of the new collection. Without a [colorIndex] it takes the next color in turn. */
+    suspend fun createCollection(name: String, colorIndex: Int? = null): Long
 
     suspend fun renameCollection(collection: Collection, name: String)
 
@@ -51,7 +51,9 @@ class DefaultCollectionRepository(
 
     override fun observeLinks(): Flow<List<BookCollectionCrossRef>> = collectionDao.observeAllLinks()
 
-    override suspend fun createCollection(name: String): Long = collectionDao.insert(Collection(name = name.trim()))
+    override suspend fun createCollection(name: String, colorIndex: Int?): Long = collectionDao.insert(
+        Collection(name = name.trim(), colorIndex = colorIndex ?: (collectionDao.count() % COLOR_COUNT)),
+    )
 
     override suspend fun renameCollection(collection: Collection, name: String) =
         collectionDao.update(collection.copy(name = name.trim()))

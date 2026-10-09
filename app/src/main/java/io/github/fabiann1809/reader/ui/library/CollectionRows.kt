@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.ui.components.rememberReduceMotion
 import io.github.fabiann1809.reader.ui.theme.PastelDots
 
@@ -107,5 +108,5 @@ fun NewCollectionRow(onClick: () -> Unit) {
     }
 }
 
-/** Dot color of a user collection, from its id until each collection keeps its own color. */
-fun collectionDot(collectionId: Long): Color = PastelDots[(collectionId % PastelDots.size).toInt()]
+/** Dot color of a user collection: the pastel its band uses. */
+fun collectionDot(collection: Collection): Color = PastelDots[collection.colorIndex.mod(PastelDots.size)]

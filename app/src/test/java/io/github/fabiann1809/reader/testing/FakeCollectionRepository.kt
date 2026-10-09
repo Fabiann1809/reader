@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.testing
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.collection.BookCollectionCrossRef
 import io.github.fabiann1809.reader.data.collection.Collection
+import io.github.fabiann1809.reader.data.collection.COLOR_COUNT
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import kotlinx.coroutines.flow.Flow
@@ -37,9 +38,9 @@ class FakeCollectionRepository(private val books: FakeBookRepository) : Collecti
     override fun observeLinks(): Flow<List<BookCollectionCrossRef>> =
         links.map { set -> set.map { (bookId, collectionId) -> BookCollectionCrossRef(bookId, collectionId, addedAt = 0) } }
 
-    override suspend fun createCollection(name: String): Long {
+    override suspend fun createCollection(name: String, colorIndex: Int?): Long {
         val id = nextId++
-        collections.update { it + Collection(id = id, name = name.trim()) }
+        collections.update { it + Collection(id = id, name = name.trim(), colorIndex = colorIndex ?: (it.size % COLOR_COUNT)) }
         return id
     }
 

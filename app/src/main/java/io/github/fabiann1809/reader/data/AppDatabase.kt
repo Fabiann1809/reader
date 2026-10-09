@@ -23,7 +23,7 @@ import io.github.fabiann1809.reader.data.session.ReadingSessionDao
 
 @Database(
     entities = [Book::class, Note::class, Collection::class, BookCollectionCrossRef::class, Bookmark::class, Highlight::class, Flashcard::class, ReadingSession::class],
-    version = 12,
+    version = 13,
     exportSchema = true,
     autoMigrations = [
         // 1 → 2: new optional Book columns (kind, format, filePath, coverPath, language, lastOpenedAt).

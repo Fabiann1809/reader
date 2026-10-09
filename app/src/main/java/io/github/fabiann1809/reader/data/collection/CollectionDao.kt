@@ -27,6 +27,9 @@ interface CollectionDao {
     @Query("SELECT * FROM book_collections")
     fun observeAllLinks(): Flow<List<BookCollectionCrossRef>>
 
+    @Query("SELECT COUNT(*) FROM collections")
+    suspend fun count(): Int
+
     @Query("SELECT * FROM collections ORDER BY name COLLATE NOCASE")
     fun observeAll(): Flow<List<Collection>>
 
