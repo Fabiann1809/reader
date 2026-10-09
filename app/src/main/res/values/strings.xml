@@ -580,12 +580,17 @@
     <string name="onboarding_skip">Saltar</string>
     <string name="onboarding_next">Siguiente</string>
     <string name="onboarding_start">Empezar</string>
-    <string name="onboarding_shelves_title">Tus libros, en estantes</string>
-    <string name="onboarding_shelves_text">Añade tus libros, en papel o digitales, y lleva el seguimiento de tu lectura.</string>
-    <string name="onboarding_understand_title">Entiende lo que lees</string>
-    <string name="onboarding_understand_text">Fotografía una página o mantén pulsado un párrafo y la IA te lo explica con palabras sencillas.</string>
-    <string name="onboarding_remember_title">Recuerda lo que aprendes</string>
-    <string name="onboarding_remember_text">Guarda tus notas y repásalas con fichas. Y si quieres, ponte a prueba con un quiz.</string>
+    <string name="onboarding_shelves_title">Tu biblioteca, a la vista</string>
+    <string name="onboarding_shelves_text">EPUB, PDF y libros en papel en un mismo estante, con tu progreso en cada portada.</string>
+    <string name="onboarding_understand_title">Fotografía lo difícil</string>
+    <string name="onboarding_understand_text">Apunta la cámara a un párrafo o selecciónalo en el lector. Reader extrae el texto por ti.</string>
+    <string name="onboarding_remember_title">Entiéndelo y no lo olvides</string>
+    <string name="onboarding_remember_text">La IA lo explica con el método Feynman usando tu propia clave de Gemini. Guárdalo como nota o ficha y repásalo después.</string>
+    <string name="onboarding_demo_paper">La atención no es un recurso infinito. Cada vez que cambiamos de tarea dejamos atrás un residuo: parte de la mente sigue ocupada en lo anterior mientras intentamos empezar lo siguiente.</string>
+    <string name="onboarding_demo_idea_label">Idea central</string>
+    <string name="onboarding_demo_idea">Cambiar de tarea deja un rastro mental que resta atención.</string>
+    <string name="onboarding_demo_card_label">Ficha</string>
+    <string name="onboarding_demo_card_question">¿Qué es el residuo de atención?</string>
     <string name="onboarding_page">Paso %1$d de %2$d</string>
 
     <!-- Collections -->

@@ -319,7 +319,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T19.4 Componentes base.** Botones, chips, campos de texto, tarjetas, hojas inferiores y bloques de estado (vacío, cargando, error) con el nuevo estilo. *Hecho cuando:* `ui/components` usa solo los tokens nuevos.
 - [x] **T19.5a Barra inferior.** Barra flotante redondeada con pill que se desliza a la pestaña activa y punto de pendientes. *Hecho cuando:* coincide con el prototipo.
 - [x] **T19.5b Pantalla Más.** Título, lista en tarjeta con iconos circulares y subtítulos, tarjeta de clave de Gemini y conteo de notas (decisión del usuario 2026-10-08: sin interruptor de modo oscuro). *Hecho cuando:* coincide con el prototipo.
-- [ ] **T19.6 Onboarding.** Los 3 pasos saltables con las ilustraciones del prototipo. *Hecho cuando:* se ve igual solo la primera vez.
+- [x] **T19.6 Onboarding.** Los 3 pasos saltables con las ilustraciones del prototipo. *Hecho cuando:* se ve igual solo la primera vez.
 
 **Biblioteca**
 - [ ] **T19.7 Cabecera de biblioteca.** Título con selector de colección, botones de búsqueda y filtros, y chips de estado. *Hecho cuando:* coincide con el prototipo.

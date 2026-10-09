@@ -2,8 +2,12 @@ package io.github.fabiann1809.reader.ui.components
 
 import android.content.Context
 import android.provider.Settings
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 
@@ -45,3 +49,21 @@ fun rememberReduceMotion(): Boolean {
 /** [rememberReduceMotion] for views outside Compose (e.g. the reader's page turns). */
 fun isReduceMotionOn(context: Context): Boolean =
     Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+
+/**
+ * Progress (0..1) of an entrance that starts after [delayMillis] and runs once; it is already 1
+ * with Reduce Motion, so callers need no second code path.
+ */
+@Composable
+fun rememberEntranceProgress(
+    delayMillis: Int = 0,
+    durationMillis: Int = Motion.ENTER_MILLIS,
+    easing: Easing = Motion.MediumEasing,
+): Float {
+    val reduceMotion = rememberReduceMotion()
+    val progress = remember { Animatable(if (reduceMotion) 1f else 0f) }
+    LaunchedEffect(Unit) {
+        if (!reduceMotion) progress.animateTo(1f, tween(durationMillis, delayMillis, easing))
+    }
+    return progress.value
+}
