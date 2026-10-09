@@ -25,7 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import io.github.fabiann1809.reader.R
-import io.github.fabiann1809.reader.ui.theme.Primary40
 
 /** The library bar in search mode: same forest green, with the query field in place of the title. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,7 +71,7 @@ fun LibrarySearchBar(query: String, onQueryChange: (String) -> Unit, onClose: ()
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Primary40,
+            containerColor = MaterialTheme.colorScheme.primary,
             navigationIconContentColor = Color.White,
         ),
     )

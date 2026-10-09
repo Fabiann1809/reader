@@ -48,7 +48,6 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.isNew
 import io.github.fabiann1809.reader.ui.theme.Fraunces
-import io.github.fabiann1809.reader.ui.theme.Primary40
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import kotlin.math.roundToInt
 
@@ -214,7 +213,7 @@ private fun CoverBadges(book: Book, modifier: Modifier = Modifier) {
                 color = Color.White,
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier
-                    .background(Primary40, CircleShape)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
                     .padding(horizontal = 6.dp, vertical = 1.dp),
             )
         }

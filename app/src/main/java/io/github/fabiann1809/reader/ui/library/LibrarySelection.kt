@@ -38,7 +38,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.collection.Collection
-import io.github.fabiann1809.reader.ui.theme.Primary40
 
 /** What the selection bar and its sheet do with the checked books. */
 class LibrarySelectionActions(
@@ -71,7 +70,7 @@ fun SelectionTopBar(count: Int, onClose: () -> Unit, onAddToCollection: () -> Un
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Primary40,
+            containerColor = MaterialTheme.colorScheme.primary,
             titleContentColor = Color.White,
             navigationIconContentColor = Color.White,
             actionIconContentColor = Color.White,
@@ -95,7 +94,7 @@ fun SelectionFrame(isSelected: Boolean?, modifier: Modifier = Modifier, content:
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(6.dp)
-                    .background(Primary40, CircleShape)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
                     .padding(3.dp)
                     .size(14.dp),
             )

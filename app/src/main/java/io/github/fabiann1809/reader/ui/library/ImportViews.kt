@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.importing.ImportStatus
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
-import io.github.fabiann1809.reader.ui.theme.ShelfTopA
 
 /**
  * Import feedback floating over the books (design 1f): progress bar and pill while importing,
@@ -81,7 +80,7 @@ fun BoxScope.ImportFeedback(
 fun ImportProgressBar(status: ImportStatus.Importing, modifier: Modifier = Modifier) {
     LinearProgressIndicator(
         progress = { status.done.toFloat() / status.total },
-        color = ShelfTopA,
+        color = MaterialTheme.colorScheme.primary,
         trackColor = Color.White.copy(alpha = 0.2f),
         drawStopIndicator = {},
         gapSize = 0.dp,

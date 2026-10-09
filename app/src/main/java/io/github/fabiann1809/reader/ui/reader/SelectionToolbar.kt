@@ -36,9 +36,9 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.highlight.HighlightColor
-import io.github.fabiann1809.reader.ui.theme.Ai80
-import io.github.fabiann1809.reader.ui.theme.DarkSurfaceContainerHigh
-import io.github.fabiann1809.reader.ui.theme.Ink900
+import io.github.fabiann1809.reader.ui.theme.DarkAi
+import io.github.fabiann1809.reader.ui.theme.DarkChip
+import io.github.fabiann1809.reader.ui.theme.LightInk
 import kotlin.math.roundToInt
 
 // Space between the selected text and the capsule.
@@ -147,8 +147,8 @@ fun SelectionToolbar(selection: TextSelection, darkPage: Boolean, actions: Selec
 
 @Composable
 private fun Capsule(darkPage: Boolean, actions: SelectionActions) {
-    // ink-900 on light pages, surface-container-high on dark ones, where ink-900 would vanish.
-    val background = if (darkPage) DarkSurfaceContainerHigh else Ink900
+    // ink on light pages, chip on dark ones, where ink would vanish.
+    val background = if (darkPage) DarkChip else LightInk
     // "Resaltar" swaps the actions for the four colors (design 01 §4.4: "Resaltar (4 colores)").
     var pickingColor by remember { mutableStateOf(false) }
     Surface(color = background, contentColor = Color.White, shape = CircleShape, shadowElevation = 8.dp) {
@@ -184,9 +184,9 @@ private fun ColorChoices(onPick: (HighlightColor) -> Unit) {
 private fun Actions(actions: SelectionActions, onHighlight: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 4.dp)) {
         TextButton(onClick = actions.onExplain) {
-            Icon(painterResource(R.drawable.ic_sparkle), contentDescription = null, tint = Ai80, modifier = Modifier.size(20.dp))
+            Icon(painterResource(R.drawable.ic_sparkle), contentDescription = null, tint = DarkAi, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.selection_explain), color = Ai80)
+            Text(stringResource(R.string.selection_explain), color = DarkAi)
         }
         Divider()
         CapsuleIcon(R.drawable.ic_highlighter, R.string.selection_highlight, onHighlight)

@@ -19,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
-import io.github.fabiann1809.reader.ui.theme.Primary40
 
 /**
  * The library bar in its three modes: selecting books, searching, or the normal bar with
@@ -64,7 +63,7 @@ private fun CollectionTopBar(uiState: LibraryUiState, onOpenSearch: () -> Unit, 
         onTitleClick = { onOpenDialog(LibraryDialog.PICKER) },
         onTitleClickLabel = stringResource(R.string.collection_change),
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Primary40,
+            containerColor = MaterialTheme.colorScheme.primary,
             titleContentColor = Color.White,
             actionIconContentColor = Color.White,
         ),

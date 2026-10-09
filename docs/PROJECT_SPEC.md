@@ -313,7 +313,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 > Decisión del usuario (2026-10-08): por ahora solo el rediseño, antes que las tareas pospuestas. Fuente: paquete "Reader Rediseño" (`Reader Rediseño.dc.html` = prototipo interactivo con 23 pantallas, y `uploads/reader-redesign-brief.md`). Solo cambia el aspecto: las funciones y los datos no cambian ni se agrega nada que no esté en el prototipo. Cada tarea cubre claro y oscuro, estados vacío, cargando y error, y "reducir animaciones".
 
 **Base visual**
-- [ ] **T19.1 Colores.** Paleta clara y oscura del prototipo (fondo, superficies, tinta, acento terracota, morado de IA, estados ok/aviso/error, pared y estante, barra inferior). *Hecho cuando:* los tokens del tema coinciden con el prototipo en ambos modos.
+- [x] **T19.1 Colores.** Paleta clara y oscura del prototipo (fondo, superficies, tinta, acento terracota, morado de IA, estados ok/aviso/error, pared y estante, barra inferior). *Hecho cuando:* los tokens del tema coinciden con el prototipo en ambos modos.
 - [ ] **T19.2 Tipografía.** Manrope (interfaz), DM Serif Display (títulos) y Literata (lectura) en lugar de Plus Jakarta Sans y Fraunces. *Hecho cuando:* ninguna pantalla usa las fuentes anteriores.
 - [ ] **T19.3 Formas y movimiento.** Radios, sombras y animaciones del prototipo (entrada escalonada, pop, fundidos), todas atenuadas con "reducir animaciones". *Hecho cuando:* existen como tokens reutilizables.
 - [ ] **T19.4 Componentes base.** Botones, chips, campos de texto, tarjetas, hojas inferiores y bloques de estado (vacío, cargando, error) con el nuevo estilo. *Hecho cuando:* `ui/components` usa solo los tokens nuevos.
