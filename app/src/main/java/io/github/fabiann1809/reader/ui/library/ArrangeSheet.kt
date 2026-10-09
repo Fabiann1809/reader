@@ -134,7 +134,7 @@ private fun OptionChip(label: String, isSelected: Boolean, onClick: () -> Unit) 
 private fun <T> Set<T>.toggle(value: T): Set<T> = if (value in this) this - value else this + value
 
 @StringRes
-private fun BookSort.labelRes(): Int = when (this) {
+fun BookSort.labelRes(): Int = when (this) {
     BookSort.LAST_READ -> R.string.sort_last_read
     BookSort.TITLE -> R.string.sort_title
     BookSort.AUTHOR -> R.string.sort_author

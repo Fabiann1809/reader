@@ -84,6 +84,8 @@
     <string name="book_read">Leer</string>
     <string name="book_continue">Continuar</string>
     <string name="library_continue">Continuar</string>
+    <string name="library_continue_reading">Sigues leyendo</string>
+    <string name="library_continue_percent">%d %%</string>
     <string name="library_continue_description">Continuar leyendo «%1$s»</string>
     <string name="library_more_actions">Más acciones</string>
     <string name="reader_cannot_open">No se puede abrir este libro</string>

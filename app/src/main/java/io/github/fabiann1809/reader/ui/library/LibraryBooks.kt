@@ -32,6 +32,7 @@ fun LibraryBooks(
     empty: EmptyState?,
     gestures: BookGestures,
     bookFrame: BookFrame,
+    header: (@Composable () -> Unit)? = null,
 ) {
     val isShelves = uiState.layout.view == LibraryView.SHELVES
     val columns = booksPerRow(uiState.layout.booksPerRow)
@@ -57,6 +58,7 @@ fun LibraryBooks(
                 columns,
                 itemCount = uiState.books.size,
                 bottomSpace = FAB_SPACE,
+                header = header,
             ) { index, width ->
                 val book = uiState.books[index]
                 bookFrame(book, Modifier) {
@@ -70,9 +72,9 @@ fun LibraryBooks(
                 }
             }
             LibraryView.GRID ->
-                BookGrid(uiState.books, columns, contentPadding, FAB_SPACE, gestures.onClick, gestures.onLongClick, bookFrame)
+                BookGrid(uiState.books, columns, contentPadding, FAB_SPACE, gestures.onClick, gestures.onLongClick, bookFrame, header)
             LibraryView.LIST ->
-                BookList(uiState.books, contentPadding, FAB_SPACE, gestures.onClick, gestures.onLongClick, bookFrame)
+                BookList(uiState.books, contentPadding, FAB_SPACE, gestures.onClick, gestures.onLongClick, bookFrame, header)
         }
     }
 }

@@ -45,6 +45,7 @@ fun Bookcase(
     columns: Int,
     itemCount: Int,
     bottomSpace: Dp = 0.dp,
+    header: (@Composable () -> Unit)? = null,
     slot: @Composable (index: Int, width: Dp) -> Unit,
 ) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -58,6 +59,7 @@ fun Bookcase(
                 bottom = contentPadding.calculateBottomPadding() + bottomSpace,
             ),
         ) {
+            header?.let { item { it() } }
             items(count = maxOf(shelvesWithBooks, shelvesToFillScreen)) { shelf ->
                 val first = shelf * columns
                 Shelf(columns = columns, bookWidth = bookWidth, itemCount = (itemCount - first).coerceAtLeast(0)) { i, width ->

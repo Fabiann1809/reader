@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
@@ -49,6 +50,7 @@ fun BookGrid(
     onBookClick: (Long) -> Unit,
     onBookLongClick: (Long) -> Unit,
     bookFrame: BookFrame,
+    header: (@Composable () -> Unit)? = null,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
@@ -61,6 +63,7 @@ fun BookGrid(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        header?.let { item(span = { GridItemSpan(maxLineSpan) }) { it() } }
         items(books, key = { it.id }) { book ->
             bookFrame(book, Modifier) {
                 // Card style from the design (7.10), with a tighter padding so the cover keeps its size.
@@ -94,6 +97,7 @@ fun BookList(
     onBookClick: (Long) -> Unit,
     onBookLongClick: (Long) -> Unit,
     bookFrame: BookFrame,
+    header: (@Composable () -> Unit)? = null,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(
@@ -101,6 +105,7 @@ fun BookList(
             bottom = contentPadding.calculateBottomPadding() + bottomSpace,
         ),
     ) {
+        header?.let { item { it() } }
         items(books, key = { it.id }) { book ->
             bookFrame(book, Modifier) {
                 BookRow(book = book, onClick = { onBookClick(book.id) }, onLongClick = { onBookLongClick(book.id) })

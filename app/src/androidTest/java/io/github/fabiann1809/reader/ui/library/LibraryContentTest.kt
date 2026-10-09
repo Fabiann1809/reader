@@ -57,6 +57,27 @@ class LibraryContentTest {
     }
 
     @Test
+    fun showsTheContinueCardAndOpensTheBook() {
+        val book = Book(id = 7, title = "Cosmos", author = "Carl Sagan", currentPage = 120, totalPages = 400)
+        var opened: Long? = null
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(books = listOf(book), isLoading = false, bookToContinue = book),
+                    onBookClick = {},
+                    onAddPhysicalBook = {},
+                    onOpenBook = { opened = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.library_continue_reading)).assertIsDisplayed()
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.library_continue_reading)).performClick()
+
+        assertEquals(7L, opened)
+    }
+
+    @Test
     fun showsBooksOnShelvesWithProgress() {
         val book = Book(
             id = 1,

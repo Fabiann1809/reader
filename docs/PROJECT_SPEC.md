@@ -323,7 +323,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 
 **Biblioteca**
 - [x] **T19.7 Cabecera de biblioteca.** Título con selector de colección y conteo de libros, botones de búsqueda y filtros, y chips de colección inteligente con conteos (decisión del usuario 2026-10-08). *Hecho cuando:* coincide con el prototipo.
-- [ ] **T19.8 Sigues leyendo y orden.** Tarjeta "Sigues leyendo", etiqueta de orden y selector de vista (estantes, cuadrícula, lista). *Hecho cuando:* la vista elegida persiste.
+- [x] **T19.8 Sigues leyendo y orden.** Tarjeta "Sigues leyendo", etiqueta de orden y selector de vista (estantes, cuadrícula, lista). *Hecho cuando:* la vista elegida persiste.
 - [ ] **T19.9 Vista de estantes.** Pared, estantes y portadas con progreso, insignias "Nuevo" y "Físico", entrada escalonada y botón flotante. *Hecho cuando:* los libros se ven como en el prototipo.
 - [ ] **T19.10 Vista Colecciones y lista.** La vista Colecciones del prototipo (pilas de portadas por colección con banda de color) reemplaza a la cuadrícula (decisión del usuario 2026-10-08), y la lista con el nuevo estilo. *Hecho cuando:* coinciden con el prototipo.
 - [ ] **T19.11 Búsqueda y filtros.** Campo de búsqueda con contador y hoja de ordenar y filtrar. *Hecho cuando:* coinciden con el prototipo.

@@ -165,7 +165,21 @@ fun LibraryContent(
     ) { innerPadding ->
         val empty = emptyState(uiState, { showAddBookSheet = true }, onSearch, onArrangementChange, onSelectFilter)
         Box(Modifier.fillMaxSize()) {
-            LibraryBooks(uiState, innerPadding, empty, gestures, bookFrame)
+            LibraryBooks(
+                uiState,
+                innerPadding,
+                empty,
+                gestures,
+                bookFrame,
+                header = {
+                    LibraryListHeader(
+                        uiState = uiState,
+                        onContinue = onOpenBook,
+                        onOpenArrange = { dialog = LibraryDialog.ARRANGE },
+                        onViewChange = { view -> onLayoutChange(uiState.layout.copy(view = view)) },
+                    )
+                },
+            )
             ImportFeedback(importStatus, innerPadding, onRetry = onRetryImports, onDismiss = onDismissImportErrors)
         }
     }
