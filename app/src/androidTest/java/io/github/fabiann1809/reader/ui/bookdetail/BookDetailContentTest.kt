@@ -90,7 +90,7 @@ class BookDetailContentTest {
         openTabAndFind(R.string.detail_tab_notes, "Idea central")
 
         composeRule.onNodeWithText("Somos polvo de estrellas").assertIsDisplayed()
-        composeRule.onNodeWithText(composeRule.activity.getString(R.string.note_page, 12)).assertIsDisplayed()
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.note_page, 12), substring = true).assertIsDisplayed()
         composeRule.onNodeWithText("Idea central").assertIsDisplayed()
         composeRule.onNodeWithText(composeRule.activity.getString(R.string.note_type_explanation))
             .assertIsDisplayed()

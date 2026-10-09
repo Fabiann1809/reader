@@ -293,6 +293,11 @@
     <string name="notes_empty_message">Fotografía una página o escribe una nota.</string>
     <string name="note_page">Pág. %1$d</string>
     <string name="note_type_explanation">Explicación IA</string>
+    <string name="note_type_manual">Nota</string>
+    <plurals name="notes_count">
+        <item quantity="one">%d nota</item>
+        <item quantity="other">%d notas</item>
+    </plurals>
     <string name="note_new_title">Nueva nota</string>
     <string name="note_edit_title">Editar nota</string>
     <string name="delete_note_title">Eliminar nota</string>
