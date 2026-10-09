@@ -71,7 +71,7 @@ class ExplanationContentTest {
         composeRule.onNodeWithText(explanation.mainIdea).assertIsDisplayed()
         composeRule.onNodeWithText(explanation.simpleExplanation).assertIsDisplayed()
         composeRule.onNodeWithText(explanation.analogy).performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.explanation_block_main_idea)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.explanation_block_main_idea).uppercase()).assertIsDisplayed()
     }
 
     @Test
@@ -95,7 +95,7 @@ class ExplanationContentTest {
         var saved = false
         setContent(ExplanationState.Success(explanation), onSaveAsNote = { saved = true })
 
-        composeRule.onNodeWithText(string(R.string.explanation_save_note)).performScrollTo().performClick()
+        composeRule.onNodeWithText(string(R.string.explanation_save_note)).performClick()
         assertTrue(saved)
     }
 

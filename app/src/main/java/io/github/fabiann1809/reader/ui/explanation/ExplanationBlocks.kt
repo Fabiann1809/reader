@@ -1,6 +1,14 @@
 package io.github.fabiann1809.reader.ui.explanation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.em
+import androidx.compose.ui.unit.sp
+import io.github.fabiann1809.reader.ai.Explanation
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,7 +38,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.ui.components.ReaderFilterChip
@@ -38,64 +45,77 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ai.KeyTerm
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
-// Explainer blocks (design 7.11). Each one has its own style so the eye finds the main idea first.
+// Explainer blocks. Each one has its own style so the eye finds the main idea first.
 
-/** "En una frase": the dominant block, lavender with a left accent bar. */
+/** The blocks of an explanation, selectable so parts of it can be copied, then the key terms. */
+@Composable
+fun ExplanationBlocks(explanation: Explanation) {
+    SelectionContainer {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            explanation.caveat?.let { CaveatBlock(it) }
+            MainIdeaBlock(explanation.mainIdea)
+            SimpleExplanationBlock(explanation.simpleExplanation)
+            AnalogyBlock(explanation.analogy)
+        }
+    }
+    KeyTermsBlock(explanation.keyTerms)
+}
+
+/** "Idea central": the dominant block, on a pastel gradient with its label in small capitals. */
 @Composable
 fun MainIdeaBlock(text: String) {
     val colors = ReaderTheme.colors
-    Row(
+    Column(
+        verticalArrangement = Arrangement.spacedBy(6.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .background(colors.aiSoft, MaterialTheme.shapes.small),
+            .clip(RoundedCornerShape(24.dp))
+            .background(Brush.horizontalGradient(colors.pastels[0]))
+            .padding(18.dp),
     ) {
-        Box(
-            Modifier
-                .width(4.dp)
-                .fillMaxHeight()
-                .background(colors.ai),
+        BlockLabel(stringResource(R.string.explanation_block_main_idea).uppercase(), color = colors.onPastel)
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleLarge.copy(fontSize = 19.sp, lineHeight = 26.sp, fontWeight = FontWeight.ExtraBold),
+            color = colors.onPastel,
         )
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            BlockLabel(stringResource(R.string.explanation_block_main_idea), color = colors.ai)
-            Text(text = text, style = MaterialTheme.typography.titleMedium)
-        }
     }
 }
 
-/** "Explicado simple": plain body text, no decoration. */
+/** "Explicación sencilla": plain body text, no decoration. */
 @Composable
 fun SimpleExplanationBlock(text: String) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         BlockTitle(stringResource(R.string.explanation_block_simple))
-        Text(text = text, style = MaterialTheme.typography.bodyLarge)
+        Text(text = text, style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 23.sp), color = MaterialTheme.colorScheme.onSecondaryContainer)
     }
 }
 
-/** "Analogía cotidiana": warm card with a light bulb, text in soft italics. */
+/** "Analogía cotidiana": a warm card with a light bulb. */
 @Composable
 fun AnalogyBlock(text: String) {
+    val colors = ReaderTheme.colors
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceContainer, MaterialTheme.shapes.large)
+            .background(colors.warningContainer, RoundedCornerShape(22.dp))
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Icon(
             painter = painterResource(R.drawable.ic_lightbulb),
             contentDescription = null,
-            tint = ReaderTheme.colors.warning,
+            tint = colors.warning,
             modifier = Modifier.size(24.dp),
         )
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            BlockTitle(stringResource(R.string.explanation_block_analogy), style = MaterialTheme.typography.labelLarge)
-            Text(text = text, style = MaterialTheme.typography.bodyLarge, fontStyle = FontStyle.Italic)
+            BlockTitle(stringResource(R.string.explanation_block_analogy), color = colors.onWarningContainer)
+            Text(text = text, style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.sp))
         }
     }
 }
 
-/** "Palabras clave": chips that reveal their definition when tapped. */
+/** "Términos clave": chips that reveal their definition when tapped. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun KeyTermsBlock(terms: List<KeyTerm>) {
@@ -157,16 +177,16 @@ fun CaveatBlock(text: String) {
 }
 
 @Composable
-private fun BlockTitle(text: String, style: TextStyle = MaterialTheme.typography.titleSmall) {
+private fun BlockTitle(text: String, color: Color = Color.Unspecified) {
     // Headings let screen readers jump from block to block in order.
-    Text(text = text, style = style, modifier = Modifier.semantics { heading() })
+    Text(text = text, style = MaterialTheme.typography.titleSmall, color = color, modifier = Modifier.semantics { heading() })
 }
 
 @Composable
 private fun BlockLabel(text: String, color: Color) {
     Text(
         text = text,
-        style = MaterialTheme.typography.labelMedium,
+        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold, letterSpacing = 0.14.em),
         color = color,
         modifier = Modifier.semantics { heading() },
     )

@@ -30,6 +30,7 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ai.InterpretationAnalysis
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.AiButton
+import io.github.fabiann1809.reader.ui.quiz.PARAGRAPH_QUIZ_SIZE
 import io.github.fabiann1809.reader.ui.components.OutlineButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.components.aiErrorMessageRes
@@ -147,7 +148,6 @@ private fun AnalysisSection(analysis: AnalysisState) {
 private const val OWN_WORDS_MIN_LINES = 5
 
 // One paragraph is enough for a short quiz only.
-private const val PARAGRAPH_QUIZ_SIZE = 3
 
 @Preview(showBackground = true)
 @Composable

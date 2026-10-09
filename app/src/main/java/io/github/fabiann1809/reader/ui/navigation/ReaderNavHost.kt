@@ -279,6 +279,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onNoteSaved = { navController.popBackStack<BookDetailRoute>(inclusive = false) },
                 onCreateFlashcard = { source -> navController.navigate(FlashcardEditorRoute(bookId, source)) },
                 onNowYou = { source -> navController.navigate(InterpretationRoute(bookId, source)) },
+                onQuiz = { source, count, title -> navController.navigate(QuizRoute(bookId, source, count, title)) },
             )
         }
         composable<SettingsRoute> {

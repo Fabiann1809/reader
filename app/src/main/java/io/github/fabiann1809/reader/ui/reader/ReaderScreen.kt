@@ -206,6 +206,10 @@ fun ReaderScreen(
                             viewModel.closeExplanation()
                             onNowYou(source)
                         },
+                        onQuiz = { source, count, title ->
+                            viewModel.closeExplanation()
+                            onQuiz(source, count, title)
+                        },
                     )
                 }
                 if (state.contentsVisible) {
