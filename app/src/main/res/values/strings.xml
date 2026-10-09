@@ -558,6 +558,8 @@
     <string name="review_tap_to_flip">Toca la ficha para ver la respuesta</string>
     <string name="review_flip">Voltear la ficha</string>
     <string name="review_answer">Respuesta</string>
+    <string name="review_question">Pregunta</string>
+    <string name="review_show_answer">Mostrar respuesta</string>
     <string name="review_summary_title">¡Sesión terminada!</string>
     <string name="review_summary_reviewed">Repasadas</string>
     <string name="review_summary_correct">Aciertos</string>
