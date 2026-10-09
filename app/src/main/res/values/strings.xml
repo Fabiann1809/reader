@@ -343,7 +343,7 @@
     <string name="extracted_text_explain">Explicar</string>
 
     <!-- AI errors -->
-    <string name="ai_error_missing_key">Primero configura tu clave de API en Configuración.</string>
+    <string name="ai_error_missing_key">Primero configura tu clave de API en Ajustes.</string>
     <string name="ai_error_invalid_key">La clave de API no es válida. Revísala o crea una nueva en Google AI Studio.</string>
     <string name="ai_error_quota_exhausted">Se agotó la cuota gratuita de hoy. Vuelve a intentarlo mañana.</string>
     <string name="ai_error_rate_limited">Demasiadas peticiones seguidas. Espera un minuto y vuelve a intentarlo.</string>
@@ -360,8 +360,8 @@
     <string name="add_book_preview_title">Título del libro</string>
 
     <!-- Settings -->
-    <string name="settings_title">Configuración</string>
-    <string name="settings_ai_section">Inteligencia artificial (Google Gemini)</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_ai_section">Funciones de IA</string>
     <string name="settings_key_status_set">Clave de API configurada. Ya puedes pedir explicaciones.</string>
     <string name="settings_key_status_missing">No hay clave de API configurada. Sin ella no se pueden generar explicaciones.</string>
     <string name="settings_key_field">Clave de API</string>
@@ -400,6 +400,7 @@
 
     <!-- Privacy -->
     <string name="settings_privacy">Privacidad</string>
+    <string name="settings_privacy_summary">Tus libros y notas no salen del teléfono. Solo el fragmento que pides explicar se envía a Google Gemini con tu propia clave.</string>
     <string name="privacy_title">Privacidad</string>
     <string name="privacy_intro">Reader no tiene servidores propios: tus datos se quedan en tu teléfono. Lo único que sale de él son los fragmentos que pides explicar.</string>
     <string name="privacy_sent_title">Qué se envía a la IA</string>
@@ -410,7 +411,7 @@
     <string name="privacy_local_title">Qué se queda en tu teléfono</string>
     <string name="privacy_local_body">Tus libros, tu progreso y tus notas se guardan solo en este teléfono. El texto de las fotos se reconoce en el propio teléfono, y cada foto se guarda de forma temporal y se borra al tomar la siguiente.</string>
     <string name="privacy_key_title">Tu clave de API</string>
-    <string name="privacy_key_body">Se guarda cifrada en este teléfono, solo se envía a Google al pedir una explicación y nunca aparece en registros. Puedes borrarla cuando quieras desde Configuración.</string>
+    <string name="privacy_key_body">Se guarda cifrada en este teléfono, solo se envía a Google al pedir una explicación y nunca aparece en registros. Puedes borrarla cuando quieras desde Ajustes.</string>
 
     <!-- Bottom navigation -->
     <string name="tab_library">Biblioteca</string>
@@ -480,7 +481,7 @@
     <string name="notes_no_match">Ninguna nota coincide</string>
     <string name="notes_no_match_message">Prueba con otras palabras o con otro tipo de nota.</string>
     <string name="settings_appearance">Apariencia</string>
-    <string name="settings_theme">Tema de la app</string>
+    <string name="settings_theme">Tema</string>
     <string name="settings_theme_system">Del sistema</string>
     <string name="settings_theme_light">Claro</string>
     <string name="settings_theme_dark">Oscuro</string>
@@ -492,7 +493,7 @@
     <string name="settings_auto_transcribe_hint">Al terminar de grabar. Cada nota usa tu clave de IA.</string>
     <string name="settings_chapter_end">Sugerir repaso al terminar un capítulo</string>
     <string name="settings_chapter_end_hint">Una tarjeta discreta con Repasar y Ponme a prueba</string>
-    <string name="settings_api_key_section">Clave de IA</string>
+    <string name="settings_api_key_section">Clave de API · Google Gemini</string>
     <string name="detail_tab_summary">Resumen</string>
     <string name="detail_tab_notes">Notas</string>
     <string name="detail_tab_cards">Fichas</string>
@@ -626,7 +627,7 @@
     <string name="more_key_active">Clave de Gemini activa</string>
     <string name="more_key_active_note">Solo se envían fragmentos</string>
     <string name="more_key_missing">Sin clave de Gemini</string>
-    <string name="more_key_missing_note">Añádela en Configuración</string>
+    <string name="more_key_missing_note">Añádela en Ajustes</string>
     <string name="more_notes_empty">Aún no hay notas</string>
     <string name="more_notes_summary">%1$s en %2$s</string>
     <plurals name="more_notes_count">
