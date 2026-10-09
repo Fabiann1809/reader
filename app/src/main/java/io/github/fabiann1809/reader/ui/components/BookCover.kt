@@ -211,7 +211,7 @@ private const val AUTHOR_SIZE_RATIO = 0.55f
 
 /** Same title, same look: a stable hash so a book keeps its colors across launches. */
 @Composable
-private fun coverStyle(title: String): CoverStyle {
+fun coverStyle(title: String): CoverStyle {
     val palette = ReaderTheme.colors.covers
     return palette[Math.floorMod(title.hashCode(), palette.size)]
 }

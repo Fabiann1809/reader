@@ -335,7 +335,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 
 **Libro**
 - [x] **T19.14 Agregar libro.** Formulario de libro físico. *Hecho cuando:* coincide con el prototipo.
-- [ ] **T19.15 Detalle del libro.** Portada, progreso, estado, pestañas Resumen, Notas, Fichas y Sesiones. *Hecho cuando:* coincide con el prototipo.
+- [x] **T19.15 Detalle del libro.** Portada, progreso, estado, pestañas Resumen, Notas, Fichas y Sesiones. *Hecho cuando:* coincide con el prototipo.
 
 **Lector**
 - [ ] **T19.16 Lector: barras y selección.** Overlay superior e inferior y barra contextual de selección. *Hecho cuando:* coinciden con el prototipo.

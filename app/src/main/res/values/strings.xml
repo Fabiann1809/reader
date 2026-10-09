@@ -478,7 +478,21 @@
     <string name="detail_fact_sessions">Sesiones</string>
     <string name="detail_fact_notes">Notas</string>
     <string name="detail_fact_cards">Fichas</string>
-    <string name="detail_ai_title">Con IA, si quieres</string>
+    <string name="detail_ai_title">Con IA, cuando quieras</string>
+    <string name="favorite_add">Añadir a favoritos</string>
+    <string name="favorite_remove">Quitar de favoritos</string>
+    <string name="detail_pages_short">%1$d pág.</string>
+    <string name="detail_continue_reading">Continuar leyendo</string>
+    <plurals name="detail_cards_count">
+        <item quantity="one">%d ficha</item>
+        <item quantity="other">%d fichas</item>
+    </plurals>
+    <plurals name="detail_cards_due">
+        <item quantity="one">%d pendiente hoy</item>
+        <item quantity="other">%d pendientes hoy</item>
+    </plurals>
+    <string name="detail_cards_review">Repasar</string>
+    <string name="detail_review_short">Repasar libro</string>
     <plurals name="detail_review_book">
         <item quantity="one">Repasa este libro (%d ficha)</item>
         <item quantity="other">Repasa este libro (%d fichas)</item>

@@ -1,6 +1,11 @@
 package io.github.fabiann1809.reader.ui.bookdetail
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -136,19 +141,10 @@ fun BookDetailContent(
 
     Scaffold(
         modifier = modifier,
+        // The hero draws behind the status bar; the loading and missing states have their own bar.
+        contentWindowInsets = WindowInsets(0),
         topBar = {
-            ReaderTopAppBar(
-                title = "",
-                onNavigateUp = onNavigateUp,
-                actions = {
-                    if (uiState is BookDetailUiState.Success) {
-                        MoreMenu(
-                            onAddToCollectionClick = { showCollectionSheet = true },
-                            onDeleteClick = { showDeleteDialog = true },
-                        )
-                    }
-                },
-            )
+            if (uiState !is BookDetailUiState.Success) ReaderTopAppBar(title = "", onNavigateUp = onNavigateUp)
         },
     ) { innerPadding ->
         val contentModifier = Modifier
@@ -170,6 +166,11 @@ fun BookDetailContent(
             }
             is BookDetailUiState.Success -> BookDetailBody(
                 state = uiState,
+                onNavigateUp = onNavigateUp,
+                onFavoriteChange = onFavoriteChange,
+                onStatusChange = { status -> onUpdateProgress(uiState.book.currentPage, status) },
+                onCollectionClick = { showCollectionSheet = true },
+                onDeleteClick = { showDeleteDialog = true },
                 onUpdateProgressClick = { showProgressDialog = true },
                 onCapturePage = onCapturePage,
                 onRead = onRead,
@@ -252,7 +253,13 @@ fun BookDetailContent(
 private fun MoreMenu(onAddToCollectionClick: () -> Unit, onDeleteClick: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
-        IconButton(onClick = { expanded = true }) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .clickable(role = Role.Button) { expanded = true },
+        ) {
             Icon(
                 painter = painterResource(R.drawable.ic_dots_three_vertical),
                 contentDescription = stringResource(R.string.more_options),
@@ -284,6 +291,11 @@ private fun MoreMenu(onAddToCollectionClick: () -> Unit, onDeleteClick: () -> Un
 @Composable
 private fun BookDetailBody(
     state: BookDetailUiState.Success,
+    onNavigateUp: () -> Unit,
+    onFavoriteChange: (Boolean) -> Unit,
+    onStatusChange: (BookStatus) -> Unit,
+    onCollectionClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     onUpdateProgressClick: () -> Unit,
     onCapturePage: () -> Unit,
     onRead: () -> Unit,
@@ -300,29 +312,31 @@ private fun BookDetailBody(
     var tab by rememberSaveable { mutableStateOf(DetailTab.SUMMARY) }
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        item(key = "book") {
-            BookHeader(book = state.book, remaining = state.remaining)
-        }
-        item(key = "actions") {
-            BookDetailActions(
+        item(key = "hero") {
+            DetailHero(
                 book = state.book,
-                onRead = onRead,
-                onCapturePage = onCapturePage,
-                onUpdateProgressClick = onUpdateProgressClick,
-                onAddNote = onAddNote,
-                onAddFlashcard = onAddFlashcard,
+                onNavigateUp = onNavigateUp,
+                onFavoriteChange = onFavoriteChange,
+                menu = { MoreMenu(onAddToCollectionClick = onCollectionClick, onDeleteClick = onDeleteClick) },
             )
+        }
+        item(key = "progress") {
+            Column(Modifier.padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                ProgressCard(state.book, state.remaining, onClick = onUpdateProgressClick)
+                StatusSwitch(state.book.status, onStatusChange)
+                DetailActionRow(state.book, onRead = onRead, onCapturePage = onCapturePage, onCollection = onCollectionClick)
+            }
         }
         item(key = "tabs") {
             DetailTabRow(selected = tab, onSelect = { tab = it })
         }
         when (tab) {
             DetailTab.SUMMARY -> summaryTab(state, onReviewBook = onReviewBook, onQuizBook = onQuizBook)
-            DetailTab.NOTES -> notesTab(state.notes, state.highlights, onNoteClick, onOpenNoteInBook, voiceNotes)
-            DetailTab.CARDS -> cardsTab(state.flashcards)
+            DetailTab.NOTES -> notesTab(state.notes, state.highlights, onAddNote, onNoteClick, onOpenNoteInBook, voiceNotes)
+            DetailTab.CARDS -> cardsTab(state.flashcards, state.dueCards, onAddFlashcard, onReviewBook)
             DetailTab.SESSIONS -> sessionsTab(state.sessions)
         }
     }
@@ -332,10 +346,12 @@ private fun BookDetailBody(
 private fun LazyListScope.notesTab(
     notes: List<Note>,
     highlights: List<Highlight>,
+    onAddNote: () -> Unit,
     onNoteClick: (Long) -> Unit,
     onOpenNoteInBook: (Note) -> Unit,
     voiceNotes: VoiceNoteControls,
 ) {
+    item(key = "notes_new") { AddLink(R.string.note_new_title, onAddNote) }
     if (notes.isEmpty()) {
         item(key = "notes_empty") {
             EmptyNotes()
@@ -353,76 +369,6 @@ private fun LazyListScope.notesTab(
         }
     }
     highlightsSection(highlights)
-}
-
-/** Cover, title and reading progress, centered as in the design (10.2). */
-@Composable
-private fun BookHeader(book: Book, remaining: RemainingReading?, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        BookCover(book = book, titleSize = 18.sp, modifier = Modifier.width(COVER_WIDTH))
-        Spacer(Modifier.height(4.dp))
-        Text(text = book.title, style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
-        val status = stringResource(book.status.labelRes())
-        Text(
-            // Books imported without metadata have no author: show only the status.
-            text = if (book.author.isBlank()) status else stringResource(R.string.book_meta, book.author, status),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(Modifier.height(4.dp))
-        ReadingProgress(book)
-        remaining?.let { RemainingText(it) }
-    }
-}
-
-@Composable
-private fun ReadingProgress(book: Book) {
-    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        book.progressFraction()?.let { fraction ->
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                LinearProgressIndicator(
-                    progress = { fraction },
-                    color = ReaderTheme.colors.progress,
-                    trackColor = MaterialTheme.colorScheme.outline,
-                    drawStopIndicator = {},
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(4.dp),
-                )
-                Text(
-                    text = stringResource(R.string.book_progress_percent, (fraction * 100).roundToInt()),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-        }
-        Text(
-            text = listOfNotNull(
-                bookProgressText(book),
-                stringResource(R.string.book_added_on, formatDate(book.createdAt)),
-            ).joinToString(" · "),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-/** "186 páginas restantes · 3 h 20 m estimadas" (design 1g). */
-@Composable
-private fun RemainingText(remaining: RemainingReading) {
-    val pages = pluralStringResource(R.plurals.detail_pages_left, remaining.pages, remaining.pages)
-    val minutes = remaining.minutes
-    Text(
-        text = if (minutes != null && remaining.pages > 0) stringResource(R.string.detail_estimated, pages, durationText(minutes)) else pages,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.fillMaxWidth(),
-    )
 }
 
 @Composable

@@ -114,7 +114,8 @@ class BookDetailContentTest {
         )
 
         // 200 pages at 2 minutes a page.
-        composeRule.onNodeWithText("200 páginas restantes · 6 h 40 m estimadas").assertIsDisplayed()
+        composeRule.onNodeWithText("200 páginas restantes").assertIsDisplayed()
+        composeRule.onNodeWithText("6 h 40 m").assertIsDisplayed()
         // Without notes or cards there's nothing to ask about yet.
         composeRule.onNode(hasScrollAction()).performScrollToNode(hasText(string(R.string.detail_quiz_needs_notes)))
         composeRule.onNodeWithText(string(R.string.detail_quiz_needs_notes)).assertIsDisplayed()
