@@ -119,7 +119,7 @@ private fun RecordingContent(
         is VoiceRecordingUiState.Failed -> R.string.voice_failed_title
         else -> R.string.voice_recording_title
     }
-    Text(stringResource(title), style = MaterialTheme.typography.titleLarge)
+    Text(stringResource(title), style = MaterialTheme.typography.headlineSmall)
     Text(
         text = subtitle,
         style = MaterialTheme.typography.bodySmall,
@@ -135,7 +135,7 @@ private fun RecordingContent(
     }
     Text(
         text = message,
-        style = MaterialTheme.typography.titleMedium,
+        style = MaterialTheme.typography.headlineMedium,
         textAlign = TextAlign.Center,
         modifier = Modifier.padding(bottom = 20.dp),
     )
@@ -183,19 +183,19 @@ private fun RecordingContent(
     }
 }
 
-/** The design's 72 dp round button, tinted with [color]. */
+/** The design's 72 dp round button, filled with [color]. */
 @Composable
 private fun MainButton(@DrawableRes icon: Int, @StringRes description: Int, color: Color, onClick: () -> Unit) {
     IconButton(
         onClick = onClick,
         modifier = Modifier
             .size(72.dp)
-            .background(color.copy(alpha = 0.14f), CircleShape),
+            .background(color, CircleShape),
     ) {
         Icon(
             painter = painterResource(icon),
             contentDescription = stringResource(description),
-            tint = color,
+            tint = Color.White,
             modifier = Modifier.size(28.dp),
         )
     }
