@@ -440,7 +440,12 @@
         <item quantity="one">%d ficha creada</item>
         <item quantity="other">%d fichas creadas</item>
     </plurals>
-    <string name="quiz_close">Cerrar</string>
+    <string name="quiz_close">Terminar</string>
+    <string name="quiz_repeat">Repetir</string>
+    <string name="quiz_how_many">¿Cuántas preguntas?</string>
+    <string name="quiz_intro_description">Preguntas tipo test generadas con IA a partir del texto.</string>
+    <string name="quiz_size_estimate">≈ %d min</string>
+    <string name="quiz_needs_more_text">Necesitas más texto</string>
     <string name="quiz_leave_title">Salir del quiz</string>
     <string name="quiz_leave_message">Si sales ahora, se pierden tus respuestas.</string>
     <string name="quiz_leave_confirm">Salir</string>

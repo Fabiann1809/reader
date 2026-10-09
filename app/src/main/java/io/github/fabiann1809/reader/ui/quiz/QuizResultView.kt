@@ -32,13 +32,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.ui.components.OutlineButton
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.TonalButton
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 /** The quiz result: score ring, strong and weak topics, and the cards of what was missed. */
 @Composable
-fun QuizResultView(finished: QuizUiState.Finished, onCreateCards: () -> Unit, onClose: () -> Unit) {
+fun QuizResultView(finished: QuizUiState.Finished, onCreateCards: () -> Unit, onRepeat: () -> Unit, onClose: () -> Unit) {
     val result = finished.result
     val colors = ReaderTheme.colors
     Column(
@@ -78,7 +79,10 @@ fun QuizResultView(finished: QuizUiState.Finished, onCreateCards: () -> Unit, on
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-        PrimaryButton(text = stringResource(R.string.quiz_close), onClick = onClose, modifier = Modifier.fillMaxWidth())
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+            OutlineButton(text = stringResource(R.string.quiz_repeat), onClick = onRepeat, modifier = Modifier.weight(1f))
+            PrimaryButton(text = stringResource(R.string.quiz_close), onClick = onClose, modifier = Modifier.weight(1f))
+        }
     }
 }
 

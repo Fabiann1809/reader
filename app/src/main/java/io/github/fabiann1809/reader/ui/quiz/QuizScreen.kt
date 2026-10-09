@@ -54,12 +54,15 @@ fun QuizScreen(
     QuizContent(
         title = title,
         uiState = uiState,
+        onSelectCount = viewModel::selectCount,
+        onStart = viewModel::start,
         onChoose = viewModel::choose,
         onNext = viewModel::next,
         onRetry = viewModel::retry,
         onLeave = leave,
         onClose = onClose,
         onCreateCards = viewModel::createCardsFromMistakes,
+        onRepeat = viewModel::repeatQuiz,
     )
     if (askingToLeave) {
         AlertDialog(
@@ -87,6 +90,9 @@ fun QuizContent(
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
     onCreateCards: () -> Unit = {},
+    onRepeat: () -> Unit = {},
+    onSelectCount: (Int) -> Unit = {},
+    onStart: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -102,6 +108,7 @@ fun QuizContent(
         )
         Box(Modifier.weight(1f)) {
             when (uiState) {
+                is QuizUiState.Intro -> QuizIntro(title, uiState, onSelectCount, onStart)
                 QuizUiState.Loading -> Centered {
                     CircularProgressIndicator(color = ReaderTheme.colors.ai)
                     Text(stringResource(R.string.quiz_loading), style = MaterialTheme.typography.bodyMedium)
@@ -115,7 +122,7 @@ fun QuizContent(
                     PrimaryButton(text = stringResource(R.string.quiz_retry), onClick = onRetry)
                 }
                 is QuizUiState.Answering -> QuestionPage(uiState, onChoose, onNext)
-                is QuizUiState.Finished -> QuizResultView(uiState, onCreateCards = onCreateCards, onClose = onClose)
+                is QuizUiState.Finished -> QuizResultView(uiState, onCreateCards = onCreateCards, onRepeat = onRepeat, onClose = onClose)
             }
         }
     }

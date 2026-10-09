@@ -21,7 +21,9 @@ class QuizViewModelTest {
     private val aiProvider = FakeAiProvider()
     private val cards = FakeFlashcardRepository()
 
-    private fun viewModel(count: Int = 3) = QuizViewModel(bookId = 7, "Un capítulo", count, GenerateQuiz(aiProvider), cards)
+    /** A quiz that is already started (past the intro), unless [started] is false. */
+    private fun viewModel(count: Int = 3, source: String = "Un capítulo", started: Boolean = true) =
+        QuizViewModel(bookId = 7, source, count, GenerateQuiz(aiProvider), cards).also { if (started) it.start() }
 
     private fun answering(viewModel: QuizViewModel) = viewModel.uiState.value as QuizUiState.Answering
 
@@ -105,6 +107,42 @@ class QuizViewModelTest {
 
         assertTrue(viewModel.uiState.value is QuizUiState.Answering)
         assertEquals(2, aiProvider.quizRequests.size)
+    }
+
+    @Test
+    fun theIntroOffersOnlyWhatTheTextCanBack() {
+        val short = viewModel(count = 10, started = false).uiState.value as QuizUiState.Intro
+        assertEquals(3, short.selected)
+        assertEquals(3, short.maxSize)
+
+        val long = viewModel(count = 10, source = "x".repeat(3000), started = false).uiState.value as QuizUiState.Intro
+        assertEquals(10, long.selected)
+        assertEquals(10, long.maxSize)
+    }
+
+    @Test
+    fun theChosenCountIsWhatTheAiIsAskedFor() {
+        val viewModel = viewModel(count = 3, source = "x".repeat(1000), started = false)
+
+        viewModel.selectCount(10)
+        assertEquals(3, (viewModel.uiState.value as QuizUiState.Intro).selected)
+        viewModel.selectCount(5)
+        viewModel.start()
+
+        assertEquals(5, aiProvider.quizRequests.single().second)
+    }
+
+    @Test
+    fun repeatingStartsTheSameQuestionsAgain() {
+        val viewModel = viewModel()
+        answer(viewModel, 1, 0, 2)
+        val quiz = finished(viewModel).quiz
+
+        viewModel.repeatQuiz()
+
+        assertEquals(quiz, answering(viewModel).quiz)
+        assertEquals(0, answering(viewModel).index)
+        assertEquals(1, aiProvider.quizRequests.size)
     }
 
     @Test

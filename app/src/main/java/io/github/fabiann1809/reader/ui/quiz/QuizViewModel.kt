@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.ui.quiz
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fabiann1809.reader.ai.GenerateQuiz
+import io.github.fabiann1809.reader.ai.QUIZ_SIZES
 import io.github.fabiann1809.reader.ai.Quiz
 import io.github.fabiann1809.reader.ai.QuizQuestion
 import io.github.fabiann1809.reader.data.flashcard.Flashcard
@@ -14,6 +15,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 sealed interface QuizUiState {
+    /** Before the questions: how many to ask for, among those the text is long enough for. */
+    data class Intro(val selected: Int, val maxSize: Int) : QuizUiState
+
     /** The AI is writing the questions. */
     data object Loading : QuizUiState
 
@@ -31,7 +35,7 @@ sealed interface QuizUiState {
     }
 
     /** The result (T15.4); [cardsCreated] once the missed questions became cards. */
-    data class Finished(val result: QuizResult, val cardsCreated: Boolean = false) : QuizUiState
+    data class Finished(val result: QuizResult, val quiz: Quiz, val cardsCreated: Boolean = false) : QuizUiState
 }
 
 /**
@@ -46,15 +50,32 @@ class QuizViewModel(
     private val flashcardRepository: FlashcardRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<QuizUiState>(QuizUiState.Loading)
+    private val maxSize = maxQuizSizeFor(source)
+    private var selected = QUIZ_SIZES.filter { it <= maxSize }.lastOrNull { it <= questionCount } ?: QUIZ_SIZES.first()
+
+    private val _uiState = MutableStateFlow<QuizUiState>(QuizUiState.Intro(selected, maxSize))
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
 
-    init {
-        load()
+    fun selectCount(count: Int) {
+        val state = _uiState.value as? QuizUiState.Intro ?: return
+        if (count !in QUIZ_SIZES || count > state.maxSize) return
+        selected = count
+        _uiState.value = state.copy(selected = count)
+    }
+
+    /** "Empezar": asks the AI for the chosen number of questions. */
+    fun start() {
+        if (_uiState.value is QuizUiState.Intro) load()
     }
 
     fun retry() {
         if (_uiState.value is QuizUiState.Failed) load()
+    }
+
+    /** "Repetir": the same questions again, from the first one. */
+    fun repeatQuiz() {
+        val state = _uiState.value as? QuizUiState.Finished ?: return
+        _uiState.value = QuizUiState.Answering(state.quiz)
     }
 
     /** Picks option [option] of the current question; the first pick counts, later taps do nothing. */
@@ -69,7 +90,7 @@ class QuizViewModel(
         val state = _uiState.value as? QuizUiState.Answering ?: return
         if (state.chosen == null) return
         _uiState.value = if (state.isLast) {
-            QuizUiState.Finished(QuizResult.of(state.quiz, state.answers))
+            QuizUiState.Finished(QuizResult.of(state.quiz, state.answers), state.quiz)
         } else {
             state.copy(index = state.index + 1, chosen = null)
         }
@@ -95,7 +116,7 @@ class QuizViewModel(
     private fun load() {
         _uiState.value = QuizUiState.Loading
         viewModelScope.launch {
-            val result = generateQuiz(source, questionCount)
+            val result = generateQuiz(source, selected)
             _uiState.update {
                 result.fold(onSuccess = { quiz -> QuizUiState.Answering(quiz) }, onFailure = { error -> QuizUiState.Failed(error) })
             }
