@@ -98,3 +98,7 @@ data object BackupRoute
 
 @Serializable
 data object AboutRoute
+
+// Full screen to name a collection, pick its color and choose its books.
+@Serializable
+data object NewCollectionRoute

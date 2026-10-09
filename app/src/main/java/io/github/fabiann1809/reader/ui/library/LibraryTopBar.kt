@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.ui.library
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -12,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import io.github.fabiann1809.reader.R
@@ -32,28 +34,31 @@ fun LibraryTopBar(
     onClearSelection: () -> Unit,
     onSelectFilter: (LibraryFilter) -> Unit,
 ) {
-    when {
-        uiState.isSelecting -> SelectionTopBar(
-            count = uiState.selectedIds.size,
-            onClose = onClearSelection,
-            onAddToCollection = { onOpenSelectionDialog(SelectionDialog.COLLECTION) },
-            onDelete = { onOpenSelectionDialog(SelectionDialog.DELETE) },
-        )
-        isSearchOpen -> LibrarySearchBar(
-            query = uiState.query,
-            resultCount = uiState.books.size,
-            onQueryChange = onSearch,
-            onClose = {
-                onSearchOpenChange(false)
-                onSearch("")
-            },
-        )
-        else -> LibraryHeader(
-            uiState = uiState,
-            onOpenSearch = { onSearchOpenChange(true) },
-            onOpenDialog = onOpenDialog,
-            onSelectFilter = onSelectFilter,
-        )
+    // Opaque, so the list that scrolls under the header does not show through it.
+    Box(Modifier.background(MaterialTheme.colorScheme.surface)) {
+        when {
+            uiState.isSelecting -> SelectionTopBar(
+                count = uiState.selectedIds.size,
+                onClose = onClearSelection,
+                onAddToCollection = { onOpenSelectionDialog(SelectionDialog.COLLECTION) },
+                onDelete = { onOpenSelectionDialog(SelectionDialog.DELETE) },
+            )
+            isSearchOpen -> LibrarySearchBar(
+                query = uiState.query,
+                resultCount = uiState.books.size,
+                onQueryChange = onSearch,
+                onClose = {
+                    onSearchOpenChange(false)
+                    onSearch("")
+                },
+            )
+            else -> LibraryHeader(
+                uiState = uiState,
+                onOpenSearch = { onSearchOpenChange(true) },
+                onOpenDialog = onOpenDialog,
+                onSelectFilter = onSelectFilter,
+            )
+        }
     }
 }
 

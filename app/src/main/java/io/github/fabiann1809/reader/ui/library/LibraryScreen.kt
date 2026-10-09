@@ -32,6 +32,7 @@ import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 fun LibraryScreen(
     onBookClick: (Long) -> Unit,
     onAddPhysicalBook: () -> Unit,
+    onNewCollection: () -> Unit = {},
     onOpenBook: (Long) -> Unit = onBookClick,
     viewModel: LibraryViewModel = viewModel(factory = AppViewModelProvider.Factory),
     folderViewModel: WatchedFolderViewModel = viewModel(factory = AppViewModelProvider.Factory),
@@ -70,6 +71,7 @@ fun LibraryScreen(
         onBookClick = onBookClick,
         onOpenBook = onOpenBook,
         onAddPhysicalBook = onAddPhysicalBook,
+        onNewCollection = onNewCollection,
         onImportFile = { pickBookFiles.launch(BOOK_MIME_TYPES) },
         watchedFolder = WatchedFolderOptions(
             folderName = watchedFolder?.name,
@@ -83,7 +85,6 @@ fun LibraryScreen(
         onSearch = viewModel::search,
         onArrangementChange = viewModel::setArrangement,
         onLayoutChange = viewModel::setLayout,
-        onCreateCollection = viewModel::createCollection,
         onRenameCollection = viewModel::renameCurrentCollection,
         onDeleteCollection = viewModel::deleteCurrentCollection,
         onRenameCollectionOf = viewModel::renameCollection,
@@ -109,7 +110,7 @@ fun LibraryContent(
     onSearch: (String) -> Unit = {},
     onArrangementChange: (LibraryArrangement) -> Unit = {},
     onLayoutChange: (LibraryLayout) -> Unit = {},
-    onCreateCollection: (String) -> Unit = {},
+    onNewCollection: () -> Unit = {},
     onRenameCollection: (String) -> Unit = {},
     onDeleteCollection: () -> Unit = {},
     onRenameCollectionOf: (Collection, String) -> Unit = { _, _ -> },
@@ -184,7 +185,7 @@ fun LibraryContent(
                         onLayoutChange(uiState.layout.copy(view = LibraryView.SHELVES))
                     },
                     onBookClick = onBookClick,
-                    onNewCollection = { dialog = LibraryDialog.CREATE },
+                    onNewCollection = onNewCollection,
                     onAddBooks = { addBooksCollectionId = it.id },
                     onRename = {
                         targetCollectionId = it.id
@@ -219,7 +220,7 @@ fun LibraryContent(
             onSelectFilter = onSelectFilter,
             onArrangementChange = onArrangementChange,
             onLayoutChange = onLayoutChange,
-            onCreateCollection = onCreateCollection,
+            onNewCollection = onNewCollection,
             onRenameCollection = { name ->
                 if (targetCollection != null) onRenameCollectionOf(targetCollection, name) else onRenameCollection(name)
             },

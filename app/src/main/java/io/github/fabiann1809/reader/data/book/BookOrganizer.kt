@@ -26,9 +26,9 @@ class BookOrganizer(
         bookIds.forEach { collectionRepository.addBook(it, collectionId) }
 
     /** Creates a collection already holding [bookIds]. Returns its id, or null for a blank name. */
-    suspend fun createCollectionWith(bookIds: Collection<Long>, name: String): Long? {
+    suspend fun createCollectionWith(bookIds: Collection<Long>, name: String, colorIndex: Int? = null): Long? {
         if (name.isBlank()) return null
-        val collectionId = collectionRepository.createCollection(name)
+        val collectionId = collectionRepository.createCollection(name, colorIndex)
         addToCollection(bookIds, collectionId)
         return collectionId
     }

@@ -35,6 +35,7 @@ import io.github.fabiann1809.reader.ui.more.AboutScreen
 import io.github.fabiann1809.reader.ui.more.BackupScreen
 import io.github.fabiann1809.reader.ui.more.MoreEntry
 import io.github.fabiann1809.reader.ui.more.MoreScreen
+import io.github.fabiann1809.reader.ui.newcollection.NewCollectionScreen
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorScreen
 import io.github.fabiann1809.reader.ui.notes.AllNotesScreen
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingScreen
@@ -152,6 +153,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onBookClick = { bookId -> navController.navigate(BookDetailRoute(bookId)) },
                 onOpenBook = { bookId -> navController.navigate(ReaderRoute(bookId)) },
                 onAddPhysicalBook = { navController.navigate(AddBookRoute) },
+                onNewCollection = { navController.navigate(NewCollectionRoute) },
             )
         }
         composable<ReviewRoute> {
@@ -187,6 +189,9 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
         }
         composable<AboutRoute> {
             AboutScreen(onNavigateUp = { navController.navigateUp() })
+        }
+        composable<NewCollectionRoute> {
+            NewCollectionScreen(onClose = { navController.navigateUp() })
         }
         composable<AddBookRoute> {
             AddBookScreen(onNavigateUp = { navController.navigateUp() })

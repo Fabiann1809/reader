@@ -111,22 +111,15 @@ private fun NewCollectionLink(onClick: () -> Unit) {
     }
 }
 
-private val CoverWidth = 86.dp
-private val CoverHeight = 128.dp
-private val BandTop = 66.dp
-private val BandHeight = 118.dp
-private const val FAN_SIZE = 5
-private const val FAN_SPREAD_DP = 50
-private const val FAN_TILT_DEGREES = 4f
-private const val FAN_RISE_DP = 7
-
 @Composable
 private fun CollectionCard(group: CollectionGroup, actions: CollectionsActions) {
     val index = pastelIndex(group)
     Column(Modifier.padding(horizontal = 20.dp)) {
-        BoxWithConstraints(Modifier.fillMaxWidth().height(BandTop + BandHeight + 10.dp)) {
-            CoverFan(group, actions.onBookClick, maxWidth)
-            Band(group, index, actions)
+        CollectionFanArt(group.books, index, onBookClick = actions.onBookClick) {
+            group.collection?.let { collection ->
+                BandButton(R.drawable.ic_plus, stringResource(R.string.collection_add_books)) { actions.onAddBooks(collection) }
+                CollectionMenuButton(collection, actions)
+            }
         }
         NameAndCount(group, index, onClick = { actions.onOpen(group) })
     }
@@ -136,78 +129,6 @@ private fun pastelIndex(group: CollectionGroup): Int = when {
     group.smart != null -> SmartCollection.entries.indexOf(group.smart)
     else -> group.collection?.colorIndex ?: 0
 }.mod(PastelDots.size)
-
-@Composable
-private fun CoverFan(group: CollectionGroup, onBookClick: (Long) -> Unit, width: Dp) {
-    val covers = group.books.take(FAN_SIZE)
-    val center = (covers.size - 1) / 2f
-    covers.forEachIndexed { i, book ->
-        val d = i - center
-        BookCover(
-            book = book,
-            titleSize = 15.sp,
-            aspect = CoverWidth / CoverHeight,
-            onClick = { onBookClick(book.id) },
-            modifier = Modifier
-                .offset(x = width / 2 - CoverWidth / 2 + (d * FAN_SPREAD_DP).dp, y = (abs(d) * FAN_RISE_DP).dp)
-                .zIndex(FAN_SIZE * 2f - (abs(d) * 2).roundToInt())
-                .rotate(d * FAN_TILT_DEGREES)
-                .width(CoverWidth),
-        )
-    }
-}
-
-/** Frosted pastel band over the lower half of the covers; the buttons only exist for the user's collections. */
-@Composable
-private fun Band(group: CollectionGroup, index: Int, actions: CollectionsActions) {
-    val colors = ReaderTheme.colors
-    val shape = RoundedCornerShape(30.dp)
-    Box(
-        Modifier
-            .offset(y = BandTop)
-            .zIndex(BAND_Z)
-            .fillMaxWidth()
-            .height(BandHeight)
-            .clip(shape)
-            .background(Brush.horizontalGradient(colors.pastels[index])),
-    ) {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.44f)
-                .background(Color.White.copy(alpha = 0.2f)),
-        )
-        group.collection?.let { collection ->
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 11.dp, end = 14.dp),
-            ) {
-                BandButton(R.drawable.ic_plus, stringResource(R.string.collection_add_books)) { actions.onAddBooks(collection) }
-                CollectionMenuButton(collection, actions)
-            }
-        }
-    }
-}
-
-private const val BAND_Z = 20f
-
-@Composable
-private fun BandButton(icon: Int, description: String, onClick: () -> Unit) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(44.dp)
-            .clip(CircleShape)
-            .background(Color.White.copy(alpha = 0.92f))
-            .clickable(role = Role.Button, onClick = onClick),
-    ) {
-        Icon(painterResource(icon), contentDescription = description, tint = BandIcon, modifier = Modifier.size(20.dp))
-    }
-}
-
-private val BandIcon = Color(0xFF241B15)
 
 @Composable
 private fun CollectionMenuButton(collection: Collection, actions: CollectionsActions) {

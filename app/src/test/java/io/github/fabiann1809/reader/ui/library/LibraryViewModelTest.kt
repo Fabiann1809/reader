@@ -103,20 +103,6 @@ class LibraryViewModelTest {
     }
 
     @Test
-    fun creatingACollectionSelectsItAndItStartsEmpty() = runTest {
-        val viewModel = viewModel()
-
-        viewModel.createCollection("Trabajo")
-
-        val state = viewModel.uiState.value
-        assertEquals("Trabajo", state.currentCollection?.name)
-        assertEquals(listOf("Trabajo"), state.collections.map { it.name })
-        assertTrue(state.books.isEmpty())
-        // The library itself still has books: this is the "empty collection" state.
-        assertFalse(state.libraryIsEmpty)
-    }
-
-    @Test
     fun customCollectionShowsOnlyItsBooks() = runTest {
         val viewModel = viewModel()
         val id = collections.createCollection("Trabajo")
@@ -130,7 +116,8 @@ class LibraryViewModelTest {
     @Test
     fun renamingChangesTheTitle() = runTest {
         val viewModel = viewModel()
-        viewModel.createCollection("Trabajo")
+        val trabajoId = collections.createCollection("Trabajo")
+        viewModel.selectFilter(LibraryFilter.Custom(trabajoId))
 
         viewModel.renameCurrentCollection("Oficina")
 
@@ -140,7 +127,8 @@ class LibraryViewModelTest {
     @Test
     fun deletingTheCollectionGoesBackToAllAndKeepsBooks() = runTest {
         val viewModel = viewModel()
-        viewModel.createCollection("Trabajo")
+        val trabajoId = collections.createCollection("Trabajo")
+        viewModel.selectFilter(LibraryFilter.Custom(trabajoId))
 
         viewModel.deleteCurrentCollection()
 

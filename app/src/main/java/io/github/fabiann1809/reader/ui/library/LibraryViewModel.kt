@@ -202,15 +202,6 @@ class LibraryViewModel(
         viewModelScope.launch { preferences.setLibraryFilter(filter) }
     }
 
-    /** Creates a collection and shows it right away. */
-    fun createCollection(name: String) {
-        if (name.isBlank()) return
-        viewModelScope.launch {
-            val id = collectionRepository.createCollection(name)
-            preferences.setLibraryFilter(LibraryFilter.Custom(id))
-        }
-    }
-
     /** Renames a collection of the user, not necessarily the shown one. */
     fun renameCollection(collection: Collection, name: String) {
         if (name.isBlank()) return

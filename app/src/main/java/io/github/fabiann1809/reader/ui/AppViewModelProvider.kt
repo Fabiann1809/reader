@@ -31,6 +31,7 @@ import io.github.fabiann1809.reader.ui.navigation.ReviewSessionRoute
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
 import io.github.fabiann1809.reader.ui.notes.AllNotesViewModel
 import io.github.fabiann1809.reader.ui.more.BackupViewModel
+import io.github.fabiann1809.reader.ui.newcollection.NewCollectionViewModel
 import io.github.fabiann1809.reader.ui.more.MoreViewModel
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingViewModel
 import io.github.fabiann1809.reader.ui.progress.ProgressViewModel
@@ -67,6 +68,14 @@ object AppViewModelProvider {
         }
         initializer {
             AddBookViewModel(readerApplication().container.bookRepository)
+        }
+        initializer {
+            NewCollectionViewModel(
+                bookRepository = readerApplication().container.bookRepository,
+                collectionRepository = readerApplication().container.collectionRepository,
+                organizer = readerApplication().container.bookOrganizer,
+                preferences = readerApplication().container.appPreferences,
+            )
         }
         initializer {
             BookDetailViewModel(

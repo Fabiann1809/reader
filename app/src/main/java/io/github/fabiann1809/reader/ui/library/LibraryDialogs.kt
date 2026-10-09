@@ -13,7 +13,7 @@ import io.github.fabiann1809.reader.data.prefs.LibraryLayout
 import io.github.fabiann1809.reader.ui.bookdetail.AddToCollectionSheet
 
 /** Sheet or dialog opened from the normal library bar (only one at a time). */
-enum class LibraryDialog { NONE, PICKER, CREATE, RENAME, DELETE, ARRANGE }
+enum class LibraryDialog { NONE, PICKER, RENAME, DELETE, ARRANGE }
 
 /** Sheet or dialog opened from the selection bar. */
 enum class SelectionDialog { NONE, COLLECTION, NEW_COLLECTION, DELETE }
@@ -23,7 +23,7 @@ class CollectionDialogActions(
     val onSelectFilter: (LibraryFilter) -> Unit = {},
     val onArrangementChange: (LibraryArrangement) -> Unit = {},
     val onLayoutChange: (LibraryLayout) -> Unit = {},
-    val onCreateCollection: (String) -> Unit = {},
+    val onNewCollection: () -> Unit = {},
     val onRenameCollection: (String) -> Unit = {},
     val onDeleteCollection: () -> Unit = {},
 )
@@ -66,16 +66,9 @@ fun CollectionDialogs(
                 actions.onSelectFilter(filter)
                 close()
             },
-            onNewCollection = { onDialogChange(LibraryDialog.CREATE) },
-            onDismiss = close,
-        )
-        LibraryDialog.CREATE -> CollectionNameDialog(
-            title = R.string.collection_new,
-            confirm = R.string.collection_create,
-            initialName = "",
-            onConfirm = { name ->
-                actions.onCreateCollection(name)
+            onNewCollection = {
                 close()
+                actions.onNewCollection()
             },
             onDismiss = close,
         )
