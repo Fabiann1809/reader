@@ -9,6 +9,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
+import io.github.fabiann1809.reader.ui.components.ReaderFilterChip
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -17,17 +26,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -74,7 +75,7 @@ fun ReadingSettingsSheet(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
-                .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
+                .padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
         ) {
             if (isPdf) {
                 Text(stringResource(R.string.reading_settings_pdf), style = MaterialTheme.typography.bodyMedium)
@@ -99,7 +100,7 @@ private fun TextSettings(settings: ReadingSettings, onChange: ((ReadingSettings)
         }
         Section(R.string.reading_settings_font) { FontPicker(settings.font) { font -> onChange { it.copy(font = font) } } }
         Section(R.string.reading_settings_size) {
-            SizeSlider(settings.fontSize) { size -> onChange { it.copy(fontSize = size) } }
+            SizeStepper(settings.fontSize) { size -> onChange { it.copy(fontSize = size) } }
         }
         Section(R.string.reading_settings_line_height) {
             SettingSlider(settings.lineHeight, ReadingSettings.LineHeightRange, R.string.reading_settings_line_height) { value ->
@@ -153,8 +154,8 @@ private fun SwitchRow(@StringRes label: Int, checked: Boolean, onCheckedChange: 
 
 @Composable
 private fun Section(@StringRes title: Int, content: @Composable () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(title), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(stringResource(title), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         content()
     }
 }
@@ -162,7 +163,7 @@ private fun Section(@StringRes title: Int, content: @Composable () -> Unit) {
 /** A swatch per theme: its page color with "Aa" in its text color, and the name below. */
 @Composable
 private fun ThemeRow(settings: ReadingSettings, onSelect: (ReadingTheme) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
         ReadingTheme.entries.forEach { theme ->
             // "Personalizado" shows the colors picked for it.
             val colors = if (theme == ReadingTheme.CUSTOM) settings.copy(theme = theme).pageColors() else theme.colors()
@@ -179,69 +180,86 @@ private fun ThemeRow(settings: ReadingSettings, onSelect: (ReadingTheme) -> Unit
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .size(48.dp)
-                        .background(Color(colors.background), CircleShape)
-                        .border(
-                            width = if (isSelected) 2.dp else 1.dp,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                            shape = CircleShape,
-                        ),
+                        .size(width = 56.dp, height = 52.dp)
+                        .scale(if (isSelected) 1.08f else 1f)
+                        .then(
+                            if (isSelected) Modifier.border(2.5.dp, MaterialTheme.colorScheme.primary, TileShape) else Modifier,
+                        )
+                        .padding(if (isSelected) 3.dp else 0.dp)
+                        .background(Color(colors.background), TileShape)
+                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant, TileShape),
                 ) {
                     Text(
                         stringResource(R.string.reader_text_settings),
                         color = Color(colors.text),
-                        fontSize = 16.sp,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 18.sp,
                         modifier = Modifier.clearAndSetSemantics {},
                     )
                 }
                 Text(
                     name,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                 )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FontPicker(selected: ReadingFont, onSelect: (ReadingFont) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        OutlinedTextField(
-            value = stringResource(selected.label),
-            onValueChange = {},
-            readOnly = true,
-            singleLine = true,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                .fillMaxWidth(),
-        )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            ReadingFont.entries.forEach { font ->
-                DropdownMenuItem(
-                    text = { Text(stringResource(font.label)) },
-                    onClick = {
-                        onSelect(font)
-                        expanded = false
-                    },
-                )
-            }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+        ReadingFont.entries.forEach { font ->
+            ReaderFilterChip(
+                selected = font == selected,
+                onClick = { onSelect(font) },
+                label = { Text(stringResource(font.label)) },
+            )
         }
     }
 }
 
-/** "A ──●── A": the font size, between a small and a big letter (design 10.12). */
+/** "A−  100 %  A+": the font size, one step of 0.1 at a time. */
 @Composable
-private fun SizeSlider(value: Double, onChange: (Double) -> Unit) {
+private fun SizeStepper(value: Double, onChange: (Double) -> Unit) {
+    val range = ReadingSettings.FontSizeRange
+    val label = stringResource(R.string.reading_settings_size)
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        val letter = stringResource(R.string.reading_settings_sample_letter)
-        // The slider already says what it is; the two letters are only a picture of small and big.
-        Text(letter, fontSize = 14.sp, modifier = Modifier.clearAndSetSemantics {})
-        SettingSlider(value, ReadingSettings.FontSizeRange, R.string.reading_settings_size, Modifier.weight(1f), onChange)
-        Text(letter, fontSize = 24.sp, modifier = Modifier.clearAndSetSemantics {})
+        Spacer(Modifier.weight(1f))
+        StepButton(R.string.reading_settings_size_smaller, "A\u2212", enabled = value > range.start) {
+            onChange(roundToStep((value - SIZE_STEP).toFloat()).coerceIn(range))
+        }
+        Text(
+            text = stringResource(R.string.reading_settings_size_value, (value * 100).roundToInt()),
+            style = MaterialTheme.typography.titleSmall,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .width(56.dp)
+                .semantics { contentDescription = label },
+        )
+        StepButton(R.string.reading_settings_size_bigger, "A+", enabled = value < range.endInclusive) {
+            onChange(roundToStep((value + SIZE_STEP).toFloat()).coerceIn(range))
+        }
+    }
+}
+
+private const val SIZE_STEP = 0.1
+
+@Composable
+private fun StepButton(@StringRes description: Int, text: String, enabled: Boolean, onClick: () -> Unit) {
+    val label = stringResource(description)
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(48.dp)
+            .alpha(if (enabled) 1f else 0.4f)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .semantics { contentDescription = label },
+    ) {
+        Text(text, style = MaterialTheme.typography.titleSmall, modifier = Modifier.clearAndSetSemantics {})
     }
 }
 
@@ -279,16 +297,7 @@ private fun PageEffectChoice(selected: PageEffect, onSelect: (PageEffect) -> Uni
         PageEffect.SCROLL to R.string.page_effect_scroll,
         PageEffect.NONE to R.string.page_effect_none,
     )
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        options.forEachIndexed { index, (effect, label) ->
-            SegmentedButton(
-                selected = effect == selected,
-                onClick = { onSelect(effect) },
-                shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                label = { Text(stringResource(label)) },
-            )
-        }
-    }
+    ChoicePills(options, selected, onSelect)
 }
 
 @Composable
@@ -297,17 +306,25 @@ private fun AlignmentChoice(selected: ReadingAlignment, onSelect: (ReadingAlignm
         ReadingAlignment.START to R.string.reading_settings_align_start,
         ReadingAlignment.JUSTIFY to R.string.reading_settings_align_justify,
     )
-    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-        options.forEachIndexed { index, (alignment, label) ->
-            SegmentedButton(
-                selected = alignment == selected,
-                onClick = { onSelect(alignment) },
-                shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                label = { Text(stringResource(label)) },
+    ChoicePills(options, selected, onSelect)
+}
+
+/** The options of a setting as equal pills in a row; the chosen one is filled with the accent. */
+@Composable
+private fun <T> ChoicePills(options: List<Pair<T, Int>>, selected: T, onSelect: (T) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        options.forEach { (option, label) ->
+            ReaderFilterChip(
+                selected = option == selected,
+                onClick = { onSelect(option) },
+                label = { Text(stringResource(label), maxLines = 1) },
+                modifier = Modifier.weight(1f),
             )
         }
     }
 }
+
+private val TileShape = RoundedCornerShape(16.dp)
 
 // Tenths: the slider snaps to them and the saved value is exact.
 private fun roundToStep(value: Float): Double = (value * 10).roundToInt() / 10.0

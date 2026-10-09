@@ -341,7 +341,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T19.16a Lector: barras.** Barra superior (atrás, capítulo y libro, lupa, marcador, menú) e inferior con los colores del tema de lectura, progreso con posición actual y total, y acciones Índice, Aa, IA (ficha morada), Notas y Grabar; se quita el botón muerto Voz (decisión del usuario 2026-10-08). *Hecho cuando:* coinciden con el prototipo.
 - [x] **T19.16b Lector: hoja de notas.** "Notas" abre una hoja con las notas y resaltados del libro (función nueva, decisión del usuario 2026-10-08). *Hecho cuando:* se listan y llevan a su pasaje.
 - [x] **T19.16c Lector: barra de selección.** Barra contextual al seleccionar texto. *Hecho cuando:* coincide con el prototipo.
-- [ ] **T19.17a Lector: ajustes de lectura.** Hoja "Aa". *Hecho cuando:* coincide con el prototipo.
+- [x] **T19.17a Lector: ajustes de lectura.** Hoja "Aa". *Hecho cuando:* coincide con el prototipo.
 - [ ] **T19.17b Lector: índice y marcadores.** *Hecho cuando:* coinciden con el prototipo.
 - [ ] **T19.17c Lector: buscar en el libro.** Pantalla de búsqueda con resultados que llevan al pasaje (función nueva, decisión del usuario 2026-10-08). *Hecho cuando:* encuentra texto en un EPUB y abre el lector en ese punto.
 

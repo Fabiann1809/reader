@@ -151,6 +151,9 @@
     <string name="reading_settings_theme">Tema</string>
     <string name="reading_settings_font">Fuente</string>
     <string name="reading_settings_size">Tamaño</string>
+    <string name="reading_settings_size_smaller">Texto más pequeño</string>
+    <string name="reading_settings_size_bigger">Texto más grande</string>
+    <string name="reading_settings_size_value">%d %%</string>
     <string name="reading_settings_sample_letter" translatable="false">A</string>
     <string name="reading_settings_line_height">Interlineado</string>
     <string name="reading_settings_margins">Márgenes</string>
