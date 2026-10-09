@@ -138,15 +138,13 @@ fun LibraryContent(
     } else {
         BookGestures(onClick = onBookClick, onLongClick = { menuBookId = it })
     }
-    val isShelves = uiState.layout.view == LibraryView.SHELVES
     // While importing, the progress pill takes the bottom of the screen.
     val showFab = !uiState.isLoading && uiState.books.isNotEmpty() && !uiState.isSelecting &&
         importStatus !is ImportStatus.Importing
 
     Scaffold(
-        // Only the shelves view has the wooden wall (design 6.5).
-        modifier = if (isShelves) modifier.woodWall() else modifier,
-        containerColor = if (isShelves) Color.Transparent else MaterialTheme.colorScheme.surface,
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             LibraryTopBar(
                 uiState = uiState,

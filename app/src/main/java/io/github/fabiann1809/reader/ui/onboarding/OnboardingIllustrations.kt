@@ -94,7 +94,7 @@ fun ShelfIllustration(modifier: Modifier = Modifier) {
                 .padding(bottom = 54.dp)
                 .fillMaxWidth()
                 .height(9.dp)
-                .background(Brush.verticalGradient(listOf(Color(0xFF6C5546), colors.shelfTop.first()))),
+                .background(Brush.verticalGradient(colors.shelfTop)),
         )
         Box(
             Modifier
@@ -102,7 +102,7 @@ fun ShelfIllustration(modifier: Modifier = Modifier) {
                 .padding(bottom = 32.dp)
                 .fillMaxWidth()
                 .height(22.dp)
-                .background(Brush.verticalGradient(listOf(Color(0xFF33261F), colors.shelfFront.first()))),
+                .background(Brush.verticalGradient(colors.shelfFront)),
         )
     }
 }

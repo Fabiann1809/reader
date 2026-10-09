@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
@@ -16,71 +17,41 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
-import kotlin.random.Random
 
-// Shelf measurements from the design (04-system-design.md, section 6.2).
+// Shelf measurements of the redesign prototype.
 val ShelfSidePadding = 16.dp
-val ShelfBookGap = 12.dp
-private val SpaceAboveBooks = 20.dp
-private val PlankTop = 8.dp
-private val PlankFront = 8.dp
+private val SpaceAboveBooks = 26.dp
+private val PlankTop = 9.dp
+private val PlankFront = 22.dp
 private val PlankShadow = 10.dp
+private val MinBookGap = 8.dp
+private val WallEdge = 30.dp
 
-// Books sink this much into the top surface of the plank so they look like they stand on it.
-private val BookOverlap = 4.dp
+// The tallest generated cover is 1.62 times its width; the shelf leaves room for it.
+private const val TALLEST_BOOK = 1.62f
 
-/**
- * Wooden wall drawn in code (no bitmap, so no licensing issues): base color, vertical grain,
- * inner side shadows and a soft top/bottom vignette. The grain uses a fixed seed so it never flickers.
- */
-fun Modifier.woodWall(): Modifier = composed {
-    val base = ReaderTheme.colors.woodWall
-    val grain = ReaderTheme.colors.woodGrain
+// With three books per shelf, a decoration takes the fourth place (as in the prototype).
+private const val DECORATED_COLUMNS = 3
+
+/** Flat wall of the library: the wall color with a darker strip at each edge. */
+fun Modifier.libraryWall(): Modifier = composed {
+    val colors = ReaderTheme.colors
     drawBehind {
-        drawRect(base)
-        val random = Random(GRAIN_SEED)
-        var x = 0f
-        while (x < size.width) {
-            val stripe = (1 + random.nextInt(3)) * density
-            drawRect(
-                color = grain.copy(alpha = 0.12f + random.nextFloat() * 0.3f),
-                topLeft = Offset(x, 0f),
-                size = Size(stripe, size.height),
-            )
-            x += stripe + (4 + random.nextInt(10)) * density
-        }
-        val sideShadow = 24.dp.toPx()
-        val shadow = Color.Black.copy(alpha = 0.25f)
-        drawRect(
-            brush = Brush.horizontalGradient(listOf(shadow, Color.Transparent), endX = sideShadow),
-            size = Size(sideShadow, size.height),
-        )
-        drawRect(
-            brush = Brush.horizontalGradient(
-                listOf(Color.Transparent, shadow),
-                startX = size.width - sideShadow,
-                endX = size.width,
-            ),
-            topLeft = Offset(size.width - sideShadow, 0f),
-            size = Size(sideShadow, size.height),
-        )
-        drawRect(
-            brush = Brush.verticalGradient(
-                0f to Color.Black.copy(alpha = 0.18f),
-                0.12f to Color.Transparent,
-                0.88f to Color.Transparent,
-                1f to Color.Black.copy(alpha = 0.18f),
-            ),
-        )
+        val edge = WallEdge.toPx()
+        drawRect(colors.woodWall)
+        drawRect(colors.woodGrain, Offset.Zero, Size(edge, size.height))
+        drawRect(colors.woodGrain, Offset(size.width - edge, 0f), Size(edge, size.height))
     }
 }
 
 /**
- * One shelf: a row of up to [columns] slots standing on a full-bleed plank.
- * [slot] draws the item at each index (a cover, a placeholder or nothing).
+ * One shelf: a row of up to [columns] slots standing on a full-bleed plank, with a decoration
+ * when [columns] is three. [slot] draws the item at each index (a cover, a placeholder or nothing).
  */
 @Composable
 fun Shelf(
@@ -88,21 +59,30 @@ fun Shelf(
     bookWidth: Dp,
     itemCount: Int,
     modifier: Modifier = Modifier,
+    shelfIndex: Int = 0,
     slot: @Composable (index: Int, width: Dp) -> Unit,
 ) {
-    val bookHeight = bookWidth * 1.5f
-    Box(modifier = modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(top = SpaceAboveBooks + bookHeight - BookOverlap)) {
-            Plank()
-        }
+    val decor = ShelfDecor.entries[shelfIndex % ShelfDecor.entries.size].takeIf { columns == DECORATED_COLUMNS }
+    Column(modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.padding(top = SpaceAboveBooks, start = ShelfSidePadding, end = ShelfSidePadding),
-            horizontalArrangement = Arrangement.spacedBy(ShelfBookGap),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom,
+            modifier = Modifier
+                .fillMaxWidth()
+                .libraryWall()
+                .height(SpaceAboveBooks + maxOf(bookWidth * TALLEST_BOOK, ShelfDecor.VASE.height))
+                .padding(top = SpaceAboveBooks, start = ShelfSidePadding, end = ShelfSidePadding),
         ) {
+            // The vase stands first on its shelf, the other decorations last.
+            if (decor == ShelfDecor.VASE) ShelfDecorItem(decor, delayMillis = DECOR_DELAY_MILLIS)
             repeat(minOf(itemCount, columns)) { index -> slot(index, bookWidth) }
+            if (decor != null && decor != ShelfDecor.VASE) ShelfDecorItem(decor, delayMillis = DECOR_DELAY_MILLIS)
         }
+        Plank()
     }
 }
+
+private const val DECOR_DELAY_MILLIS = 260
 
 @Composable
 private fun Plank() {
@@ -123,15 +103,28 @@ private fun Plank() {
         Modifier
             .fillMaxWidth()
             .height(PlankShadow)
+            .libraryWall()
             .background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.25f), Color.Transparent))),
     )
 }
 
-/** Width of each book so that [columns] books and their gaps fill the shelf. */
-fun shelfBookWidth(shelfWidth: Dp, columns: Int): Dp =
-    (shelfWidth - ShelfSidePadding * 2 - ShelfBookGap * (columns - 1)) / columns
+/** Width of each book so that [columns] books (and the decoration, when there is one) fill the shelf. */
+fun shelfBookWidth(shelfWidth: Dp, columns: Int): Dp {
+    val decor = if (columns == DECORATED_COLUMNS) ShelfDecorSlot + MinBookGap else 0.dp
+    return (shelfWidth - ShelfSidePadding * 2 - decor - MinBookGap * (columns - 1)) / columns
+}
 
-/** Full height of one shelf row for books of [bookWidth]. */
-fun shelfRowHeight(bookWidth: Dp): Dp = SpaceAboveBooks + bookWidth * 1.5f - BookOverlap + PlankTop + PlankFront + PlankShadow
+/** A few books lean slightly on their shelf; which ones is fixed by the title. */
+fun Modifier.shelfTilt(title: String): Modifier =
+    if (Math.floorMod(title.hashCode(), TILT_EVERY) == TILT_REMAINDER) {
+        graphicsLayer {
+            rotationZ = -TILT_DEGREES
+            transformOrigin = TransformOrigin(0f, 1f)
+        }
+    } else {
+        this
+    }
 
-private const val GRAIN_SEED = 42
+private const val TILT_EVERY = 5
+private const val TILT_REMAINDER = 2
+private const val TILT_DEGREES = 3f

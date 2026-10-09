@@ -69,16 +69,23 @@ val DarkShelfFront = Color(0xFF0E0A08)
 val DarkNavBar = Color(0xFF261F1B)
 val DarkNavActive = Color(0xFF3D3027)
 
-// Muted colors for generated covers, picked by title hash.
-val CoverPalette = listOf(
-    Color(0xFF3F5B7A),
-    Color(0xFF7A3F4B),
-    Color(0xFF4E6B4A),
-    Color(0xFF8A6A3A),
-    Color(0xFF5A4A7A),
-    Color(0xFF3F6E6E),
-    Color(0xFF7A4F3A),
-    Color(0xFF5B5B5B),
+// Colors of a generated cover: the cover itself, the ink of its texts and the band across the top.
+class CoverStyle(val cover: Color, val ink: Color, val band: Color)
+
+// Picked by title hash, so a book keeps its look (prototype BOOKS and IMPORTED).
+val CoverStyles = listOf(
+    CoverStyle(Color(0xFF2F4858), Color(0xFFF4E9D8), Color(0xFFE0A458)),
+    CoverStyle(Color(0xFFB9473A), Color(0xFFFFF4E6), Color(0xFFF2C14E)),
+    CoverStyle(Color(0xFF1F2A36), Color(0xFFF2C14E), Color(0xFF5C7A99)),
+    CoverStyle(Color(0xFFE8D9BF), Color(0xFF3B2A1E), Color(0xFFB4652B)),
+    CoverStyle(Color(0xFF5B4B8A), Color(0xFFF4ECFF), Color(0xFFE7B7C8)),
+    CoverStyle(Color(0xFF3E5C47), Color(0xFFF1EBD9), Color(0xFFD9B26F)),
+    CoverStyle(Color(0xFFC27C3A), Color(0xFF2A1A0E), Color(0xFF2A1A0E)),
+    CoverStyle(Color(0xFFF3EFE6), Color(0xFF1F2A36), Color(0xFFB9473A)),
+    CoverStyle(Color(0xFF7A8F9C), Color(0xFF0F1A22), Color(0xFFF4E9D8)),
+    CoverStyle(Color(0xFF6E3B5C), Color(0xFFFBE9F1), Color(0xFFF2C14E)),
+    CoverStyle(Color(0xFF203A43), Color(0xFFBFE3EA), Color(0xFFE07A5F)),
+    CoverStyle(Color(0xFFF2C14E), Color(0xFF2A1A0E), Color(0xFF2F4858)),
 )
 
 // Pastel gradients of collection bands and highlighted cards (prototype --pA..--pD), two stops each.

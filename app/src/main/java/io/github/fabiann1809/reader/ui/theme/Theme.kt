@@ -112,7 +112,7 @@ data class ReaderColors(
     val navActive: Color,
     val pastels: List<List<Color>>,
     val onPastel: Color,
-    val covers: List<Color>,
+    val covers: List<CoverStyle>,
 )
 
 private val LightReaderColors = ReaderColors(
@@ -121,8 +121,8 @@ private val LightReaderColors = ReaderColors(
     aiSoft = LightAiSoft,
     woodWall = LightWall,
     woodGrain = LightWallShade,
-    shelfTop = listOf(LightShelfTop, LightShelfTop),
-    shelfFront = listOf(LightShelfFront, LightShelfFront),
+    shelfTop = listOf(Color(0xFF6C5546), LightShelfTop),
+    shelfFront = listOf(Color(0xFF33261F), LightShelfFront),
     progress = LightAccent,
     success = LightOk,
     successContainer = LightOkSoft,
@@ -134,7 +134,7 @@ private val LightReaderColors = ReaderColors(
     navActive = LightNavActive,
     pastels = LightPastels,
     onPastel = LightInk,
-    covers = CoverPalette,
+    covers = CoverStyles,
 )
 
 private val DarkReaderColors = LightReaderColors.copy(
@@ -143,8 +143,8 @@ private val DarkReaderColors = LightReaderColors.copy(
     aiSoft = DarkAiSoft,
     woodWall = DarkWall,
     woodGrain = DarkWallShade,
-    shelfTop = listOf(DarkShelfTop, DarkShelfTop),
-    shelfFront = listOf(DarkShelfFront, DarkShelfFront),
+    shelfTop = listOf(Color(0xFF574334), DarkShelfTop),
+    shelfFront = listOf(Color(0xFF1C1411), DarkShelfFront),
     progress = DarkAccent,
     success = DarkOk,
     successContainer = DarkOkSoft,

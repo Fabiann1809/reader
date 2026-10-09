@@ -205,7 +205,7 @@ private fun FlashToggle(flashAuto: Boolean, onToggle: () -> Unit) {
 /** Page-shaped guide with gold corners (shelf color), so the user frames the whole page. */
 @Composable
 private fun PageFrame(modifier: Modifier = Modifier) {
-    val corner = ReaderTheme.colors.shelfTop.first()
+    val corner = Color(0xFFF5B963)
     Box(
         modifier = modifier.drawBehind {
             val stroke = 3.dp.toPx()

@@ -36,8 +36,8 @@ import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import kotlin.math.ceil
 
 /**
- * Shelves filled with [itemCount] items, [columns] per shelf. Extra empty shelves are added
- * so the wall is always covered with shelves down to the bottom of the screen.
+ * Shelves filled with [itemCount] items, [columns] per shelf, on the library wall. The optional
+ * [header] comes first, on the plain background.
  */
 @Composable
 fun Bookcase(
@@ -50,9 +50,7 @@ fun Bookcase(
 ) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val bookWidth = shelfBookWidth(maxWidth, columns)
-        val rowHeight = shelfRowHeight(bookWidth)
-        val shelvesWithBooks = ceil(itemCount / columns.toFloat()).toInt()
-        val shelvesToFillScreen = ceil(maxHeight / rowHeight).toInt()
+        val shelves = ceil(itemCount / columns.toFloat()).toInt()
         LazyColumn(
             contentPadding = PaddingValues(
                 top = contentPadding.calculateTopPadding(),
@@ -60,15 +58,18 @@ fun Bookcase(
             ),
         ) {
             header?.let { item { it() } }
-            items(count = maxOf(shelvesWithBooks, shelvesToFillScreen)) { shelf ->
+            items(count = shelves) { shelf ->
                 val first = shelf * columns
-                Shelf(columns = columns, bookWidth = bookWidth, itemCount = (itemCount - first).coerceAtLeast(0)) { i, width ->
+                Shelf(columns = columns, bookWidth = bookWidth, itemCount = itemCount - first, shelfIndex = shelf) { i, width ->
                     slot(first + i, width)
                 }
             }
+            item { Box(Modifier.fillMaxWidth().height(WALL_FOOT).libraryWall()) }
         }
     }
 }
+
+private val WALL_FOOT = 30.dp
 
 /** Light block standing in for a cover while the library loads. */
 @Composable
@@ -77,7 +78,7 @@ fun PlaceholderCover(width: Dp) {
         Modifier
             .width(width)
             .aspectRatio(2f / 3f)
-            .background(Color.White.copy(alpha = 0.22f), RoundedCornerShape(4.dp)),
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f), RoundedCornerShape(4.dp)),
     )
 }
 
@@ -103,13 +104,13 @@ fun EmptyShelf(contentPadding: PaddingValues, empty: EmptyState) {
                 Text(
                     text = empty.title,
                     style = MaterialTheme.typography.titleLarge,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                 )
                 Text(
                     text = empty.message,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(16.dp))
@@ -127,7 +128,7 @@ fun EmptyShelf(contentPadding: PaddingValues, empty: EmptyState) {
 /** Dashed outline of a book: the empty-state placeholder from the design. */
 @Composable
 private fun GhostBook(width: Dp) {
-    val outline = Color.White.copy(alpha = 0.45f)
+    val outline = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
     Box(
         modifier = Modifier
             .width(width)

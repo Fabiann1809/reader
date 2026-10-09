@@ -16,6 +16,7 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.prefs.LibraryView
 import io.github.fabiann1809.reader.ui.components.BookCover
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
+import io.github.fabiann1809.reader.ui.components.shelfCoverAspect
 import io.github.fabiann1809.reader.ui.components.StatusMessage
 
 /** How books react to touch: a tap and a long press, each receiving the book's id. */
@@ -61,12 +62,13 @@ fun LibraryBooks(
                 header = header,
             ) { index, width ->
                 val book = uiState.books[index]
-                bookFrame(book, Modifier) {
+                bookFrame(book, Modifier.shelfTilt(book.title)) {
                     BookCover(
                         book = book,
                         onClick = { gestures.onClick(book.id) },
                         onLongClick = { gestures.onLongClick(book.id) },
                         showBadges = true,
+                        aspect = shelfCoverAspect(book.title),
                         modifier = Modifier.width(width),
                     )
                 }

@@ -39,20 +39,26 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.isNew
+import io.github.fabiann1809.reader.ui.theme.CoverStyle
 import io.github.fabiann1809.reader.ui.theme.DmSerifDisplay
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import kotlin.math.roundToInt
 
-// Covers are 2:3 with a tighter radius on the spine side (design 6.4).
-private val CoverShape = RoundedCornerShape(topStart = 2.dp, bottomStart = 2.dp, topEnd = 4.dp, bottomEnd = 4.dp)
+// Covers are 2:3 by default, with a tighter radius on the spine side.
+private val CoverShape = RoundedCornerShape(topStart = 3.dp, bottomStart = 3.dp, topEnd = 6.dp, bottomEnd = 6.dp)
+private const val DEFAULT_ASPECT = 2f / 3f
+private val ProgressFill = Color(0xFFF5B963)
+private val PhysicalBadge = Color(0xB8241B15)
 
 /**
  * A book's cover: its stored cover image when it has one (imported books), otherwise a generated one
@@ -69,7 +75,10 @@ fun BookCover(
     onLongClick: (() -> Unit)? = null,
     // "Nuevo" and "Físico" badges; only the library shows them.
     showBadges: Boolean = false,
+    // Width over height; shelves vary it per book so the covers do not look cloned.
+    aspect: Float = DEFAULT_ASPECT,
 ) {
+    val style = coverStyle(book.title)
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val progress = book.progressFraction()
@@ -84,11 +93,11 @@ fun BookCover(
 
     Box(
         modifier = modifier
-            .aspectRatio(2f / 3f)
+            .aspectRatio(aspect)
             .scale(if (pressed) 0.97f else 1f)
-            .shadow(elevation = if (pressed) 1.dp else 3.dp, shape = CoverShape)
+            .shadow(elevation = if (pressed) 2.dp else 6.dp, shape = CoverShape)
             .clip(CoverShape)
-            .background(coverColor(book.title))
+            .background(style.cover)
             .then(
                 if (onClick != null) {
                     Modifier.combinedClickable(
@@ -115,74 +124,102 @@ fun BookCover(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
+        } else {
+            GeneratedCoverText(book, style, titleSize)
         }
-        // Subtle diagonal gloss.
+        // Soft diagonal gloss.
         Box(
             Modifier
                 .fillMaxSize()
-                .background(Brush.linearGradient(listOf(Color.White.copy(alpha = 0.06f), Color.Transparent))),
+                .background(
+                    Brush.linearGradient(
+                        0f to Color.White.copy(alpha = 0.1f),
+                        0.55f to Color.Transparent,
+                    ),
+                ),
         )
-        // Spine highlight on the left edge.
+        // Spine shade on the left edge.
         Box(
             Modifier
                 .fillMaxHeight()
-                .width(3.dp)
-                .background(Brush.horizontalGradient(listOf(Color.White.copy(alpha = 0.18f), Color.Transparent))),
+                .width(6.dp)
+                .background(Brush.horizontalGradient(listOf(Color.Black.copy(alpha = 0.22f), Color.Transparent))),
         )
-        // A real cover already shows its title and author.
-        if (coverImage == null) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(start = 10.dp, end = 8.dp, bottom = 12.dp),
-            ) {
-                Text(
-                    text = book.title,
-                    color = Color.White,
-                    fontFamily = DmSerifDisplay,
-                    fontSize = titleSize,
-                    lineHeight = titleSize * 1.15f,
-                    style = MaterialTheme.typography.titleSmall,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = book.author,
-                    color = Color.White.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.labelSmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
         if (showBadges) {
             CoverBadges(book, Modifier.align(Alignment.TopEnd))
         }
-        progress?.let { fraction ->
+        // Only a book in progress shows the bar; unread and finished ones stay clean.
+        progress?.takeIf { it > 0f && it < 1f }?.let { fraction ->
             Box(
                 Modifier
                     .align(Alignment.BottomStart)
                     .fillMaxWidth()
-                    .height(3.dp)
-                    .background(Color.Black.copy(alpha = 0.3f)),
+                    .height(4.dp)
+                    .background(Color.White.copy(alpha = 0.3f)),
             ) {
                 Box(
                     Modifier
                         .fillMaxHeight()
                         .fillMaxWidth(fraction)
-                        .background(ReaderTheme.colors.progress),
+                        .background(ProgressFill),
                 )
             }
         }
     }
 }
 
-/** Same title, same color: a stable hash so a book keeps its color across launches. */
+/** The band across the top, the author in small capitals and the title in serif, all in the cover's ink. */
 @Composable
-private fun coverColor(title: String): Color {
+private fun GeneratedCoverText(book: Book, style: CoverStyle, titleSize: TextUnit) {
+    Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier
+                .padding(top = 12.dp)
+                .fillMaxWidth()
+                .height(4.dp)
+                .background(style.band),
+        )
+        Column(
+            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 10.dp, end = 8.dp, top = 24.dp, bottom = 12.dp),
+        ) {
+            Text(
+                text = book.author.uppercase(),
+                color = style.ink.copy(alpha = 0.8f),
+                fontSize = titleSize * AUTHOR_SIZE_RATIO,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 0.12.em,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = book.title,
+                color = style.ink,
+                fontFamily = DmSerifDisplay,
+                fontSize = titleSize,
+                lineHeight = titleSize * 1.05f,
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+private const val AUTHOR_SIZE_RATIO = 0.55f
+
+/** Same title, same look: a stable hash so a book keeps its colors across launches. */
+@Composable
+private fun coverStyle(title: String): CoverStyle {
     val palette = ReaderTheme.colors.covers
     return palette[Math.floorMod(title.hashCode(), palette.size)]
 }
+
+/** Shelf proportion of a book (width over height): between 1:1.38 and 1:1.62, fixed by its title. */
+fun shelfCoverAspect(title: String): Float = 1f / (1.38f + Math.floorMod(title.hashCode(), SHELF_HEIGHT_STEPS) * 0.04f)
+
+private const val SHELF_HEIGHT_STEPS = 7
 
 /** Title, author and progress for screen readers; books imported without metadata have no author. */
 @Composable
@@ -199,19 +236,20 @@ private fun coverDescription(book: Book, progress: Float?): String {
     }
 }
 
-/** "Nuevo" pill and "Físico" hand in the top corner (design 6.4). They are visual only: the cover's description covers them. */
+/** "Nuevo" pill and "Físico" hand in the top corner. They are visual only: the cover's description covers them. */
 @Composable
 private fun CoverBadges(book: Book, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier.padding(6.dp),
+        modifier = modifier.padding(top = 1.dp, end = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (book.isNew()) {
             Text(
                 text = stringResource(R.string.book_badge_new),
-                color = Color.White,
-                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 8.5.sp,
+                fontWeight = FontWeight.ExtraBold,
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.primary, CircleShape)
                     .padding(horizontal = 6.dp, vertical = 1.dp),
@@ -223,9 +261,9 @@ private fun CoverBadges(book: Book, modifier: Modifier = Modifier) {
                 contentDescription = null,
                 tint = Color.White,
                 modifier = Modifier
-                    .background(Color.Black.copy(alpha = 0.3f), CircleShape)
-                    .padding(3.dp)
-                    .size(12.dp),
+                    .background(PhysicalBadge, CircleShape)
+                    .padding(3.5.dp)
+                    .size(17.dp),
             )
         }
     }
