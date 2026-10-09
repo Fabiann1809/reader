@@ -122,6 +122,7 @@
     <string name="reader_bookmark_add">Marcar esta página</string>
     <string name="reader_bookmark_remove">Quitar el marcador de esta página</string>
     <string name="reader_bookmarks">Marcadores</string>
+    <string name="reader_toc_here">Estás aquí</string>
     <string name="reader_bookmark_detail">%1$d %% · %2$s</string>
     <string name="reader_bookmark_delete">Borrar marcador</string>
     <string name="reader_bookmarks_empty_title">Aún no tienes marcadores</string>

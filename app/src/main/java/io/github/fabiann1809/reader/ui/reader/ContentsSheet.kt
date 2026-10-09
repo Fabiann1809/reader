@@ -1,6 +1,21 @@
 package io.github.fabiann1809.reader.ui.reader
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -55,6 +70,14 @@ fun ContentsSheet(
     var tab by rememberSaveable { mutableIntStateOf(TAB_INDEX) }
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.navigationBarsPadding()) {
+            Text(
+                text = state.title,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 20.dp),
+            )
             PrimaryTabRow(selectedTabIndex = tab, containerColor = MaterialTheme.colorScheme.surfaceContainerLow) {
                 SheetTab(R.string.reader_index, selected = tab == TAB_INDEX) { tab = TAB_INDEX }
                 SheetTab(R.string.reader_bookmarks, selected = tab == TAB_BOOKMARKS) { tab = TAB_BOOKMARKS }
@@ -87,23 +110,73 @@ private fun TocList(entries: List<TocEntry>, openChapter: TocEntry?, onClick: (T
     }
     // Opens on the chapter being read, so a long index doesn't start from the top.
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = openChapter?.index ?: 0)
-    LazyColumn(state = listState) {
+    LazyColumn(state = listState, contentPadding = PaddingValues(start = 10.dp, end = 10.dp, bottom = 24.dp)) {
         items(entries, key = { it.index }) { entry ->
-            val isOpen = entry == openChapter
-            ListItem(
-                headlineContent = {
-                    Text(
-                        text = entry.title ?: stringResource(R.string.reader_untitled_chapter),
-                        color = if (isOpen) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                        fontWeight = if (isOpen) FontWeight.SemiBold else null,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(start = LevelIndent * entry.level),
-                    )
-                },
-                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                modifier = Modifier.clickable(role = Role.Button) { onClick(entry) },
+            val status = when {
+                openChapter == null -> ChapterStatus.PENDING
+                entry.index < openChapter.index -> ChapterStatus.DONE
+                entry == openChapter -> ChapterStatus.CURRENT
+                else -> ChapterStatus.PENDING
+            }
+            ChapterRow(entry, status) { onClick(entry) }
+        }
+    }
+}
+
+private enum class ChapterStatus { DONE, CURRENT, PENDING }
+
+/** A chapter: read ones are checked, the open one is marked "Estás aquí", the rest wait with an empty circle. */
+@Composable
+private fun ChapterRow(entry: TocEntry, status: ChapterStatus, onClick: () -> Unit) {
+    val isCurrent = status == ChapterStatus.CURRENT
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 54.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (isCurrent) MaterialTheme.colorScheme.surfaceContainerHigh else Color.Transparent)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+    ) {
+        Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+            when (status) {
+                ChapterStatus.DONE -> Icon(
+                    painter = painterResource(R.drawable.ic_check_circle),
+                    contentDescription = null,
+                    tint = ReaderTheme.colors.success,
+                    modifier = Modifier.size(20.dp),
+                )
+                ChapterStatus.CURRENT -> Icon(
+                    painter = painterResource(R.drawable.ic_book_open),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
+                )
+                ChapterStatus.PENDING -> Box(
+                    Modifier
+                        .size(14.dp)
+                        .border(2.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+                )
+            }
+        }
+        Column(Modifier.weight(1f).padding(start = LevelIndent * entry.level)) {
+            Text(
+                text = entry.title ?: stringResource(R.string.reader_untitled_chapter),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = if (isCurrent) FontWeight.ExtraBold else FontWeight.SemiBold,
+                color = if (status == ChapterStatus.PENDING) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
+            if (isCurrent) {
+                Text(
+                    text = stringResource(R.string.reader_toc_here),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
         }
     }
 }
