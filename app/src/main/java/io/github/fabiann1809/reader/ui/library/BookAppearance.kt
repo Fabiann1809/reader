@@ -20,7 +20,6 @@ import io.github.fabiann1809.reader.ui.components.rememberReduceMotion
 // Design 8: books rise 8 dp and fade in, staggered 30 ms. Books further down share the last delay,
 // so a long library does not keep the ones scrolled into view hidden.
 private val RISE = 8.dp
-private const val STAGGER_MILLIS = 30
 private const val MAX_STAGGERED_BOOKS = 12
 
 /**
@@ -29,7 +28,7 @@ private const val MAX_STAGGERED_BOOKS = 12
  */
 fun bookAppearanceProgress(elapsedMillis: Float, index: Int, reduceMotion: Boolean): Float {
     if (reduceMotion) return (elapsedMillis / Motion.INSTANT_MILLIS).coerceIn(0f, 1f)
-    val delay = minOf(index, MAX_STAGGERED_BOOKS) * STAGGER_MILLIS
+    val delay = minOf(index, MAX_STAGGERED_BOOKS) * Motion.STAGGER_MILLIS
     val linear = ((elapsedMillis - delay) / Motion.MEDIUM_MILLIS).coerceIn(0f, 1f)
     return Motion.MediumEasing.transform(linear)
 }
@@ -38,7 +37,7 @@ fun bookAppearanceProgress(elapsedMillis: Float, index: Int, reduceMotion: Boole
 @Stable
 class BookAppearance(private val reduceMotion: Boolean, isFinished: Boolean) {
     private val totalMillis =
-        if (reduceMotion) Motion.INSTANT_MILLIS else Motion.MEDIUM_MILLIS + MAX_STAGGERED_BOOKS * STAGGER_MILLIS
+        if (reduceMotion) Motion.INSTANT_MILLIS else Motion.MEDIUM_MILLIS + MAX_STAGGERED_BOOKS * Motion.STAGGER_MILLIS
     private val elapsed = Animatable(if (isFinished) totalMillis.toFloat() else 0f)
 
     suspend fun play() {

@@ -148,12 +148,13 @@ private val DarkReaderColors = LightReaderColors.copy(
 
 private val LocalReaderColors = staticCompositionLocalOf { LightReaderColors }
 
+// Radii of the prototype: chips and buttons are pills (CircleShape), the rest uses these.
 private val ReaderShapes = Shapes(
-    extraSmall = RoundedCornerShape(4.dp),
-    small = RoundedCornerShape(8.dp),
-    medium = RoundedCornerShape(12.dp),
-    large = RoundedCornerShape(16.dp),
-    extraLarge = RoundedCornerShape(28.dp),
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(16.dp),
+    medium = RoundedCornerShape(20.dp),
+    large = RoundedCornerShape(22.dp),
+    extraLarge = RoundedCornerShape(30.dp),
 )
 
 /** Accessors for the design colors that MaterialTheme doesn't cover. */
