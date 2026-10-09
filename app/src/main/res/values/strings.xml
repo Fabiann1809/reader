@@ -74,6 +74,9 @@
     <string name="format_cbz">CBZ</string>
     <string name="kind_digital">Digital</string>
     <string name="kind_physical">Físico</string>
+    <string name="book_author_format">%1$s · %2$s</string>
+    <string name="book_progress_finished">Terminado</string>
+    <string name="book_progress_not_started">Sin empezar</string>
     <string name="book_menu">Opciones del libro</string>
     <string name="book_menu_open">Abrir</string>
     <string name="book_menu_detail">Detalle</string>
