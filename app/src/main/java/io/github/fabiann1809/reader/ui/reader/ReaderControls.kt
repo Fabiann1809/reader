@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,19 +29,21 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -49,23 +52,35 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.ui.components.Motion
 import io.github.fabiann1809.reader.ui.components.rememberReduceMotion
-import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import kotlin.math.roundToInt
 
-// Surface at 94 % with level 3 shadow (design 7.8).
-private const val BAR_ALPHA = 0.94f
-private val BarElevation = 6.dp
+// The bars are the page's own color at 97 % (the app's surface for PDFs), with a thin line on the page side.
+private const val BAR_ALPHA = 0.97f
+private const val LINE_ALPHA = 0.12f
+private const val SECONDARY_ALPHA = 0.6f
+
+private class BarColors(val bar: Color, val content: Color, val line: Color)
+
+@Composable
+private fun barColors(state: ReaderUiState.Ready): BarColors {
+    val surface = MaterialTheme.colorScheme.surface
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val page = state.readingSettings.pageColors()
+    val (background, text) = if (state.format == BookFormat.EPUB) Color(page.background) to Color(page.text) else surface to onSurface
+    return BarColors(bar = background.copy(alpha = BAR_ALPHA), content = text, line = text.copy(alpha = LINE_ALPHA))
+}
 
 /**
- * The reader's overlay (design 7.8): a top bar (back, title, bookmark, menu) and a bottom bar
- * (progress bar with the chapter, and the reading actions). They slide in and fade in 180 ms.
- * Actions without a feature yet get one in their own task: voice (T11.15), AI (T11.11),
- * recording (phase 13) and the menu.
+ * The reader's overlay: a top bar (back, chapter and book, bookmark, menu) and a bottom bar (the
+ * progress bar with positions, and the reading actions). They slide in and fade in 180 ms.
  */
 @Composable
 fun ReaderControls(
@@ -77,11 +92,11 @@ fun ReaderControls(
     onMenu: () -> Unit = {},
     onIndex: () -> Unit = {},
     onTextSettings: () -> Unit = {},
-    onVoice: () -> Unit = {},
     onAi: () -> Unit = {},
     onRecord: () -> Unit = {},
 ) {
     val reduceMotion = rememberReduceMotion()
+    val colors = barColors(state)
     Box(modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = state.controlsVisible,
@@ -89,7 +104,7 @@ fun ReaderControls(
             exit = barExit(toTop = true, reduceMotion),
             modifier = Modifier.align(Alignment.TopCenter),
         ) {
-            TopBar(title = state.title, bookmarked = state.pageIsBookmarked, onBack = onBack, onBookmark = onBookmark, onMenu = onMenu)
+            TopBar(state, colors, onBack = onBack, onBookmark = onBookmark, onMenu = onMenu)
         }
         AnimatedVisibility(
             visible = state.controlsVisible,
@@ -97,19 +112,17 @@ fun ReaderControls(
             exit = barExit(toTop = false, reduceMotion),
             modifier = Modifier.align(Alignment.BottomCenter),
         ) {
-            BottomBar(state, onSeek) {
+            BottomBar(state, colors, onSeek) {
                 ControlAction(R.drawable.ic_list_bullets, R.string.reader_index, R.string.reader_index, onIndex)
                 ControlAction(R.drawable.ic_text_aa, R.string.reader_text_settings, R.string.reader_text_settings_description, onTextSettings)
-                ControlAction(R.drawable.ic_speaker_high, R.string.reader_voice, R.string.reader_voice_description, onVoice)
-                // The AI stands out with the lavender accent, never with a solid fill (design 02 §3.4).
-                ControlAction(R.drawable.ic_sparkle, R.string.reader_ai, R.string.reader_ai_description, onAi, ReaderTheme.colors.ai)
+                AiAction(onAi)
                 ControlAction(R.drawable.ic_microphone, R.string.reader_record, R.string.reader_record_description, onRecord)
             }
         }
     }
 }
 
-// Slide from the edge plus fade; with Reduce Motion, only a quick fade (design 03 §5).
+// Slide from the edge plus fade; with Reduce Motion, only a quick fade.
 private fun barEnter(fromTop: Boolean, reduceMotion: Boolean): EnterTransition {
     if (reduceMotion) return fadeIn(tween(Motion.INSTANT_MILLIS))
     return fadeIn(shortTween()) + slideInVertically(shortTween()) { if (fromTop) -it else it }
@@ -124,18 +137,15 @@ private fun barExit(toTop: Boolean, reduceMotion: Boolean): ExitTransition {
 private fun <T> shortTween() = tween<T>(Motion.SHORT_MILLIS, easing = LinearOutSlowInEasing)
 
 @Composable
-private fun ControlsBar(content: @Composable () -> Unit) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface.copy(alpha = BAR_ALPHA),
-        shadowElevation = BarElevation,
-        modifier = Modifier.fillMaxWidth(),
-        content = content,
-    )
+private fun ControlsBar(colors: BarColors, content: @Composable () -> Unit) {
+    CompositionLocalProvider(LocalContentColor provides colors.content) {
+        Column(Modifier.fillMaxWidth().background(colors.bar)) { content() }
+    }
 }
 
 @Composable
-private fun TopBar(title: String, bookmarked: Boolean, onBack: () -> Unit, onBookmark: () -> Unit, onMenu: () -> Unit) {
-    ControlsBar {
+private fun TopBar(state: ReaderUiState.Ready, colors: BarColors, onBack: () -> Unit, onBookmark: () -> Unit, onMenu: () -> Unit) {
+    ControlsBar(colors) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -143,23 +153,36 @@ private fun TopBar(title: String, bookmarked: Boolean, onBack: () -> Unit, onBoo
                 .height(56.dp)
                 .padding(horizontal = 4.dp),
         ) {
-            BarIcon(R.drawable.ic_caret_left, R.string.navigate_up, onBack)
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+            BarIcon(R.drawable.ic_arrow_left, R.string.navigate_up, onBack)
+            Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 8.dp),
-            )
-            if (bookmarked) {
+            ) {
+                Text(
+                    text = state.chapter ?: state.title,
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.ExtraBold),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (state.chapter != null) {
+                    Text(
+                        text = state.title,
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.alpha(SECONDARY_ALPHA),
+                    )
+                }
+            }
+            if (state.pageIsBookmarked) {
                 BarIcon(R.drawable.ic_bookmark_simple_fill, R.string.reader_bookmark_remove, onBookmark, tint = MaterialTheme.colorScheme.primary)
             } else {
                 BarIcon(R.drawable.ic_bookmark_simple, R.string.reader_bookmark_add, onBookmark)
             }
             BarIcon(R.drawable.ic_dots_three_vertical, R.string.more_options, onMenu)
         }
+        HorizontalDivider(color = colors.line)
     }
 }
 
@@ -171,28 +194,35 @@ private fun BarIcon(@DrawableRes icon: Int, description: Int, onClick: () -> Uni
 }
 
 @Composable
-private fun BottomBar(state: ReaderUiState.Ready, onSeek: (Float) -> Unit, actions: @Composable () -> Unit) {
-    ControlsBar {
+private fun BottomBar(state: ReaderUiState.Ready, colors: BarColors, onSeek: (Float) -> Unit, actions: @Composable () -> Unit) {
+    ControlsBar(colors) {
+        HorizontalDivider(color = colors.line)
         Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal))
-                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+                .padding(start = 14.dp, end = 14.dp, top = 12.dp, bottom = 8.dp),
         ) {
-            ProgressRow(state.chapter, state.progression, onSeek)
-            Row(horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth()) { actions() }
+            ProgressRow(state.positionCount, state.progression, colors, onSeek)
+            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) { actions() }
         }
     }
 }
 
-/** The draggable progress bar (design 7.9); it shows the chapter, or the percentage while dragging. */
+/** The draggable progress bar with where the reader is and where the book ends, in positions. */
 @Composable
-private fun ProgressRow(chapter: String?, progression: Float?, onSeek: (Float) -> Unit) {
+private fun ProgressRow(positionCount: Int?, progression: Float?, colors: BarColors, onSeek: (Float) -> Unit) {
     var dragged by remember { mutableStateOf<Float?>(null) }
     val value = dragged ?: progression ?: 0f
-    val percent = stringResource(R.string.reader_progress_percent, (value * 100).roundToInt())
     val progressDescription = stringResource(R.string.reader_progress)
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    val here = positionCount?.let { (value * it).roundToInt().coerceAtLeast(1).toString() }
+        ?: stringResource(R.string.reader_progress_percent, (value * 100).roundToInt())
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.padding(horizontal = 6.dp),
+    ) {
+        Text(here, style = MaterialTheme.typography.labelMedium, color = colors.content.copy(alpha = SECONDARY_ALPHA), maxLines = 1)
         ReaderSlider(
             value = value,
             onValueChange = { dragged = it },
@@ -201,18 +231,20 @@ private fun ProgressRow(chapter: String?, progression: Float?, onSeek: (Float) -
                 dragged = null
             },
             enabled = progression != null,
+            inactiveColor = colors.line,
             modifier = Modifier
                 .weight(1f)
                 .semantics { contentDescription = progressDescription },
         )
-        Text(
-            text = if (dragged == null && chapter != null) chapter else percent,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.widthIn(max = 120.dp),
-        )
+        positionCount?.let {
+            Text(
+                text = it.toString(),
+                style = MaterialTheme.typography.labelMedium,
+                color = colors.content.copy(alpha = SECONDARY_ALPHA),
+                maxLines = 1,
+                modifier = Modifier.widthIn(min = 24.dp),
+            )
+        }
     }
 }
 
@@ -223,24 +255,52 @@ private fun ControlAction(
     label: Int,
     description: Int,
     onClick: () -> Unit,
-    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
 ) {
     val descriptionText = stringResource(description)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
         modifier = Modifier
-            .sizeIn(minWidth = 56.dp, minHeight = 48.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .size(width = 60.dp, height = 56.dp)
+            .clip(RoundedCornerShape(16.dp))
             .clickable(role = Role.Button, onClick = onClick)
-            .semantics { contentDescription = descriptionText }
-            .padding(vertical = 6.dp),
+            .semantics { contentDescription = descriptionText },
     ) {
-        Icon(painterResource(icon), contentDescription = null, tint = tint, modifier = Modifier.size(24.dp))
+        Icon(painterResource(icon), contentDescription = null, modifier = Modifier.size(22.dp))
         Text(
             text = stringResource(label),
-            style = MaterialTheme.typography.labelSmall,
-            color = tint,
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 11.sp),
+            modifier = Modifier
+                .alpha(0.7f)
+                .clearAndSetSemantics {},
+        )
+    }
+}
+
+/** "IA" stands out as a filled lavender tile, as every AI feature does. */
+@Composable
+private fun AiAction(onClick: () -> Unit) {
+    val descriptionText = stringResource(R.string.reader_ai_description)
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
+        modifier = Modifier
+            .sizeIn(minWidth = 64.dp, minHeight = 56.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.tertiary)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics { contentDescription = descriptionText },
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_sparkle),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onTertiary,
+            modifier = Modifier.size(22.dp),
+        )
+        Text(
+            text = stringResource(R.string.reader_ai),
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold, fontSize = 11.sp),
+            color = MaterialTheme.colorScheme.onTertiary,
             modifier = Modifier.clearAndSetSemantics {},
         )
     }

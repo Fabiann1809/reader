@@ -41,7 +41,6 @@ class ReaderControlsTest {
         listOf(
             R.string.reader_index,
             R.string.reader_text_settings_description,
-            R.string.reader_voice_description,
             R.string.reader_ai_description,
             R.string.reader_record_description,
             R.string.reader_bookmark_add,
