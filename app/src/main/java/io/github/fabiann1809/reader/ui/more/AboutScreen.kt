@@ -1,7 +1,14 @@
 package io.github.fabiann1809.reader.ui.more
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -61,31 +68,48 @@ fun AboutScreen(onNavigateUp: () -> Unit, modifier: Modifier = Modifier) {
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState()),
         ) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier
+                    .padding(horizontal = 20.dp, vertical = 8.dp)
+                    .fillMaxWidth()
+                    .background(Brush.linearGradient(ReaderTheme.colors.pastels[0]), RoundedCornerShape(30.dp))
+                    .padding(22.dp),
+            ) {
+                Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold), color = ReaderTheme.colors.onPastel)
                 Text(
                     text = stringResource(R.string.about_version, version),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = ReaderTheme.colors.onPastel,
                 )
                 Text(
                     text = stringResource(R.string.about_tagline),
                     style = MaterialTheme.typography.bodyLarge,
+                    color = ReaderTheme.colors.onPastel,
                     modifier = Modifier.padding(top = 12.dp),
                 )
             }
             Text(
                 text = stringResource(R.string.about_licenses),
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp),
+                modifier = Modifier.padding(start = 24.dp, top = 16.dp, bottom = 8.dp),
             )
-            ThirdPartyLicense.entries.forEach { item ->
-                ListItem(
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 32.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainer),
+            ) {
+                ThirdPartyLicense.entries.forEach { item ->
+                    ListItem(
                     headlineContent = { Text(stringResource(item.title)) },
                     supportingContent = { Text(stringResource(item.license)) },
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
-                    modifier = Modifier.clickable { openLicense = item },
-                )
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        modifier = Modifier.clickable { openLicense = item },
+                    )
+                }
             }
         }
     }

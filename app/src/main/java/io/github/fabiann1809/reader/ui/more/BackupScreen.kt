@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader.ui.more
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -22,8 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -32,7 +37,6 @@ import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.OutlineButton
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
-import io.github.fabiann1809.reader.ui.settings.SettingsDivider
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 @Composable
@@ -73,7 +77,7 @@ fun BackupScreen(
     }
 }
 
-/** "Respaldo" (T17.2): what a backup holds, and exporting it. */
+/** "Respaldo" (T17.2): a pastel card to export what a backup holds, and a card to import one. */
 @Composable
 fun BackupContent(
     export: ExportState,
@@ -88,47 +92,80 @@ fun BackupContent(
         topBar = { ReaderTopAppBar(title = stringResource(R.string.backup_title), onNavigateUp = onNavigateUp) },
     ) { innerPadding ->
         Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = 40.dp),
         ) {
-            Text(stringResource(R.string.backup_export_title), style = MaterialTheme.typography.titleMedium)
-            Text(stringResource(R.string.backup_export_message), style = MaterialTheme.typography.bodyMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painterResource(R.drawable.ic_shield_check),
-                    contentDescription = null,
-                    tint = ReaderTheme.colors.success,
-                    modifier = Modifier.size(20.dp),
-                )
-                Text(
-                    stringResource(R.string.backup_no_key),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            PrimaryButton(
-                text = stringResource(R.string.backup_export),
-                onClick = onExport,
-                enabled = export != ExportState.Exporting,
-                icon = R.drawable.ic_archive,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            ExportResult(export)
-            SettingsDivider()
-            Text(stringResource(R.string.backup_import_title), style = MaterialTheme.typography.titleMedium)
-            Text(stringResource(R.string.backup_import_message), style = MaterialTheme.typography.bodyMedium)
-            OutlineButton(
-                text = stringResource(R.string.backup_import),
-                onClick = onImport,
-                enabled = import != ImportState.Importing,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            ImportResult(import)
+            ExportCard(export, onExport)
+            ImportCard(import, onImport)
         }
+    }
+}
+
+@Composable
+private fun ExportCard(export: ExportState, onExport: () -> Unit) {
+    val colors = ReaderTheme.colors
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Brush.linearGradient(colors.pastels[2]), RoundedCornerShape(30.dp))
+            .padding(22.dp),
+    ) {
+        Icon(painterResource(R.drawable.ic_archive), contentDescription = null, tint = colors.onPastel, modifier = Modifier.size(36.dp))
+        Text(
+            stringResource(R.string.backup_export_title),
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
+            color = colors.onPastel,
+        )
+        Text(stringResource(R.string.backup_export_message), style = MaterialTheme.typography.bodyMedium, color = colors.onPastel)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(painterResource(R.drawable.ic_shield_check), contentDescription = null, tint = colors.onPastel, modifier = Modifier.size(18.dp))
+            Text(stringResource(R.string.backup_no_key), style = MaterialTheme.typography.bodySmall, color = colors.onPastel)
+        }
+        PrimaryButton(
+            text = stringResource(R.string.backup_export),
+            onClick = onExport,
+            enabled = export != ExportState.Exporting,
+            icon = R.drawable.ic_archive,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+        )
+        ExportResult(export)
+    }
+}
+
+@Composable
+private fun ImportCard(import: ImportState, onImport: () -> Unit) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainer, RoundedCornerShape(30.dp))
+            .padding(22.dp),
+    ) {
+        Text(
+            stringResource(R.string.backup_import_title),
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
+        )
+        Text(
+            stringResource(R.string.backup_import_message),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        OutlineButton(
+            text = stringResource(R.string.backup_import),
+            onClick = onImport,
+            enabled = import != ImportState.Importing,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+        )
+        ImportResult(import)
     }
 }
 
@@ -136,11 +173,8 @@ fun BackupContent(
 private fun ExportResult(export: ExportState) {
     when (export) {
         ExportState.Idle -> Unit
-        ExportState.Exporting -> Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-            Text(stringResource(R.string.backup_exporting), style = MaterialTheme.typography.bodyMedium)
-        }
-        is ExportState.Done -> Text(
+        ExportState.Exporting -> Busy(R.string.backup_exporting)
+        is ExportState.Done -> Banner(
             stringResource(
                 R.string.backup_exported,
                 export.summary.books,
@@ -148,14 +182,9 @@ private fun ExportResult(export: ExportState) {
                 export.summary.flashcards,
                 export.summary.files,
             ),
-            style = MaterialTheme.typography.bodyMedium,
-            color = ReaderTheme.colors.success,
+            success = true,
         )
-        ExportState.Failed -> Text(
-            stringResource(R.string.backup_export_failed),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
-        )
+        ExportState.Failed -> Banner(stringResource(R.string.backup_export_failed), success = false)
     }
 }
 
@@ -163,16 +192,12 @@ private fun ExportResult(export: ExportState) {
 private fun ImportResult(import: ImportState) {
     when (import) {
         ImportState.Idle, is ImportState.Confirming -> Unit
-        ImportState.Importing -> Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-            Text(stringResource(R.string.backup_importing), style = MaterialTheme.typography.bodyMedium)
-        }
-        is ImportState.Done -> Text(
+        ImportState.Importing -> Busy(R.string.backup_importing)
+        is ImportState.Done -> Banner(
             stringResource(R.string.backup_imported, import.summary.books, import.summary.notes, import.summary.flashcards, import.summary.files),
-            style = MaterialTheme.typography.bodyMedium,
-            color = ReaderTheme.colors.success,
+            success = true,
         )
-        is ImportState.Failed -> Text(
+        is ImportState.Failed -> Banner(
             stringResource(
                 when (import.reason) {
                     ImportFailure.NOT_A_BACKUP -> R.string.backup_import_not_a_backup
@@ -180,9 +205,39 @@ private fun ImportResult(import: ImportState) {
                     ImportFailure.UNREADABLE -> R.string.backup_import_unreadable
                 },
             ),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
+            success = false,
         )
+    }
+}
+
+@Composable
+private fun Busy(message: Int) {
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+        Text(stringResource(message), style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+/** A soft green or red box with the outcome; the icon keeps it from relying on color alone. */
+@Composable
+private fun Banner(text: String, success: Boolean) {
+    val colors = ReaderTheme.colors
+    val scheme = MaterialTheme.colorScheme
+    val accent: Color = if (success) colors.success else scheme.error
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(if (success) colors.successContainer else scheme.errorContainer, RoundedCornerShape(18.dp))
+            .padding(14.dp),
+    ) {
+        Icon(
+            painter = painterResource(if (success) R.drawable.ic_check_circle else R.drawable.ic_warning_circle),
+            contentDescription = null,
+            tint = accent,
+            modifier = Modifier.size(22.dp),
+        )
+        Text(text, style = MaterialTheme.typography.bodyMedium, color = scheme.onSurface)
     }
 }
 

@@ -168,6 +168,3 @@ private fun AppTheme.label(): Int = when (this) {
     AppTheme.LIGHT -> R.string.settings_theme_light
     AppTheme.DARK -> R.string.settings_theme_dark
 }
-
-@Composable
-fun SettingsDivider() = HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
