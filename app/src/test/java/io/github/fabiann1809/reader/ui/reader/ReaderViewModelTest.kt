@@ -11,6 +11,7 @@ import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import io.github.fabiann1809.reader.data.prefs.ReadingTheme
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.data.reader.ReaderSession
+import io.github.fabiann1809.reader.data.reader.SearchHit
 import io.github.fabiann1809.reader.data.reader.ReadingAdjustments
 import io.github.fabiann1809.reader.data.reader.ReadingLocation
 import io.github.fabiann1809.reader.data.reader.ReadingPosition
@@ -111,6 +112,10 @@ class ReaderViewModelTest {
 
         override suspend fun chapterText(bookId: Long, href: String): String? = chapter
 
+        var searchHits: List<SearchHit>? = emptyList()
+
+        override suspend fun search(bookId: Long, query: String, limit: Int): List<SearchHit>? = searchHits
+
         override fun close(bookId: Long) = Unit
     }
 
@@ -165,6 +170,49 @@ class ReaderViewModelTest {
         assertEquals(BookFormat.PDF, (viewModel.uiState.value as ReaderUiState.Ready).format)
     }
 
+
+    @Test
+    fun searchingTheBookListsTheMatchesOnceTypingPauses() {
+        val session = FakeSession()
+        val hit = SearchHit(location = "{}", chapter = "Capítulo 1", before = "El ", match = "principito", after = " vive")
+        session.searchHits = listOf(hit)
+        val viewModel = viewModel(bookId = 1, session = session)
+
+        viewModel.openSearch()
+        viewModel.onSearchQuery("princi")
+        // Still waiting for the typing to pause.
+        assertEquals(true, (viewModel.uiState.value as ReaderUiState.Ready).search?.isSearching)
+        mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
+
+        val search = (viewModel.uiState.value as ReaderUiState.Ready).search
+        assertEquals(listOf(hit), search?.results)
+        assertEquals(false, search?.isSearching)
+    }
+
+    @Test
+    fun aBookThatCannotBeSearchedSaysSo() {
+        val session = FakeSession()
+        session.searchHits = null
+        val viewModel = viewModel(bookId = 1, session = session)
+
+        viewModel.openSearch()
+        viewModel.onSearchQuery("algo")
+        mainDispatcherRule.testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(true, (viewModel.uiState.value as ReaderUiState.Ready).search?.unsupported)
+    }
+
+    @Test
+    fun aMatchGoesToItsPlaceAndClosesTheSearch() {
+        val session = FakeSession()
+        val viewModel = viewModel(bookId = 1, session = session)
+        viewModel.openSearch()
+
+        viewModel.goToSearchResult(SearchHit(location = "{\"href\":\"a\"}", chapter = null, before = "", match = "a", after = ""))
+
+        assertEquals(null, (viewModel.uiState.value as ReaderUiState.Ready).search)
+        assertEquals(listOf("{\"href\":\"a\"}"), session.jumpedToLocations)
+    }
     @Test
     fun aCenterTapShowsTheControlsAndAnotherHidesThem() {
         val viewModel = viewModel(bookId = 1, session = FakeSession())

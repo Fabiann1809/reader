@@ -123,8 +123,18 @@ fun ReaderScreen(
                     onAi = if (state.format == BookFormat.PDF) viewModel::startZonePicking else ({}),
                     onRecord = viewModel::startVoiceNote,
                     onNotes = viewModel::showNotes,
+                    onSearch = viewModel::openSearch,
                     onMenu = viewModel::showMenu,
                 )
+                state.search?.let { search ->
+                    ReaderSearch(
+                        bookTitle = state.title,
+                        search = search,
+                        onQueryChange = viewModel::onSearchQuery,
+                        onResult = viewModel::goToSearchResult,
+                        onBack = viewModel::closeSearch,
+                    )
+                }
                 if (state.notesVisible) {
                     ReaderNotesSheet(
                         onGoTo = viewModel::goToLocation,

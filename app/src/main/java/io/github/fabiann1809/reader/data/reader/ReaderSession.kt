@@ -22,6 +22,10 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.locateProgression
 import org.readium.r2.shared.publication.services.positions
+import org.readium.r2.shared.publication.services.search.isSearchable
+import org.readium.r2.shared.publication.services.search.search
+import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.getOrElse
 
 /** Why a book could not be opened in the reader. */
 enum class OpenProblem {
@@ -59,6 +63,9 @@ data class ReadingPosition(
     // How far into the chapter (0 to 1); unlike [progression], it changes on every screen.
     val chapterProgression: Double? = null,
 )
+
+/** One match of a search in the book: where it is, its chapter and the text around it. */
+data class SearchHit(val location: String, val chapter: String?, val before: String, val match: String, val after: String)
 
 /** Opens a book for reading, keeps it while it is read and reports where the reader is. */
 interface ReaderSession {
@@ -106,6 +113,12 @@ interface ReaderSession {
 
     /** The plain text of the chapter file [href] of the open EPUB [bookId] (T15.3); null if it can't be read. */
     suspend fun chapterText(bookId: Long, href: String): String?
+
+    /**
+     * The places of [bookId] where [query] appears, in reading order and up to [limit]; null when the
+     * open book cannot be searched (a PDF).
+     */
+    suspend fun search(bookId: Long, query: String, limit: Int = SEARCH_LIMIT): List<SearchHit>?
 
     /** Where the open navigator must go (see [jumpTo]). */
     val jumps: SharedFlow<Locator>
@@ -225,6 +238,22 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
 
     override suspend fun chapterText(bookId: Long, href: String): String? = publication(bookId)?.chapterText(href)
 
+    @OptIn(ExperimentalReadiumApi::class)
+    override suspend fun search(bookId: Long, query: String, limit: Int): List<SearchHit>? {
+        val publication = publication(bookId)?.takeIf { it.isSearchable } ?: return null
+        val iterator = publication.search(query) ?: return null
+        val hits = mutableListOf<SearchHit>()
+        try {
+            while (hits.size < limit) {
+                val page = iterator.next().getOrElse { null } ?: break
+                page.locators.mapTo(hits) { it.toHit() }
+            }
+        } finally {
+            iterator.close()
+        }
+        return hits.take(limit)
+    }
+
     override fun close(bookId: Long) {
         if (bookId == openBookId) closeCurrent()
     }
@@ -248,7 +277,18 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         null
     }
 
+    private fun Locator.toHit() = SearchHit(
+        location = toJSON().toString(),
+        chapter = title,
+        before = text.before.orEmpty(),
+        match = text.highlight.orEmpty(),
+        after = text.after.orEmpty(),
+    )
+
     private companion object {
         val READABLE_FORMATS = setOf(BookFormat.EPUB, BookFormat.PDF)
     }
 }
+
+/** How many matches a search of the book keeps: enough to browse, few enough to show at once. */
+const val SEARCH_LIMIT = 100

@@ -2,6 +2,9 @@ package io.github.fabiann1809.reader.data.book
 
 import android.content.Context
 import org.readium.adapter.pdfium.document.PdfiumDocumentFactory
+import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.services.search.StringSearchService
+import org.readium.r2.shared.publication.services.search.searchServiceFactory
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.asset.Asset
 import org.readium.r2.shared.util.asset.AssetRetriever
@@ -20,6 +23,7 @@ class ReadiumToolkit(context: Context) {
 
     private val httpClient = DefaultHttpClient()
     private val assetRetriever = AssetRetriever(context.contentResolver, httpClient)
+    @OptIn(ExperimentalReadiumApi::class)
     private val publicationOpener = PublicationOpener(
         publicationParser = DefaultPublicationParser(
             context = context,
@@ -27,6 +31,8 @@ class ReadiumToolkit(context: Context) {
             assetRetriever = assetRetriever,
             pdfFactory = PdfiumDocumentFactory(context),
         ),
+        // So an EPUB can be searched for text (the "Buscar en el libro" of the reader).
+        onCreatePublication = { servicesBuilder.searchServiceFactory = StringSearchService.createDefaultFactory() },
     )
 
     /** The file's format, recognized by its content (not its extension). Null if Readium doesn't know it. */

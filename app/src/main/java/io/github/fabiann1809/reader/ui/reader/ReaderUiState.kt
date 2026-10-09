@@ -5,6 +5,7 @@ import io.github.fabiann1809.reader.data.bookmark.Bookmark
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.data.reader.ReaderSession
+import io.github.fabiann1809.reader.data.reader.SearchHit
 import io.github.fabiann1809.reader.data.reader.TocEntry
 
 sealed interface ReaderUiState {
@@ -42,6 +43,7 @@ sealed interface ReaderUiState {
         val recordingVoice: Boolean = false,
         val menuVisible: Boolean = false,
         val notesVisible: Boolean = false,
+        val search: ReaderSearchState? = null,
         val chapterQuiz: ChapterQuiz? = null,
         val chapterUnreadable: Boolean = false,
         val chapterEnd: ChapterEnd? = null,
@@ -55,6 +57,17 @@ sealed interface ReaderUiState {
 
     data class CannotOpen(val problem: OpenProblem) : ReaderUiState
 }
+
+/**
+ * "Buscar en el libro": the [query] typed, what it [results] in (up to a limit) and whether it is [isSearching];
+ * [unsupported] when the open book cannot be searched.
+ */
+data class ReaderSearchState(
+    val query: String = "",
+    val results: List<SearchHit> = emptyList(),
+    val isSearching: Boolean = false,
+    val unsupported: Boolean = false,
+)
 
 /** Marking a zone of a PDF page to explain it (T11.14): drawing it, reading it, or nothing found. */
 enum class ZonePicking { MARKING, READING, NO_TEXT }

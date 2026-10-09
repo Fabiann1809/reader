@@ -123,6 +123,16 @@
     <string name="reader_bookmark_remove">Quitar el marcador de esta página</string>
     <string name="reader_bookmarks">Marcadores</string>
     <string name="reader_toc_here">Estás aquí</string>
+    <string name="reader_search_description">Buscar en el libro</string>
+    <string name="reader_search_placeholder">Buscar en %1$s</string>
+    <string name="reader_search_prompt">Escribe una palabra o frase del libro</string>
+    <string name="reader_search_none">Sin resultados</string>
+    <string name="reader_search_none_hint">Revisa la ortografía o prueba con una palabra más corta.</string>
+    <string name="reader_search_unsupported">Este libro no se puede buscar</string>
+    <plurals name="reader_search_results">
+        <item quantity="one">%d resultado</item>
+        <item quantity="other">%d resultados</item>
+    </plurals>
     <string name="reader_bookmark_detail">%1$d %% · %2$s</string>
     <string name="reader_bookmark_delete">Borrar marcador</string>
     <string name="reader_bookmarks_empty_title">Aún no tienes marcadores</string>

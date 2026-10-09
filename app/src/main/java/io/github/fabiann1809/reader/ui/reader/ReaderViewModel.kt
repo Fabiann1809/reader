@@ -17,9 +17,12 @@ import io.github.fabiann1809.reader.data.prefs.ReadingPreferences
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import io.github.fabiann1809.reader.data.reader.OpenProblem
 import io.github.fabiann1809.reader.data.reader.ReaderSession
+import io.github.fabiann1809.reader.data.reader.SearchHit
 import io.github.fabiann1809.reader.data.reader.TocEntry
 import io.github.fabiann1809.reader.data.session.ReadingSessionTracker
 import io.github.fabiann1809.reader.ocr.TextRecognizer
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,6 +48,8 @@ class ReaderViewModel(
     // Injected so tests control time.
     private val now: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
+
+    private var searchJob: Job? = null
 
     private val _uiState = MutableStateFlow<ReaderUiState>(ReaderUiState.Loading)
     val uiState: StateFlow<ReaderUiState> = _uiState.asStateFlow()
@@ -230,6 +235,33 @@ class ReaderViewModel(
 
     fun hideMenu() = updateReady { it.copy(menuVisible = false) }
 
+    fun openSearch() = updateReady { it.copy(search = ReaderSearchState(), controlsVisible = false) }
+
+    fun closeSearch() {
+        searchJob?.cancel()
+        updateReady { it.copy(search = null) }
+    }
+
+    /** Searches the book for [query] once the typing pauses; a blank one clears the results. */
+    fun onSearchQuery(query: String) {
+        searchJob?.cancel()
+        updateReady { it.copy(search = ReaderSearchState(query = query, isSearching = query.isNotBlank())) }
+        if (query.isBlank()) return
+        searchJob = viewModelScope.launch {
+            delay(SEARCH_PAUSE_MILLIS)
+            val hits = session.search(bookId, query.trim())
+            updateReady { state ->
+                state.copy(search = state.search?.copy(results = hits.orEmpty(), isSearching = false, unsupported = hits == null))
+            }
+        }
+    }
+
+    /** Goes to a match, back to the page with nothing on top. */
+    fun goToSearchResult(hit: SearchHit) {
+        closeSearch()
+        session.jumpToLocation(bookId, hit.location)
+    }
+
     fun showNotes() = updateReady { it.copy(notesVisible = true) }
 
     fun hideNotes() = updateReady { it.copy(notesVisible = false) }
@@ -348,3 +380,6 @@ class ReaderViewModel(
 
 // The end-of-chapter suggestion's quiz: short, it interrupts reading.
 private const val CHAPTER_END_QUIZ_SIZE = 3
+
+// How long typing must pause before the book is searched.
+private const val SEARCH_PAUSE_MILLIS = 300L
