@@ -331,7 +331,10 @@
     <string name="ai_error_unknown">Ocurrió un error inesperado con la IA. Vuelve a intentarlo.</string>
 
     <!-- Add book -->
-    <string name="add_book_title">Añadir libro</string>
+    <string name="add_book_title">Agregar libro físico</string>
+    <string name="add_book_cover_hint">La portada se genera con el título</string>
+    <string name="add_book_save">Guardar en la biblioteca</string>
+    <string name="add_book_preview_title">Título del libro</string>
 
     <!-- Settings -->
     <string name="settings_title">Configuración</string>
