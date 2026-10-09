@@ -43,6 +43,7 @@ import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.ui.components.readerTextFieldColors
 import io.github.fabiann1809.reader.ui.components.readerTextFieldShape
+import io.github.fabiann1809.reader.ui.theme.PastelDots
 
 @StringRes
 fun SmartCollection.nameRes(): Int = when (this) {
@@ -59,6 +60,7 @@ fun SmartCollection.nameRes(): Int = when (this) {
 fun CollectionPickerSheet(
     selected: LibraryFilter,
     collections: List<Collection>,
+    countOf: (LibraryFilter) -> Int,
     onSelect: (LibraryFilter) -> Unit,
     onNewCollection: () -> Unit,
     onDismiss: () -> Unit,
@@ -68,68 +70,36 @@ fun CollectionPickerSheet(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
-                .padding(bottom = 16.dp),
+                .padding(start = 12.dp, end = 12.dp, bottom = 16.dp),
         ) {
             Text(
                 text = stringResource(R.string.collections_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
             )
             SmartCollection.entries.forEach { smart ->
                 val filter = LibraryFilter.Smart(smart)
-                PickerRow(stringResource(smart.nameRes()), isSelected = selected == filter) { onSelect(filter) }
-            }
-            if (collections.isNotEmpty()) {
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+                CollectionRow(
+                    name = stringResource(smart.nameRes()),
+                    dot = PastelDots[SmartCollection.entries.indexOf(smart) % PastelDots.size],
+                    count = countOf(filter),
+                    isSelected = selected == filter,
+                    onClick = { onSelect(filter) },
                 )
-                collections.forEach { collection ->
-                    val filter = LibraryFilter.Custom(collection.id)
-                    PickerRow(collection.name, isSelected = selected == filter) { onSelect(filter) }
-                }
             }
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.collection_new), color = MaterialTheme.colorScheme.primary) },
-                leadingContent = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_plus_circle),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                },
-                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                modifier = Modifier.clickable(role = Role.Button, onClick = onNewCollection),
-            )
+            collections.forEach { collection ->
+                val filter = LibraryFilter.Custom(collection.id)
+                CollectionRow(
+                    name = collection.name,
+                    dot = PastelDots[(collection.id % PastelDots.size).toInt()],
+                    count = countOf(filter),
+                    isSelected = selected == filter,
+                    onClick = { onSelect(filter) },
+                )
+            }
+            NewCollectionRow(onNewCollection)
         }
     }
-}
-
-@Composable
-private fun PickerRow(name: String, isSelected: Boolean, onClick: () -> Unit) {
-    ListItem(
-        headlineContent = { Text(name) },
-        trailingContent = {
-            if (isSelected) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_check),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
-        },
-        colors = ListItemDefaults.colors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.secondaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceContainerLow
-            },
-        ),
-        modifier = Modifier
-            .semantics { selected = isSelected }
-            .clickable(role = Role.RadioButton, onClick = onClick),
-    )
 }
 
 /** Name input used both to create and to rename a collection. */

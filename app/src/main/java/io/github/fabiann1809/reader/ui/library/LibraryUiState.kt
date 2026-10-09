@@ -40,3 +40,9 @@ data class LibraryUiState(
 
 /** The book whose "Colección" sheet is open, with the user collections that already hold it. */
 data class BookCollections(val book: Book, val collectionIds: Set<Long>)
+
+/** How many books [filter] holds in the whole library, for the collection sheet. */
+fun LibraryUiState.countOf(filter: LibraryFilter): Int = when (filter) {
+    is LibraryFilter.Smart -> smartCounts[filter.collection] ?: 0
+    is LibraryFilter.Custom -> collectionGroups.find { it.collection?.id == filter.collectionId }?.books?.size ?: 0
+}

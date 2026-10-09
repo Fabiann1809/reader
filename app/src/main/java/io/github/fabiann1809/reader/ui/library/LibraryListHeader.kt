@@ -51,7 +51,7 @@ fun LibraryListHeader(
     Column {
         val book = uiState.bookToContinue
         if (book != null && uiState.query.isBlank()) ContinueCard(book, onClick = { onContinue(book.id) })
-        if (uiState.books.isNotEmpty()) {
+        if (!uiState.libraryIsEmpty && !uiState.isLoading) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,

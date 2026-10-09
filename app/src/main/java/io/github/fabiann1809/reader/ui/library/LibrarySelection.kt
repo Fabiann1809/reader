@@ -3,8 +3,11 @@ package io.github.fabiann1809.reader.ui.library
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,6 +31,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import io.github.fabiann1809.reader.ui.theme.PastelDots
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -50,32 +55,40 @@ class LibrarySelectionActions(
 )
 
 /** Library bar while selecting: how many books are checked, plus what can be done with them. */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectionTopBar(count: Int, onClose: () -> Unit, onAddToCollection: () -> Unit, onDelete: () -> Unit) {
     BackHandler(onBack = onClose)
-    TopAppBar(
-        title = { Text(pluralStringResource(R.plurals.selection_count, count, count)) },
-        navigationIcon = {
-            IconButton(onClick = onClose) {
-                Icon(painterResource(R.drawable.ic_x), contentDescription = stringResource(R.string.selection_close))
-            }
-        },
-        actions = {
-            IconButton(onClick = onAddToCollection) {
-                Icon(painterResource(R.drawable.ic_books), contentDescription = stringResource(R.string.collection_add_title))
-            }
-            IconButton(onClick = onDelete) {
-                Icon(painterResource(R.drawable.ic_trash), contentDescription = stringResource(R.string.action_delete))
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            titleContentColor = Color.White,
-            navigationIconContentColor = Color.White,
-            actionIconContentColor = Color.White,
-        ),
-    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .statusBarsPadding()
+            .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 14.dp),
+    ) {
+        SelectionButton(R.drawable.ic_x, stringResource(R.string.selection_close), onClose)
+        Text(
+            text = pluralStringResource(R.plurals.selection_count, count, count),
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.weight(1f).padding(start = 4.dp),
+        )
+        SelectionButton(R.drawable.ic_books, stringResource(R.string.collection_add_title), onAddToCollection)
+        SelectionButton(R.drawable.ic_trash, stringResource(R.string.action_delete), onDelete)
+    }
+}
+
+// Round button of the selection bar, like the ones of the library header.
+@Composable
+private fun SelectionButton(icon: Int, description: String, onClick: () -> Unit) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(48.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .clickable(role = Role.Button, onClick = onClick),
+    ) {
+        Icon(painterResource(icon), contentDescription = description, modifier = Modifier.size(22.dp))
+    }
 }
 
 /**
@@ -117,44 +130,28 @@ fun AddSelectionToCollectionSheet(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
-                .padding(bottom = 16.dp),
+                .padding(start = 12.dp, end = 12.dp, bottom = 16.dp),
         ) {
             Text(
                 text = stringResource(R.string.collection_add_title),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
             )
-            SheetRow(stringResource(R.string.collection_favorites), onFavorites)
-            if (collections.isNotEmpty()) {
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
-                )
-                collections.forEach { collection -> SheetRow(collection.name) { onCollection(collection.id) } }
+            CollectionRow(
+                name = stringResource(R.string.collection_favorites),
+                dot = PastelDots[0],
+                count = null,
+                isSelected = false,
+                onClick = onFavorites,
+            )
+            collections.forEach { collection ->
+                CollectionRow(collection.name, collectionDot(collection.id), count = null, isSelected = false) {
+                    onCollection(collection.id)
+                }
             }
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.collection_new), color = MaterialTheme.colorScheme.primary) },
-                leadingContent = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_plus_circle),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                },
-                colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                modifier = Modifier.clickable(role = Role.Button, onClick = onNewCollection),
-            )
+            NewCollectionRow(onNewCollection)
         }
     }
-}
-
-@Composable
-private fun SheetRow(name: String, onClick: () -> Unit) {
-    ListItem(
-        headlineContent = { Text(name) },
-        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        modifier = Modifier.clickable(role = Role.Button, onClick = onClick),
-    )
 }
 
 @Composable

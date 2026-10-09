@@ -61,6 +61,7 @@ fun CollectionDialogs(
         LibraryDialog.PICKER -> CollectionPickerSheet(
             selected = uiState.filter,
             collections = uiState.collections,
+            countOf = { filter -> uiState.countOf(filter) },
             onSelect = { filter ->
                 actions.onSelectFilter(filter)
                 close()

@@ -16,7 +16,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
-import io.github.fabiann1809.reader.ui.components.LightStatusBarIcons
 
 /**
  * The library bar in its three modes: selecting books, searching, or the header with the
@@ -33,8 +32,6 @@ fun LibraryTopBar(
     onClearSelection: () -> Unit,
     onSelectFilter: (LibraryFilter) -> Unit,
 ) {
-    // The selection bar is still dark: its status bar icons must be light.
-    if (uiState.isSelecting) LightStatusBarIcons()
     when {
         uiState.isSelecting -> SelectionTopBar(
             count = uiState.selectedIds.size,
