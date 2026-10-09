@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.remember
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import io.github.fabiann1809.reader.util.AppLocale
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -92,11 +92,11 @@ fun ProgressContent(
 /** "Progreso" and today's date. */
 @Composable
 private fun ProgressHeader() {
-    val today = remember { LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", Locale.getDefault())) }
+    val today = remember { LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", AppLocale)) }
     Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp)) {
         Text(stringResource(R.string.tab_progress), style = MaterialTheme.typography.displaySmall)
         Text(
-            text = today.replaceFirstChar { it.titlecase(Locale.getDefault()) },
+            text = today.replaceFirstChar { it.titlecase(AppLocale) },
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

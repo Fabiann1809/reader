@@ -22,7 +22,7 @@ import io.github.fabiann1809.reader.data.prefs.GoalUnit
 import io.github.fabiann1809.reader.data.prefs.ReadingGoal
 import java.time.LocalDate
 import java.time.format.TextStyle
-import java.util.Locale
+import io.github.fabiann1809.reader.util.AppLocale
 
 /** "Esta semana": the total, a bar per day (today's in the accent color) and the daily average. */
 @Composable
@@ -81,7 +81,7 @@ private fun DayBar(day: DayMinutes, scale: Int, isToday: Boolean, modifier: Modi
             )
         }
         Text(
-            day.day.getDisplayName(TextStyle.NARROW, Locale.getDefault()),
+            day.day.getDisplayName(TextStyle.NARROW, AppLocale),
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold),
             color = if (isToday) scheme.primary else scheme.onSurfaceVariant,
         )
