@@ -25,7 +25,6 @@ import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
 import io.github.fabiann1809.reader.data.prefs.LibraryView
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
-import io.github.fabiann1809.reader.ui.components.LightStatusBarIcons
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 @Composable
@@ -47,7 +46,6 @@ fun LibraryScreen(
     val pickFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri != null) folderViewModel.watch(uri.toString())
     }
-    LightStatusBarIcons()
     LibraryContent(
         uiState = uiState,
         bookCollections = bookCollections,
@@ -158,6 +156,7 @@ fun LibraryContent(
                 onOpenDialog = { dialog = it },
                 onOpenSelectionDialog = { selectionDialog = it },
                 onClearSelection = selectionActions.onClear,
+                onSelectFilter = onSelectFilter,
             )
         },
         floatingActionButton = {

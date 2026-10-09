@@ -4,6 +4,7 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
+import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
 
 data class LibraryUiState(
@@ -25,6 +26,8 @@ data class LibraryUiState(
     val selectedIds: Set<Long> = emptySet(),
     /** What "Continuar" opens, from the whole library whatever the shelf shows. Null if nothing was read yet. */
     val bookToContinue: Book? = null,
+    /** Books in each default collection, from the whole library: the numbers on the header chips. */
+    val smartCounts: Map<SmartCollection, Int> = emptyMap(),
 ) {
     val isSelecting: Boolean
         get() = selectedIds.isNotEmpty()

@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader.ui.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookRepository
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
@@ -11,6 +12,7 @@ import io.github.fabiann1809.reader.data.book.importing.ImportQueue
 import io.github.fabiann1809.reader.data.book.importing.ImportStatus
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
+import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.data.prefs.AppPreferences
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -57,11 +59,11 @@ class LibraryViewModel(
         },
         collectionRepository.observeCollections(),
         // The whole library (not just this shelf): is it empty, and which book "Continuar" opens.
-        bookRepository.observeBooks().map { all -> all.isEmpty() to all.bookToContinue() },
+        bookRepository.observeBooks().map { all -> WholeLibrary(all.isEmpty(), all.bookToContinue(), all.countBySmartCollection()) },
         query,
         // combine() takes at most five typed flows, so the display state travels together.
         combine(preferences.libraryArrangement, preferences.libraryLayout, selection, ::Triple),
-    ) { (filter, collection, books), collections, (libraryIsEmpty, bookToContinue), query, (arrangement, layout, selection) ->
+    ) { (filter, collection, books), collections, whole, query, (arrangement, layout, selection) ->
         val shown = books.filter { it.matchesSearch(query) }.arrangedBy(arrangement)
         LibraryUiState(
             books = shown,
@@ -69,8 +71,9 @@ class LibraryViewModel(
             filter = filter,
             currentCollection = collection,
             collections = collections,
-            libraryIsEmpty = libraryIsEmpty,
-            bookToContinue = bookToContinue,
+            libraryIsEmpty = whole.isEmpty,
+            bookToContinue = whole.bookToContinue,
+            smartCounts = whole.smartCounts,
             query = query,
             arrangement = arrangement,
             layout = layout,
@@ -83,6 +86,10 @@ class LibraryViewModel(
         started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
         initialValue = LibraryUiState(),
     )
+
+    private class WholeLibrary(val isEmpty: Boolean, val bookToContinue: Book?, val smartCounts: Map<SmartCollection, Int>)
+
+    private fun List<Book>.countBySmartCollection() = SmartCollection.entries.associateWith { smart -> count(smart.includes) }
 
     /** Filters the shown collection by title and author as the user types. */
     fun search(text: String) {
