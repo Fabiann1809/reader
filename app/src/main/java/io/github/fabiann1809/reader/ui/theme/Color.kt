@@ -101,3 +101,6 @@ val DarkPastels = listOf(
     listOf(Color(70, 140, 110, 153), Color(160, 150, 70, 153)),
     listOf(Color(200, 120, 60, 140), Color(200, 160, 70, 140)),
 )
+
+// Dot next to a collection name, matching the pastel of its band.
+val PastelDots = listOf(Color(0xFFE9798A), Color(0xFF9E7FE0), Color(0xFF5FAE88), Color(0xFFE8A34F))

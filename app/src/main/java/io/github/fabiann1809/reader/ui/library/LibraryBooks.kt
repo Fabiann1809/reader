@@ -24,7 +24,7 @@ class BookGestures(val onClick: (Long) -> Unit, val onLongClick: (Long) -> Unit)
 
 /**
  * The books area: placeholders while loading, the empty state when there is nothing to show,
- * or the books in the chosen view (shelves, grid or list).
+ * or the books in the chosen view ((shelves, collections or list)).
  */
 @Composable
 fun LibraryBooks(
@@ -34,8 +34,11 @@ fun LibraryBooks(
     gestures: BookGestures,
     bookFrame: BookFrame,
     header: (@Composable () -> Unit)? = null,
+    collectionsActions: CollectionsActions = CollectionsActions(),
 ) {
     val isShelves = uiState.layout.view == LibraryView.SHELVES
+    // The Colecciones view lists every collection, so what the shown one lacks does not make it empty.
+    val empty = if (uiState.layout.view == LibraryView.COLLECTIONS && !uiState.libraryIsEmpty) null else empty
     val columns = booksPerRow(uiState.layout.booksPerRow)
     when {
         uiState.isLoading && isShelves -> Bookcase(contentPadding, columns, itemCount = PLACEHOLDER_COUNT) { _, width ->
@@ -73,8 +76,8 @@ fun LibraryBooks(
                     )
                 }
             }
-            LibraryView.GRID ->
-                BookGrid(uiState.books, columns, contentPadding, FAB_SPACE, gestures.onClick, gestures.onLongClick, bookFrame, header)
+            LibraryView.COLLECTIONS ->
+                CollectionsView(uiState.collectionGroups, contentPadding, FAB_SPACE, collectionsActions, header)
             LibraryView.LIST ->
                 BookList(uiState.books, contentPadding, FAB_SPACE, gestures.onClick, gestures.onLongClick, bookFrame, header)
         }

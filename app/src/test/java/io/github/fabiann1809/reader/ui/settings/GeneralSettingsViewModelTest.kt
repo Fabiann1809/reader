@@ -34,14 +34,14 @@ class GeneralSettingsViewModelTest {
         viewModel.setTheme(AppTheme.DARK)
         viewModel.setAutoTranscribe(false)
         viewModel.setChapterEndSuggestion(false)
-        viewModel.setLibraryView(LibraryView.GRID)
+        viewModel.setLibraryView(LibraryView.COLLECTIONS)
         viewModel.setBooksPerRow(9)
 
         val state = viewModel.uiState.value
         assertEquals(AppTheme.DARK, state.settings.theme)
         assertFalse(state.settings.autoTranscribe)
         assertFalse(state.settings.chapterEndSuggestion)
-        assertEquals(LibraryView.GRID, state.layout.view)
+        assertEquals(LibraryView.COLLECTIONS, state.layout.view)
         // Out of range: kept to the largest count a row allows.
         assertEquals(4, state.layout.booksPerRow)
     }

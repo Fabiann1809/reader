@@ -21,6 +21,7 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.book.importing.ImportStatus
+import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
 import io.github.fabiann1809.reader.data.prefs.LibraryView
@@ -85,6 +86,8 @@ fun LibraryScreen(
         onCreateCollection = viewModel::createCollection,
         onRenameCollection = viewModel::renameCurrentCollection,
         onDeleteCollection = viewModel::deleteCurrentCollection,
+        onRenameCollectionOf = viewModel::renameCollection,
+        onDeleteCollectionOf = viewModel::deleteCollection,
     )
 }
 
@@ -109,6 +112,8 @@ fun LibraryContent(
     onCreateCollection: (String) -> Unit = {},
     onRenameCollection: (String) -> Unit = {},
     onDeleteCollection: () -> Unit = {},
+    onRenameCollectionOf: (Collection, String) -> Unit = { _, _ -> },
+    onDeleteCollectionOf: (Collection) -> Unit = {},
     bookCollections: BookCollections? = null,
     bookActions: LibraryBookActions = LibraryBookActions(),
     selectionActions: LibrarySelectionActions = LibrarySelectionActions(),
@@ -122,6 +127,10 @@ fun LibraryContent(
     var menuBookId by rememberSaveable { mutableStateOf<Long?>(null) }
     var deleteBookId by rememberSaveable { mutableStateOf<Long?>(null) }
     var newCollectionForBook by rememberSaveable { mutableStateOf<Long?>(null) }
+    // The collection a band button acts on, and the one getting books (Colecciones view).
+    var targetCollectionId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var addBooksCollectionId by rememberSaveable { mutableStateOf<Long?>(null) }
+    val targetCollection = uiState.collections.find { it.id == targetCollectionId }
 
     val menuActions = BookMenuActions(
         onOpen = onOpenBook,
@@ -169,6 +178,23 @@ fun LibraryContent(
                 empty,
                 gestures,
                 bookFrame,
+                collectionsActions = CollectionsActions(
+                    onOpen = { group ->
+                        onSelectFilter(group.filter)
+                        onLayoutChange(uiState.layout.copy(view = LibraryView.SHELVES))
+                    },
+                    onBookClick = onBookClick,
+                    onNewCollection = { dialog = LibraryDialog.CREATE },
+                    onAddBooks = { addBooksCollectionId = it.id },
+                    onRename = {
+                        targetCollectionId = it.id
+                        dialog = LibraryDialog.RENAME
+                    },
+                    onDelete = {
+                        targetCollectionId = it.id
+                        dialog = LibraryDialog.DELETE
+                    },
+                ),
                 header = {
                     LibraryListHeader(
                         uiState = uiState,
@@ -184,17 +210,33 @@ fun LibraryContent(
 
     CollectionDialogs(
         dialog = dialog,
-        onDialogChange = { dialog = it },
-        uiState = uiState,
+        onDialogChange = {
+            dialog = it
+            if (it == LibraryDialog.NONE) targetCollectionId = null
+        },
+        uiState = if (targetCollection != null) uiState.copy(currentCollection = targetCollection) else uiState,
         actions = CollectionDialogActions(
             onSelectFilter = onSelectFilter,
             onArrangementChange = onArrangementChange,
             onLayoutChange = onLayoutChange,
             onCreateCollection = onCreateCollection,
-            onRenameCollection = onRenameCollection,
-            onDeleteCollection = onDeleteCollection,
+            onRenameCollection = { name ->
+                if (targetCollection != null) onRenameCollectionOf(targetCollection, name) else onRenameCollection(name)
+            },
+            onDeleteCollection = {
+                if (targetCollection != null) onDeleteCollectionOf(targetCollection) else onDeleteCollection()
+            },
         ),
     )
+    uiState.collections.find { it.id == addBooksCollectionId }?.let { collection ->
+        AddBooksToCollectionSheet(
+            collection = collection,
+            books = uiState.allBooks,
+            memberIds = uiState.collectionGroups.find { it.collection?.id == collection.id }?.books.orEmpty().mapTo(mutableSetOf()) { it.id },
+            onToggle = { bookId, included -> bookActions.onCollectionChange(bookId, collection.id, included) },
+            onDismiss = { addBooksCollectionId = null },
+        )
+    }
     SelectionDialogs(selectionDialog, onDialogChange = { selectionDialog = it }, uiState, selectionActions)
     BookDialogs(
         uiState = uiState,

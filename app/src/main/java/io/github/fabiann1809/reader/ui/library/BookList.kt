@@ -39,6 +39,9 @@ import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.ui.components.BookCover
 import io.github.fabiann1809.reader.ui.components.progressFraction
 
+/** Wraps each book with what the library adds around it: its long-press menu and the selection look. */
+typealias BookFrame = @Composable (book: Book, modifier: Modifier, content: @Composable () -> Unit) -> Unit
+
 /** "Lista": one card per book with a small cover, title, author, format and a progress bar. */
 @Composable
 fun BookList(

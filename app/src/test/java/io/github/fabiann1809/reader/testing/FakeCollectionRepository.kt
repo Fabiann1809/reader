@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.testing
 
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.collection.BookCollectionCrossRef
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
@@ -32,6 +33,9 @@ class FakeCollectionRepository(private val books: FakeBookRepository) : Collecti
 
     override fun observeCollectionIdsOf(bookId: Long): Flow<List<Long>> =
         links.map { set -> set.filter { it.first == bookId }.map { it.second } }
+
+    override fun observeLinks(): Flow<List<BookCollectionCrossRef>> =
+        links.map { set -> set.map { (bookId, collectionId) -> BookCollectionCrossRef(bookId, collectionId, addedAt = 0) } }
 
     override suspend fun createCollection(name: String): Long {
         val id = nextId++

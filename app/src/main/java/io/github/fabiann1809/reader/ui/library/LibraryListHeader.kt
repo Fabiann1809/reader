@@ -170,13 +170,13 @@ private fun SortLabel(label: Int, onClick: () -> Unit) {
 
 private val ViewIcons = mapOf(
     LibraryView.SHELVES to R.drawable.ic_books,
-    LibraryView.GRID to R.drawable.ic_squares_four,
+    LibraryView.COLLECTIONS to R.drawable.ic_stack,
     LibraryView.LIST to R.drawable.ic_list_bullets,
 )
 
 private val ViewLabels = mapOf(
     LibraryView.SHELVES to R.string.view_shelves,
-    LibraryView.GRID to R.string.view_grid,
+    LibraryView.COLLECTIONS to R.string.view_collections,
     LibraryView.LIST to R.string.view_list,
 )
 

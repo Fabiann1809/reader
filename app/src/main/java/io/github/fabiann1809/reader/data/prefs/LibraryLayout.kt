@@ -3,7 +3,7 @@ package io.github.fabiann1809.reader.data.prefs
 /** How the library draws its books (design 6.5). Stored by name, so renaming a constant resets the choice. */
 enum class LibraryView {
     SHELVES,
-    GRID,
+    COLLECTIONS,
     LIST,
 }
 

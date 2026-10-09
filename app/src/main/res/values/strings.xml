@@ -56,7 +56,7 @@
     <string name="arrange_view">Vista</string>
     <string name="arrange_books_per_row">Libros por fila</string>
     <string name="view_shelves">Estantes</string>
-    <string name="view_grid">Cuadrícula</string>
+    <string name="view_collections">Colecciones</string>
     <string name="view_list">Lista</string>
     <string name="arrange_sort_title">Ordenar por</string>
     <string name="arrange_status">Estado</string>
@@ -88,6 +88,9 @@
     <string name="book_continue">Continuar</string>
     <string name="library_continue">Continuar</string>
     <string name="library_continue_reading">Sigues leyendo</string>
+    <string name="collection_add_books">Añadir libros</string>
+    <string name="collection_add_books_title">Añadir libros a «%1$s»</string>
+    <string name="collection_add_books_empty">Aún no tienes libros.</string>
     <string name="library_continue_percent">%d %%</string>
     <string name="library_continue_description">Continuar leyendo «%1$s»</string>
     <string name="library_more_actions">Más acciones</string>

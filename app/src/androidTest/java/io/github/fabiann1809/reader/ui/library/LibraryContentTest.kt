@@ -23,6 +23,7 @@ import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.book.importing.FailedImport
 import io.github.fabiann1809.reader.data.book.importing.ImportStatus
 import io.github.fabiann1809.reader.data.collection.Collection
+import io.github.fabiann1809.reader.data.collection.buildCollectionGroups
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
@@ -307,34 +308,73 @@ class LibraryContentTest {
             }
         }
 
-        composeRule.onNodeWithText("Frank Herbert").assertIsDisplayed()
+        composeRule.onNodeWithText("Frank Herbert", substring = true).assertIsDisplayed()
         composeRule.onNodeWithText("Dune").performClick()
         assertEquals(4L, opened)
     }
 
     @Test
-    fun gridViewOpensTheBook() {
-        var opened: Long? = null
+    fun collectionsViewShowsEveryCollectionAndOpensOne() {
+        val book = Book(id = 4, title = "Dune", author = "Frank Herbert")
+        val mine = Collection(id = 9, name = "Clásicos")
+        var filter: LibraryFilter? = null
+        var layout: LibraryLayout? = null
         composeRule.setContent {
             ReaderTheme {
                 LibraryContent(
                     uiState = LibraryUiState(
-                        books = listOf(Book(id = 4, title = "Dune", author = "Frank Herbert")),
+                        books = listOf(book),
                         isLoading = false,
-                        layout = LibraryLayout(view = LibraryView.GRID, booksPerRow = 2),
+                        layout = LibraryLayout(view = LibraryView.COLLECTIONS),
+                        collections = listOf(mine),
+                        collectionGroups = buildCollectionGroups(listOf(book), listOf(mine), emptyList()),
+                        allBooks = listOf(book),
                     ),
-                    onBookClick = { opened = it },
+                    onBookClick = {},
                     onAddPhysicalBook = {},
+                    onSelectFilter = { filter = it },
+                    onLayoutChange = { layout = it },
                 )
             }
         }
 
-        composeRule.onNodeWithContentDescription(
-            composeRule.activity.getString(R.string.book_cover_description, "Dune", "Frank Herbert"),
-            substring = true,
-        )
-            .performClick()
-        assertEquals(4L, opened)
+        composeRule.onNodeWithText("Clásicos").assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.collection_to_read)).assertIsDisplayed()
+        composeRule.onNodeWithText("Clásicos").performClick()
+
+        assertEquals(LibraryFilter.Custom(9), filter)
+        assertEquals(LibraryView.SHELVES, layout?.view)
+    }
+
+    @Test
+    fun collectionsViewAddsBooksToACollectionOfTheUser() {
+        val book = Book(id = 4, title = "Dune", author = "Frank Herbert")
+        val mine = Collection(id = 9, name = "Clásicos")
+        val changes = mutableListOf<Triple<Long, Long, Boolean>>()
+        composeRule.setContent {
+            ReaderTheme {
+                LibraryContent(
+                    uiState = LibraryUiState(
+                        books = listOf(book),
+                        isLoading = false,
+                        layout = LibraryLayout(view = LibraryView.COLLECTIONS),
+                        collections = listOf(mine),
+                        collectionGroups = buildCollectionGroups(listOf(book), listOf(mine), emptyList()),
+                        allBooks = listOf(book),
+                    ),
+                    onBookClick = {},
+                    onAddPhysicalBook = {},
+                    bookActions = LibraryBookActions(onCollectionChange = { bookId, collectionId, included ->
+                        changes += Triple(bookId, collectionId, included)
+                    }),
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription(string(R.string.collection_add_books)).performClick()
+        composeRule.onNodeWithText("Dune").performClick()
+
+        assertEquals(listOf(Triple(4L, 9L, true)), changes)
     }
 
     @Test
@@ -352,10 +392,10 @@ class LibraryContentTest {
         }
 
         composeRule.onNodeWithContentDescription(string(R.string.library_arrange)).performClick()
-        composeRule.onNodeWithText(string(R.string.view_grid)).performClick()
+        composeRule.onNodeWithText(string(R.string.view_collections)).performClick()
         composeRule.onNodeWithText("4").performClick()
 
-        assertEquals(listOf(LibraryLayout(view = LibraryView.GRID), LibraryLayout(booksPerRow = 4)), layouts)
+        assertEquals(listOf(LibraryLayout(view = LibraryView.COLLECTIONS), LibraryLayout(booksPerRow = 4)), layouts)
     }
 
     private fun setContentWithMenu(book: Book, actions: LibraryBookActions, onBookClick: (Long) -> Unit = {}) {

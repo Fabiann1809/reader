@@ -214,10 +214,10 @@ class LibraryViewModelTest {
         val viewModel = viewModel()
         assertEquals(LibraryLayout(view = LibraryView.SHELVES, booksPerRow = 3), viewModel.uiState.value.layout)
 
-        viewModel.setLayout(LibraryLayout(view = LibraryView.GRID, booksPerRow = 4))
+        viewModel.setLayout(LibraryLayout(view = LibraryView.COLLECTIONS, booksPerRow = 4))
 
-        assertEquals(LibraryLayout(view = LibraryView.GRID, booksPerRow = 4), viewModel.uiState.value.layout)
-        assertEquals(LibraryLayout(view = LibraryView.GRID, booksPerRow = 4), preferences.libraryLayout.first())
+        assertEquals(LibraryLayout(view = LibraryView.COLLECTIONS, booksPerRow = 4), viewModel.uiState.value.layout)
+        assertEquals(LibraryLayout(view = LibraryView.COLLECTIONS, booksPerRow = 4), preferences.libraryLayout.first())
     }
 
     @Test

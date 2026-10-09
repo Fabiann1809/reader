@@ -18,6 +18,9 @@ interface CollectionRepository {
     /** Ids of the user collections that contain the book. */
     fun observeCollectionIdsOf(bookId: Long): Flow<List<Long>>
 
+    /** Every book-collection link, for views that group the whole library. */
+    fun observeLinks(): Flow<List<BookCollectionCrossRef>>
+
     /** Returns the id of the new collection. */
     suspend fun createCollection(name: String): Long
 
@@ -45,6 +48,8 @@ class DefaultCollectionRepository(
     }
 
     override fun observeCollectionIdsOf(bookId: Long): Flow<List<Long>> = collectionDao.observeCollectionIdsOf(bookId)
+
+    override fun observeLinks(): Flow<List<BookCollectionCrossRef>> = collectionDao.observeAllLinks()
 
     override suspend fun createCollection(name: String): Long = collectionDao.insert(Collection(name = name.trim()))
 

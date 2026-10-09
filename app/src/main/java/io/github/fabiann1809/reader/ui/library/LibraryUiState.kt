@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.ui.library
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.collection.Collection
+import io.github.fabiann1809.reader.data.collection.CollectionGroup
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
@@ -28,6 +29,10 @@ data class LibraryUiState(
     val bookToContinue: Book? = null,
     /** Books in each default collection, from the whole library: the numbers on the header chips. */
     val smartCounts: Map<SmartCollection, Int> = emptyMap(),
+    /** Every collection with its books, for the "Colecciones" view. */
+    val collectionGroups: List<CollectionGroup> = emptyList(),
+    /** The whole library, for choosing which books go into a collection. */
+    val allBooks: List<Book> = emptyList(),
 ) {
     val isSelecting: Boolean
         get() = selectedIds.isNotEmpty()

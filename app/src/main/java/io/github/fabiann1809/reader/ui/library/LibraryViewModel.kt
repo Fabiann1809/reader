@@ -10,7 +10,10 @@ import io.github.fabiann1809.reader.data.book.arrangedBy
 import io.github.fabiann1809.reader.data.book.bookToContinue
 import io.github.fabiann1809.reader.data.book.importing.ImportQueue
 import io.github.fabiann1809.reader.data.book.importing.ImportStatus
+import io.github.fabiann1809.reader.data.collection.Collection
+import io.github.fabiann1809.reader.data.collection.CollectionGroup
 import io.github.fabiann1809.reader.data.collection.CollectionRepository
+import io.github.fabiann1809.reader.data.collection.buildCollectionGroups
 import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.data.prefs.AppPreferences
@@ -59,7 +62,15 @@ class LibraryViewModel(
         },
         collectionRepository.observeCollections(),
         // The whole library (not just this shelf): is it empty, and which book "Continuar" opens.
-        bookRepository.observeBooks().map { all -> WholeLibrary(all.isEmpty(), all.bookToContinue(), all.countBySmartCollection()) },
+        combine(bookRepository.observeBooks(), collectionRepository.observeCollections(), collectionRepository.observeLinks()) { all, collections, links ->
+            WholeLibrary(
+                isEmpty = all.isEmpty(),
+                bookToContinue = all.bookToContinue(),
+                smartCounts = all.countBySmartCollection(),
+                groups = buildCollectionGroups(all, collections, links),
+                books = all,
+            )
+        },
         query,
         // combine() takes at most five typed flows, so the display state travels together.
         combine(preferences.libraryArrangement, preferences.libraryLayout, selection, ::Triple),
@@ -74,6 +85,8 @@ class LibraryViewModel(
             libraryIsEmpty = whole.isEmpty,
             bookToContinue = whole.bookToContinue,
             smartCounts = whole.smartCounts,
+            collectionGroups = whole.groups,
+            allBooks = whole.books,
             query = query,
             arrangement = arrangement,
             layout = layout,
@@ -87,7 +100,13 @@ class LibraryViewModel(
         initialValue = LibraryUiState(),
     )
 
-    private class WholeLibrary(val isEmpty: Boolean, val bookToContinue: Book?, val smartCounts: Map<SmartCollection, Int>)
+    private class WholeLibrary(
+        val isEmpty: Boolean,
+        val bookToContinue: Book?,
+        val smartCounts: Map<SmartCollection, Int>,
+        val groups: List<CollectionGroup>,
+        val books: List<Book>,
+    )
 
     private fun List<Book>.countBySmartCollection() = SmartCollection.entries.associateWith { smart -> count(smart.includes) }
 
@@ -189,6 +208,22 @@ class LibraryViewModel(
         viewModelScope.launch {
             val id = collectionRepository.createCollection(name)
             preferences.setLibraryFilter(LibraryFilter.Custom(id))
+        }
+    }
+
+    /** Renames a collection of the user, not necessarily the shown one. */
+    fun renameCollection(collection: Collection, name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch { collectionRepository.renameCollection(collection, name) }
+    }
+
+    /** Deletes a collection of the user (its books stay in the library); if it was shown, goes back to "Todos". */
+    fun deleteCollection(collection: Collection) {
+        viewModelScope.launch {
+            if ((preferences.libraryFilter.first() as? LibraryFilter.Custom)?.collectionId == collection.id) {
+                preferences.setLibraryFilter(LibraryFilter.Default)
+            }
+            collectionRepository.deleteCollection(collection)
         }
     }
 
