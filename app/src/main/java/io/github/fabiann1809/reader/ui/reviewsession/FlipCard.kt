@@ -25,7 +25,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -49,6 +51,14 @@ private const val CAMERA_DISTANCE = 12f
 
 private val CardShape = RoundedCornerShape(32.dp)
 
+/** Two faint rounded rectangles under the card, lower and wider each, as a cheap shadow. */
+private fun Modifier.softShadow(): Modifier = drawBehind {
+    val radius = CornerRadius(32.dp.toPx())
+    listOf(6.dp to 0.06f, 12.dp to 0.04f).forEach { (offset, alpha) ->
+        drawRoundRect(Color.Black.copy(alpha = alpha), topLeft = Offset(0f, offset.toPx()), size = size, cornerRadius = radius)
+    }
+}
+
 /**
  * The card of a review session: its question on paper and, after a 3D flip, its answer on a pastel
  * gradient with the source. A tap flips it.
@@ -66,25 +76,28 @@ fun FlipCard(dueCard: DueCard, flipped: Boolean, onFlip: () -> Unit, modifier: M
     } else {
         Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest)
     }
-    Box(
-        modifier = modifier
-            .graphicsLayer {
-                rotationY = rotation
-                cameraDistance = CAMERA_DISTANCE * density
-            }
-            .shadow(14.dp, CardShape)
-            .clip(CardShape)
-            .then(face)
-            .clickable(role = Role.Button, onClickLabel = stringResource(R.string.review_flip), onClick = onFlip),
-    ) {
-        Column(
-            // The back is drawn turned over again, so its text reads the right way round.
+    // Soft shadow drawn by hand: a real elevation sorts in front of the card while it is turned.
+    Box(modifier.softShadow()) {
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .graphicsLayer { rotationY = if (showsBack) 180f else 0f }
-                .padding(26.dp),
-        ) {
-            if (showsBack) CardBack(dueCard) else CardFront(dueCard.card.front)
+                .graphicsLayer {
+                    rotationY = rotation
+                    cameraDistance = CAMERA_DISTANCE * density
+                }
+                .clip(CardShape)
+                .then(face)
+                .clickable(role = Role.Button, onClickLabel = stringResource(R.string.review_flip), onClick = onFlip),
+            ) {
+            Column(
+                // The back is mirrored (not rotated in 3D, which left a ghost rectangle) so its text reads the right way round.
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { scaleX = if (showsBack) -1f else 1f }
+                    .padding(26.dp),
+            ) {
+                if (showsBack) CardBack(dueCard) else CardFront(dueCard.card.front)
+        }
         }
     }
 }
