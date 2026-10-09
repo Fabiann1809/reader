@@ -326,7 +326,7 @@
     <string name="camera_permission_open_settings">Abrir ajustes</string>
 
     <!-- Extracted text -->
-    <string name="extracted_text_title">Revisar texto</string>
+    <string name="extracted_text_title">Texto reconocido</string>
     <string name="extracted_text_label">Texto reconocido</string>
     <string name="extracted_text_recognizing">Leyendo el texto de la imagen…</string>
     <string name="extracted_text_hint">Revisa y corrige el texto antes de enviarlo. Puedes borrar lo que no necesites.</string>

@@ -1,7 +1,15 @@
 package io.github.fabiann1809.reader.ui.extractedtext
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +24,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,7 +41,6 @@ import io.github.fabiann1809.reader.ai.MAX_TEXT_LENGTH
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.AiButton
 import io.github.fabiann1809.reader.ui.components.OutlineButton
-import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.components.readerTextFieldColors
 import io.github.fabiann1809.reader.ui.components.readerTextFieldShape
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
@@ -62,21 +68,35 @@ fun ExtractedTextContent(
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            ReaderTopAppBar(title = stringResource(R.string.extracted_text_title), onNavigateUp = onNavigateUp)
-        },
-    ) { innerPadding ->
-        val contentModifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
-            .padding(16.dp)
-        when (uiState) {
-            ExtractedTextUiState.Recognizing -> Recognizing(contentModifier)
-            is ExtractedTextUiState.Failed -> OcrFailed(uiState.reason, onRetake = onNavigateUp, modifier = contentModifier)
-            is ExtractedTextUiState.Editing -> TextEditor(uiState, onTextChange, onExplain, modifier = contentModifier)
+    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+        Column(Modifier.statusBarsPadding()) {
+            Header(onNavigateUp)
+            val contentModifier = Modifier
+                .weight(1f)
+                .padding(start = 20.dp, end = 20.dp, bottom = 24.dp)
+            when (uiState) {
+                ExtractedTextUiState.Recognizing -> Recognizing(contentModifier)
+                is ExtractedTextUiState.Failed -> OcrFailed(uiState.reason, onRetake = onNavigateUp, modifier = contentModifier)
+                is ExtractedTextUiState.Editing -> TextEditor(uiState, onTextChange, onExplain, modifier = contentModifier)
+            }
         }
+    }
+}
+
+/** Back arrow and "Texto reconocido". */
+@Composable
+private fun Header(onNavigateUp: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 4.dp, top = 8.dp, bottom = 4.dp)) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .clickable(role = Role.Button, onClick = onNavigateUp),
+        ) {
+            Icon(painterResource(R.drawable.ic_arrow_left), contentDescription = stringResource(R.string.navigate_up))
+        }
+        Text(stringResource(R.string.extracted_text_title), style = MaterialTheme.typography.headlineSmall)
     }
 }
 
@@ -84,7 +104,6 @@ fun ExtractedTextContent(
 @Composable
 private fun Recognizing(modifier: Modifier = Modifier) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SectionLabel(stringResource(R.string.extracted_text_label))
         val skeleton = MaterialTheme.colorScheme.surfaceContainer
         listOf(1f, 0.92f, 0.97f, 0.6f).forEach { width ->
             Box(
@@ -114,7 +133,6 @@ private fun TextEditor(
         modifier = modifier.imePadding(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        SectionLabel(stringResource(R.string.extracted_text_label))
         Text(
             text = stringResource(R.string.extracted_text_hint),
             style = MaterialTheme.typography.bodyMedium,
@@ -153,11 +171,6 @@ private fun TextEditor(
     }
 }
 
-@Composable
-private fun SectionLabel(text: String) {
-    Text(text = text, style = MaterialTheme.typography.titleMedium)
-}
-
 // Doubted lines get a light wash of the warning color behind them.
 private const val UNCERTAIN_MARK_ALPHA = 0.3f
 
@@ -168,9 +181,8 @@ private fun WarningBanner(message: String, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(warning.copy(alpha = 0.12f), MaterialTheme.shapes.medium)
-            .border(1.dp, warning, MaterialTheme.shapes.medium)
-            .padding(16.dp),
+            .background(ReaderTheme.colors.warningContainer, RoundedCornerShape(18.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top,
     ) {
@@ -180,7 +192,11 @@ private fun WarningBanner(message: String, modifier: Modifier = Modifier) {
             tint = warning,
             modifier = Modifier.size(22.dp),
         )
-        Text(text = message, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold, lineHeight = 19.sp),
+            color = ReaderTheme.colors.onWarningContainer,
+        )
     }
 }
 

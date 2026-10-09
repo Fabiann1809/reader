@@ -348,7 +348,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 **IA y captura**
 - [x] **T19.18 Explicador.** Bloques, etiqueta "Generado con IA", texto original colapsable y estados; acciones fijas abajo con "Ponme a prueba" agregado (decisión del usuario 2026-10-08). *Hecho cuando:* coincide con el prototipo.
 - [x] **T19.19 Cámara y recorte.** Marco guía, disparo, galería y recorte. *Hecho cuando:* coinciden con el prototipo.
-- [ ] **T19.20 Texto reconocido.** Texto editable con aviso de dudas y error de OCR. *Hecho cuando:* coincide con el prototipo.
+- [x] **T19.20 Texto reconocido.** Texto editable con aviso de dudas y error de OCR. *Hecho cuando:* coincide con el prototipo.
 - [ ] **T19.21 Ahora tú.** Entrada del usuario y respuesta con bien, incompleto y confuso. *Hecho cuando:* coincide con el prototipo.
 
 **Repaso y progreso**
