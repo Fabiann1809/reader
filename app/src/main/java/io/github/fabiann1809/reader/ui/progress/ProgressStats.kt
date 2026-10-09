@@ -21,9 +21,12 @@ data class ProgressStats(
     val goal: ReadingGoal,
     val streakDays: Int,
     val week: List<DayMinutes>,
-    val finishedThisYear: Int,
+    // Titles of the books finished this year, oldest first, for the little spines on the card.
+    val finishedTitles: List<String>,
     val year: Int,
 ) {
+    val finishedThisYear: Int get() = finishedTitles.size
+
     val weekMinutes: Int get() = week.sumOf { it.minutes }
 
     /** The average of the days read this week ("42 min de media"); 0 if none yet. */
@@ -63,9 +66,10 @@ fun progressStats(
             val day = monday.plusDays(offset)
             DayMinutes(day.dayOfWeek, minutesByDay[day] ?: 0)
         },
-        finishedThisYear = books.count { book ->
-            book.status == BookStatus.FINISHED && book.finishedAt?.toDate(zone)?.year == today.year
-        },
+        finishedTitles = books
+            .filter { book -> book.status == BookStatus.FINISHED && book.finishedAt?.toDate(zone)?.year == today.year }
+            .sortedBy { it.finishedAt }
+            .map { it.title },
         year = today.year,
     )
 }

@@ -26,7 +26,7 @@ class ProgressContentTest {
         goal = ReadingGoal(),
         streakDays = 6,
         week = DayOfWeek.entries.map { DayMinutes(it, if (it.value <= 3) 30 else 0) },
-        finishedThisYear = 3,
+        finishedTitles = listOf("El arte de aprender", "Atención plena", "Hábitos atómicos"),
         year = 2026,
     )
 

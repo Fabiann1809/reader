@@ -75,6 +75,7 @@ class ProgressStatsTest {
         val stats = progressStats(emptyList(), books, goal = ReadingGoal(GoalUnit.MINUTES, 30), now = now, zone = zone)
 
         assertEquals(1, stats.finishedThisYear)
+        assertEquals(listOf("A"), stats.finishedTitles)
         assertEquals(2026, stats.year)
     }
 

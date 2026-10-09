@@ -2,7 +2,11 @@ package io.github.fabiann1809.reader.ui.progress
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import io.github.fabiann1809.reader.ui.components.coverStyle
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,6 +52,7 @@ fun FinishedBooksCard(stats: ProgressStats) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 2.dp),
                 )
+                if (stats.finishedTitles.isNotEmpty()) FinishedSpines(stats.finishedTitles, Modifier.padding(top = 10.dp))
             }
             Text(
                 stats.finishedThisYear.toString(),
@@ -57,6 +62,26 @@ fun FinishedBooksCard(stats: ProgressStats) {
         }
     }
 }
+
+/** The finished books as little spines, each in the color its cover has. */
+@Composable
+private fun FinishedSpines(titles: List<String>, modifier: Modifier = Modifier) {
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = modifier) {
+        titles.take(MAX_SPINES).forEach { title ->
+            val style = coverStyle(title)
+            Box(
+                Modifier
+                    .size(width = 28.dp, height = 42.dp)
+                    .clip(RoundedCornerShape(topStart = 2.dp, topEnd = 4.dp, bottomEnd = 4.dp, bottomStart = 2.dp))
+                    .background(style.cover),
+            ) {
+                Box(Modifier.fillMaxWidth().height(4.dp).background(style.band))
+            }
+        }
+    }
+}
+
+private const val MAX_SPINES = 8
 
 /** "3 h 48 m", or "42 min" under an hour. */
 @Composable
