@@ -23,6 +23,9 @@ import io.github.fabiann1809.reader.ocr.Corner
 import io.github.fabiann1809.reader.ocr.ImageArea
 
 private val DimColor = Color.Black.copy(alpha = 0.55f)
+
+// The amber of the camera frame, so the crop looks like its continuation.
+private val CropColor = Color(0xFFF5B963)
 private val HandleRadius = 9.dp
 
 // How close to a corner a finger must land to drag it instead of the whole area.
@@ -112,8 +115,8 @@ private fun nearestCorner(rect: Rect, point: Offset, touchRadius: Float): Corner
 private fun DrawScope.drawCrop(crop: Rect) {
     // One dim layer with a hole: four separate rectangles would leave faint seams where they meet.
     clipRect(crop.left, crop.top, crop.right, crop.bottom, clipOp = ClipOp.Difference) { drawRect(DimColor) }
-    drawRect(Color.White, topLeft = crop.topLeft, size = crop.size, style = Stroke(width = 2.dp.toPx()))
-    Corner.entries.forEach { drawCircle(Color.White, radius = HandleRadius.toPx(), center = crop.cornerOffset(it)) }
+    drawRect(CropColor, topLeft = crop.topLeft, size = crop.size, style = Stroke(width = 2.dp.toPx()))
+    Corner.entries.forEach { drawCircle(CropColor, radius = HandleRadius.toPx(), center = crop.cornerOffset(it)) }
 }
 
 private fun DrawScope.drawParagraph(paragraph: Rect, color: Color) {

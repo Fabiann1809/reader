@@ -26,6 +26,17 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.ClipOp
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.clipPath
+import io.github.fabiann1809.reader.ui.components.rememberReduceMotion
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -133,14 +144,13 @@ fun CameraCapture(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = onClose) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_x),
-                    contentDescription = stringResource(R.string.capture_close),
-                    tint = Color.White,
-                )
-            }
-            FlashToggle(flashAuto = flashAuto, onToggle = { flashAuto = !flashAuto })
+            RoundOverlayButton(R.drawable.ic_x, stringResource(R.string.capture_close), onClose)
+            RoundOverlayButton(
+                icon = if (flashAuto) R.drawable.ic_lightning else R.drawable.ic_lightning_slash,
+                description = stringResource(if (flashAuto) R.string.capture_flash_auto else R.string.capture_flash_off),
+                onClick = { flashAuto = !flashAuto },
+                role = Role.Switch,
+            )
         }
         PageFrame(
             modifier = Modifier
@@ -177,44 +187,52 @@ fun CameraCapture(
     }
 }
 
+/** Round dark button over the preview; the flash one tells its state to screen readers. */
 @Composable
-private fun FlashToggle(flashAuto: Boolean, onToggle: () -> Unit) {
-    Row(
+private fun RoundOverlayButton(icon: Int, description: String, onClick: () -> Unit, role: Role = Role.Button) {
+    Box(
+        contentAlignment = Alignment.Center,
         modifier = Modifier
+            .size(48.dp)
             .clip(CircleShape)
-            .background(Color.Black.copy(alpha = 0.45f))
-            .clickable(role = Role.Switch, onClick = onToggle)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+            .background(Color.Black.copy(alpha = 0.4f))
+            .clickable(role = role, onClick = onClick)
+            .semantics { contentDescription = description },
     ) {
-        Icon(
-            painter = painterResource(if (flashAuto) R.drawable.ic_lightning else R.drawable.ic_lightning_slash),
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(18.dp),
-        )
-        Text(
-            text = stringResource(if (flashAuto) R.string.capture_flash_auto else R.string.capture_flash_off),
-            style = MaterialTheme.typography.labelMedium,
-            color = Color.White,
-        )
+        Icon(painterResource(icon), contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
     }
 }
 
-/** Page-shaped guide with gold corners (shelf color), so the user frames the whole page. */
+/** Page-shaped guide: the preview is dimmed around it, and its amber corners pulse while a line scans it. */
 @Composable
 private fun PageFrame(modifier: Modifier = Modifier) {
-    val corner = Color(0xFFF5B963)
+    val reduceMotion = rememberReduceMotion()
+    val transition = rememberInfiniteTransition(label = "frame")
+    val pulse by transition.animateFloat(
+        initialValue = 0.6f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(PULSE_MILLIS), RepeatMode.Reverse),
+        label = "cornerPulse",
+    )
+    val scan by transition.animateFloat(
+        initialValue = 0.04f,
+        targetValue = 0.94f,
+        animationSpec = infiniteRepeatable(tween(SCAN_MILLIS), RepeatMode.Reverse),
+        label = "scan",
+    )
+    val corner = Color(0xFFF5B963).copy(alpha = if (reduceMotion) 1f else pulse)
     Box(
         modifier = modifier.drawBehind {
-            val stroke = 3.dp.toPx()
-            val arm = 28.dp.toPx()
-            drawRoundRect(
-                color = Color.White.copy(alpha = 0.35f),
-                cornerRadius = CornerRadius(12.dp.toPx()),
-                style = Stroke(width = 1.dp.toPx()),
-            )
+            val frame = Path().apply { addRoundRect(RoundRect(0f, 0f, size.width, size.height, CornerRadius(18.dp.toPx()))) }
+            clipPath(frame, ClipOp.Difference) {
+                drawRect(Color.Black.copy(alpha = 0.35f), topLeft = Offset(-SCRIM_REACH, -SCRIM_REACH), size = Size(size.width + 2 * SCRIM_REACH, size.height + 2 * SCRIM_REACH))
+            }
+            if (!reduceMotion) {
+                val y = size.height * scan
+                drawLine(Color(0xFFF5B963), Offset(8.dp.toPx(), y), Offset(size.width - 8.dp.toPx(), y), 2.dp.toPx())
+            }
+            val stroke = 4.dp.toPx()
+            val arm = 30.dp.toPx()
             val w = size.width
             val h = size.height
             // Each corner is two short lines meeting at the frame's corner.
@@ -237,7 +255,7 @@ private fun GalleryButton(onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier
             .size(SIDE_BUTTON_SIZE)
-            .background(Color.White.copy(alpha = 0.16f), RoundedCornerShape(12.dp)),
+            .background(Color.White.copy(alpha = 0.14f), RoundedCornerShape(16.dp)),
     ) {
         Icon(
             painter = painterResource(R.drawable.ic_images),
@@ -247,7 +265,7 @@ private fun GalleryButton(onClick: () -> Unit) {
     }
 }
 
-/** White 72 dp shutter with a translucent outer ring (design 7.14); shrinks a little when pressed. */
+/** White shutter with a translucent outer ring; shrinks a little when pressed. */
 @Composable
 private fun ShutterButton(isCapturing: Boolean, onClick: () -> Unit) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -255,10 +273,10 @@ private fun ShutterButton(isCapturing: Boolean, onClick: () -> Unit) {
     val description = stringResource(R.string.capture_take_photo)
     Box(
         modifier = Modifier
-            .size(80.dp)
-            .scale(if (pressed) 0.92f else 1f)
-            .border(4.dp, Color.White.copy(alpha = 0.6f), CircleShape)
-            .padding(8.dp)
+            .size(82.dp)
+            .scale(if (pressed) 0.88f else 1f)
+            .border(4.dp, Color.White.copy(alpha = 0.7f), CircleShape)
+            .padding(7.dp)
             .clip(CircleShape)
             .background(Color.White)
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
@@ -274,8 +292,11 @@ private fun ShutterButton(isCapturing: Boolean, onClick: () -> Unit) {
     }
 }
 
-private val SIDE_BUTTON_SIZE = 48.dp
+private val SIDE_BUTTON_SIZE = 52.dp
 private const val FRAME_WIDTH_FRACTION = 0.82f
+private const val PULSE_MILLIS = 1_000
+private const val SCAN_MILLIS = 2_200
+private const val SCRIM_REACH = 4_000f
 
 // Typical book page proportions (width / height).
 private const val PAGE_ASPECT_RATIO = 0.7f
