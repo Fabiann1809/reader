@@ -31,6 +31,7 @@ import io.github.fabiann1809.reader.ui.navigation.ReviewSessionRoute
 import io.github.fabiann1809.reader.ui.noteeditor.NoteEditorViewModel
 import io.github.fabiann1809.reader.ui.notes.AllNotesViewModel
 import io.github.fabiann1809.reader.ui.more.BackupViewModel
+import io.github.fabiann1809.reader.ui.more.MoreViewModel
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingViewModel
 import io.github.fabiann1809.reader.ui.progress.ProgressViewModel
 import io.github.fabiann1809.reader.ui.quiz.QuizViewModel
@@ -145,6 +146,12 @@ object AppViewModelProvider {
                 explainText = readerApplication().container.explainText,
                 noteRepository = readerApplication().container.noteRepository,
                 labels = ExplanationLabels.from(readerApplication()),
+            )
+        }
+        initializer {
+            MoreViewModel(
+                noteRepository = readerApplication().container.noteRepository,
+                apiKeyStore = readerApplication().container.apiKeyStore,
             )
         }
         initializer {

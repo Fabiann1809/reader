@@ -110,6 +110,8 @@ data class ReaderColors(
     val onWarningContainer: Color,
     val navBar: Color,
     val navActive: Color,
+    val pastels: List<List<Color>>,
+    val onPastel: Color,
     val covers: List<Color>,
 )
 
@@ -130,6 +132,8 @@ private val LightReaderColors = ReaderColors(
     onWarningContainer = LightWarnInk,
     navBar = LightNavBar,
     navActive = LightNavActive,
+    pastels = LightPastels,
+    onPastel = LightInk,
     covers = CoverPalette,
 )
 
@@ -150,6 +154,8 @@ private val DarkReaderColors = LightReaderColors.copy(
     onWarningContainer = DarkWarnInk,
     navBar = DarkNavBar,
     navActive = DarkNavActive,
+    pastels = DarkPastels,
+    onPastel = DarkInk,
 )
 
 private val LocalReaderColors = staticCompositionLocalOf { LightReaderColors }

@@ -541,6 +541,25 @@
     <string name="backup_import_unreadable">No se pudo leer el archivo. No se cambió nada.</string>
     <string name="backup_export_failed">No se pudo guardar el respaldo. Prueba en otra carpeta.</string>
     <string name="about_title">Acerca de</string>
+    <string name="more_key_active">Clave de Gemini activa</string>
+    <string name="more_key_active_note">Solo se envían fragmentos</string>
+    <string name="more_key_missing">Sin clave de Gemini</string>
+    <string name="more_key_missing_note">Añádela en Configuración</string>
+    <string name="more_notes_empty">Aún no hay notas</string>
+    <string name="more_notes_summary">%1$s en %2$s</string>
+    <plurals name="more_notes_count">
+        <item quantity="one">%d nota</item>
+        <item quantity="other">%d notas</item>
+    </plurals>
+    <plurals name="more_books_count">
+        <item quantity="one">%d libro</item>
+        <item quantity="other">%d libros</item>
+    </plurals>
+    <string name="more_backup_hint">Exportar o importar ZIP</string>
+    <string name="more_settings_hint">Clave de IA, apariencia, lectura</string>
+    <string name="more_privacy_hint">Qué se envía y qué no</string>
+    <string name="more_about_hint">Versión y licencias</string>
+    <string name="more_footer">Reader v%1$s · tus datos se quedan en este teléfono</string>
     <string name="about_version">Versión %1$s</string>
     <string name="about_tagline">Tu biblioteca, tu progreso y un tutor que te ayuda a entender lo que lees.</string>
     <string name="about_licenses">Licencias de terceros</string>

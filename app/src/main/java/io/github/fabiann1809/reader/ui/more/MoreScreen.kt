@@ -2,77 +2,75 @@ package io.github.fabiann1809.reader.ui.more
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
-import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
+import io.github.fabiann1809.reader.ui.AppViewModelProvider
 
-/** Secondary destinations of the "Más" tab (design 02 §1), in the design's order. */
-enum class MoreEntry(@StringRes val title: Int, @DrawableRes val icon: Int) {
-    ALL_NOTES(R.string.all_notes_title, R.drawable.ic_note_pencil),
-    BACKUP(R.string.backup_title, R.drawable.ic_archive),
-    SETTINGS(R.string.settings_title, R.drawable.ic_gear_six),
-    PRIVACY(R.string.settings_privacy, R.drawable.ic_shield_check),
-    ABOUT(R.string.about_title, R.drawable.ic_info),
+/** Secondary destinations of the "Más" tab, in the design's order. [hint] is null when it depends on data. */
+enum class MoreEntry(@StringRes val title: Int, @DrawableRes val icon: Int, @StringRes val hint: Int?) {
+    ALL_NOTES(R.string.all_notes_title, R.drawable.ic_note_pencil, null),
+    BACKUP(R.string.backup_title, R.drawable.ic_archive, R.string.more_backup_hint),
+    SETTINGS(R.string.settings_title, R.drawable.ic_gear_six, R.string.more_settings_hint),
+    PRIVACY(R.string.settings_privacy, R.drawable.ic_shield_check, R.string.more_privacy_hint),
+    ABOUT(R.string.about_title, R.drawable.ic_info, R.string.more_about_hint),
 }
 
 @Composable
-fun MoreScreen(onOpen: (MoreEntry) -> Unit, modifier: Modifier = Modifier) {
-    Scaffold(
-        modifier = modifier,
-        topBar = { ReaderTopAppBar(title = stringResource(R.string.tab_more)) },
-    ) { innerPadding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            MoreEntry.entries.forEach { entry ->
-                // A divider separates content (notes, backup) from app settings and information.
-                if (entry == MoreEntry.SETTINGS) {
-                    HorizontalDivider(
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                    )
-                }
-                ListItem(
-                    headlineContent = { Text(stringResource(entry.title)) },
-                    leadingContent = {
-                        Icon(
-                            painter = painterResource(entry.icon),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                    },
-                    trailingContent = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_caret_right),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    },
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
-                    modifier = Modifier.clickable { onOpen(entry) },
-                )
-            }
-        }
+fun MoreScreen(
+    onOpen: (MoreEntry) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: MoreViewModel = viewModel(factory = AppViewModelProvider.Factory),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    MoreContent(uiState, onOpen, modifier)
+}
+
+@Composable
+fun MoreContent(uiState: MoreUiState, onOpen: (MoreEntry) -> Unit, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val version = remember { context.packageManager.getPackageInfo(context.packageName, 0).versionName.orEmpty() }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .statusBarsPadding()
+            .padding(horizontal = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.tab_more),
+            style = MaterialTheme.typography.displaySmall,
+            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+        )
+        KeyStatusCard(hasApiKey = uiState.hasApiKey)
+        MoreEntries(uiState, onOpen)
+        Text(
+            text = stringResource(R.string.more_footer, version),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .fillMaxWidth(),
+        )
     }
 }

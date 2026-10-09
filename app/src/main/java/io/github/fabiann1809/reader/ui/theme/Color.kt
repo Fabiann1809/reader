@@ -80,3 +80,17 @@ val CoverPalette = listOf(
     Color(0xFF7A4F3A),
     Color(0xFF5B5B5B),
 )
+
+// Pastel gradients of collection bands and highlighted cards (prototype --pA..--pD), two stops each.
+val LightPastels = listOf(
+    listOf(Color(248, 170, 180, 204), Color(252, 222, 160, 204)),
+    listOf(Color(205, 170, 240, 204), Color(150, 205, 240, 204)),
+    listOf(Color(160, 215, 190, 209), Color(235, 225, 150, 209)),
+    listOf(Color(252, 200, 150, 191), Color(252, 226, 160, 191)),
+)
+val DarkPastels = listOf(
+    listOf(Color(190, 95, 110, 153), Color(200, 150, 80, 153)),
+    listOf(Color(130, 95, 190, 153), Color(70, 130, 180, 153)),
+    listOf(Color(70, 140, 110, 153), Color(160, 150, 70, 153)),
+    listOf(Color(200, 120, 60, 140), Color(200, 160, 70, 140)),
+)
