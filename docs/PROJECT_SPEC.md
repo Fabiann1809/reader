@@ -364,7 +364,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T19.27a Ajustes.** Clave de API, apariencia, lectura, funciones de IA y tarjeta de privacidad. *Hecho cuando:* coincide con el prototipo.
 - [x] **T19.27b Privacidad.** *Hecho cuando:* coincide con el sistema visual del prototipo.
 - [x] **T19.27c Respaldo y Acerca de.** *Hecho cuando:* coincide con el prototipo.
-- [ ] **T19.28 Revisión final.** Recorrer las 23 pantallas en claro y oscuro, con reducir animaciones, y corregir diferencias. Actualizar capturas del README. *Hecho cuando:* no queda ninguna pantalla con el estilo anterior.
+- [x] **T19.28 Revisión final.** Recorrer las 23 pantallas en claro y oscuro, con reducir animaciones, y corregir diferencias. Actualizar capturas del README. *Hecho cuando:* no queda ninguna pantalla con el estilo anterior.
 
 ## 10. Riesgos técnicos (en orden)
 
