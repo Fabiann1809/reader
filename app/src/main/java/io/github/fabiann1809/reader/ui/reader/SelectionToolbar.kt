@@ -3,13 +3,16 @@ package io.github.fabiann1809.reader.ui.reader
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -17,7 +20,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,7 +38,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.highlight.HighlightColor
-import io.github.fabiann1809.reader.ui.theme.DarkAi
 import io.github.fabiann1809.reader.ui.theme.DarkChip
 import io.github.fabiann1809.reader.ui.theme.LightInk
 import kotlin.math.roundToInt
@@ -182,13 +183,8 @@ private fun ColorChoices(onPick: (HighlightColor) -> Unit) {
 
 @Composable
 private fun Actions(actions: SelectionActions, onHighlight: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 4.dp)) {
-        TextButton(onClick = actions.onExplain) {
-            Icon(painterResource(R.drawable.ic_sparkle), contentDescription = null, tint = DarkAi, modifier = Modifier.size(20.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.selection_explain), color = DarkAi)
-        }
-        Divider()
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp)) {
+        ExplainPill(actions.onExplain)
         CapsuleIcon(R.drawable.ic_highlighter, R.string.selection_highlight, onHighlight)
         CapsuleIcon(R.drawable.ic_note_pencil, R.string.selection_note, actions.onNote)
         CapsuleIcon(R.drawable.ic_microphone, R.string.selection_voice_note, actions.onVoiceNote)
@@ -197,15 +193,22 @@ private fun Actions(actions: SelectionActions, onHighlight: () -> Unit) {
     }
 }
 
-// A thin line between "Explicar" and the icons.
+/** "Explicar": the capsule's one filled button, in the accent color. */
 @Composable
-private fun Divider() {
-    Box(
-        Modifier
-            .padding(horizontal = 2.dp)
-            .size(width = 1.dp, height = 20.dp)
-            .background(Color.White.copy(alpha = 0.2f)),
-    )
+private fun ExplainPill(onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .height(48.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primary)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 18.dp),
+    ) {
+        Icon(painterResource(R.drawable.ic_sparkle), contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(18.dp))
+        Text(stringResource(R.string.selection_explain), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onPrimary)
+    }
 }
 
 @Composable
