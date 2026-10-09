@@ -230,6 +230,16 @@ class ReaderViewModel(
 
     fun hideMenu() = updateReady { it.copy(menuVisible = false) }
 
+    fun showNotes() = updateReady { it.copy(notesVisible = true) }
+
+    fun hideNotes() = updateReady { it.copy(notesVisible = false) }
+
+    /** Goes to a note or highlight of the "Notas" sheet, back to the page with nothing on top. */
+    fun goToLocation(location: String) {
+        updateReady { it.copy(notesVisible = false, controlsVisible = false) }
+        session.jumpToLocation(bookId, location)
+    }
+
     /** "Ponme a prueba" in the menu: reads the open chapter and asks to open a quiz of [count] questions about it. */
     fun startChapterQuiz(count: Int) {
         val state = _uiState.value as? ReaderUiState.Ready ?: return

@@ -17,7 +17,7 @@ sealed interface ReaderUiState {
      * [textSettingsVisible] the "Aa" sheet for [readingSettings]. [selection] is the text selected on
      * the page, which shows the selection capsule, and [explaining] the text in the explainer sheet.
      * [zonePicking] is set while a zone of a PDF page is being marked to explain it, and
-     * [recordingVoice] while the "Grabar" sheet is open. [menuVisible] is the ⋮ sheet, and
+     * [recordingVoice] while the "Grabar" sheet is open. [menuVisible] is the ⋮ sheet, [notesVisible] the "Notas" sheet, and
      * [chapterQuiz] a quiz about the open chapter that is ready to start (T15.3). [chapterEnd] is a
      * chapter just finished, whose discreet suggestion shows (T15.5).
      */
@@ -41,6 +41,7 @@ sealed interface ReaderUiState {
         val zonePicking: ZonePicking? = null,
         val recordingVoice: Boolean = false,
         val menuVisible: Boolean = false,
+        val notesVisible: Boolean = false,
         val chapterQuiz: ChapterQuiz? = null,
         val chapterUnreadable: Boolean = false,
         val chapterEnd: ChapterEnd? = null,

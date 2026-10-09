@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.ui.bookdetail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -18,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
@@ -42,9 +44,15 @@ fun LazyListScope.highlightsSection(highlights: List<Highlight>) {
     items(highlights, key = { "highlight_${it.id}" }) { highlight -> HighlightItem(highlight) }
 }
 
+/** One highlight; with [onClick] it also goes to its place in the book. */
 @Composable
-private fun HighlightItem(highlight: Highlight) {
-    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.height(IntrinsicSize.Min)) {
+fun HighlightItem(highlight: Highlight, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = modifier
+            .height(IntrinsicSize.Min)
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier),
+    ) {
         Box(
             Modifier
                 .width(4.dp)

@@ -52,6 +52,8 @@ fun ReaderScreen(
     onQuiz: (source: String, count: Int, title: String) -> Unit = { _, _, _ -> },
     // "Repasar" in the end-of-chapter suggestion (T15.5).
     onReview: () -> Unit = {},
+    // A note of the "Notas" sheet that has no place in the book opens its editor.
+    onOpenNote: (noteId: Long) -> Unit = {},
     viewModel: ReaderViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -120,8 +122,19 @@ fun ReaderScreen(
                     // In a PDF, "IA" marks a zone to explain (T11.14); EPUB text is selected instead.
                     onAi = if (state.format == BookFormat.PDF) viewModel::startZonePicking else ({}),
                     onRecord = viewModel::startVoiceNote,
+                    onNotes = viewModel::showNotes,
                     onMenu = viewModel::showMenu,
                 )
+                if (state.notesVisible) {
+                    ReaderNotesSheet(
+                        onGoTo = viewModel::goToLocation,
+                        onOpenNote = { noteId ->
+                            viewModel.hideNotes()
+                            onOpenNote(noteId)
+                        },
+                        onDismiss = viewModel::hideNotes,
+                    )
+                }
                 if (state.menuVisible) {
                     ReaderMenuSheet(
                         isPdf = state.format == BookFormat.PDF,

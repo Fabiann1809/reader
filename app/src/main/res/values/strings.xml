@@ -195,6 +195,10 @@
     <string name="reader_ai_description">Preguntar a la IA</string>
     <string name="reader_record">Grabar</string>
     <string name="reader_record_description">Grabar una nota de voz</string>
+    <string name="reader_notes">Notas</string>
+    <string name="reader_notes_description">Notas y resaltados del libro</string>
+    <string name="reader_notes_title">Notas y resaltados</string>
+    <string name="reader_notes_empty_message">Selecciona un texto del libro para resaltarlo o escribir una nota.</string>
     <string name="voice_recording_title">Grabando nota</string>
     <string name="voice_recorded_title">Nota grabada</string>
     <string name="voice_failed_title">No se pudo grabar</string>

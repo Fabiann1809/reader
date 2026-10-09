@@ -207,6 +207,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onCreateFlashcard = { source, page -> navController.navigate(FlashcardEditorRoute(bookId, source, page ?: 0)) },
                 onNowYou = { source -> navController.navigate(InterpretationRoute(bookId, source)) },
                 onQuiz = { source, count, title -> navController.navigate(QuizRoute(bookId, source, count, title)) },
+                onOpenNote = { noteId -> navController.navigate(NoteEditorRoute(bookId, noteId)) },
                 onReview = { navController.navigateToTab(TopLevelTab.REVIEW) },
             )
         }

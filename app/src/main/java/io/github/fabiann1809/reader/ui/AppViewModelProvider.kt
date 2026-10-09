@@ -36,6 +36,7 @@ import io.github.fabiann1809.reader.ui.more.MoreViewModel
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingViewModel
 import io.github.fabiann1809.reader.ui.progress.ProgressViewModel
 import io.github.fabiann1809.reader.ui.quiz.QuizViewModel
+import io.github.fabiann1809.reader.ui.reader.ReaderNotesViewModel
 import io.github.fabiann1809.reader.ui.reader.ReaderViewModel
 import io.github.fabiann1809.reader.ui.review.PendingReviewsViewModel
 import io.github.fabiann1809.reader.ui.review.ReviewViewModel
@@ -102,6 +103,13 @@ object AppViewModelProvider {
                 session = readerApplication().container.readerSession,
                 chapterSuggestions = readerApplication().container.chapterSuggestions,
                 sessionTracker = readerApplication().container.newReadingSessionTracker(),
+            )
+        }
+        initializer {
+            ReaderNotesViewModel(
+                bookId = createSavedStateHandle().toRoute<ReaderRoute>().bookId,
+                noteRepository = readerApplication().container.noteRepository,
+                highlightRepository = readerApplication().container.highlightRepository,
             )
         }
         initializer {
