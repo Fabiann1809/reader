@@ -358,8 +358,8 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T19.25 Progreso.** Anillo de meta, racha, gráfica semanal y libros del año. *Hecho cuando:* coincide con el prototipo.
 
 **Notas y ajustes**
-- [x] **T19.26a Todas las notas y tarjeta de nota.** Notas agrupadas por libro, buscador, chips y tarjeta con icono por tipo. *Hecho cuando:* coincide con el prototipo.- [ ] **T19.26b Editor de nota.** *Hecho cuando:* coincide con el sistema visual del prototipo.- [ ] **T19.26c Hoja de grabación de voz.** *Hecho cuando:* coincide con el sistema visual del prototipo.
-- [ ] **T19.26b Editor de nota.** *Hecho cuando:* coincide con el sistema visual del prototipo.
+- [x] **T19.26a Todas las notas y tarjeta de nota.** Notas agrupadas por libro, buscador, chips y tarjeta con icono por tipo. *Hecho cuando:* coincide con el prototipo.- [x] **T19.26b Editor de nota.** *Hecho cuando:* coincide con el sistema visual del prototipo.- [ ] **T19.26c Hoja de grabación de voz.** *Hecho cuando:* coincide con el sistema visual del prototipo.
+- [x] **T19.26b Editor de nota.** *Hecho cuando:* coincide con el sistema visual del prototipo.
 - [ ] **T19.26c Hoja de grabación de voz.** *Hecho cuando:* coincide con el sistema visual del prototipo.
 - [ ] **T19.27 Ajustes, privacidad y respaldo.** *Hecho cuando:* coinciden con el prototipo.
 - [ ] **T19.28 Revisión final.** Recorrer las 23 pantallas en claro y oscuro, con reducir animaciones, y corregir diferencias. Actualizar capturas del README. *Hecho cuando:* no queda ninguna pantalla con el estilo anterior.

@@ -42,7 +42,7 @@ fun ReaderTopAppBar(
     TopAppBar(
         title = {
             if (onTitleClick == null) {
-                Text(title)
+                Text(title, style = MaterialTheme.typography.headlineSmall)
             } else {
                 Row(
                     modifier = Modifier
@@ -52,7 +52,7 @@ fun ReaderTopAppBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                    Text(title, style = MaterialTheme.typography.headlineSmall, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                     Icon(painterResource(R.drawable.ic_caret_down), contentDescription = null, modifier = Modifier.size(20.dp))
                 }
             }
@@ -62,7 +62,7 @@ fun ReaderTopAppBar(
             if (onNavigateUp != null) {
                 IconButton(onClick = onNavigateUp) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_caret_left),
+                        painter = painterResource(R.drawable.ic_arrow_left),
                         contentDescription = stringResource(R.string.navigate_up),
                     )
                 }
