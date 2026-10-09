@@ -309,6 +309,51 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [ ] **T18.1 Sincronización con Google Drive.** Carpeta de datos de la app (appDataFolder) con inicio de sesión de Google, estados (Sincronizado, Pendiente, Error con Reintentar) y resolución de conflictos. Cambia la decisión "sin cuentas" del spec. *Hecho cuando:* dos dispositivos ven los mismos datos.
 - [ ] **T18.2 Dropbox.** Mismo contrato que T18.1. *Hecho cuando:* sincroniza.
 
+### Fase 19 — Rediseño v2
+> Decisión del usuario (2026-10-08): por ahora solo el rediseño, antes que las tareas pospuestas. Fuente: paquete "Reader Rediseño" (`Reader Rediseño.dc.html` = prototipo interactivo con 23 pantallas, y `uploads/reader-redesign-brief.md`). Solo cambia el aspecto: las funciones y los datos no cambian ni se agrega nada que no esté en el prototipo. Cada tarea cubre claro y oscuro, estados vacío, cargando y error, y "reducir animaciones".
+
+**Base visual**
+- [ ] **T19.1 Colores.** Paleta clara y oscura del prototipo (fondo, superficies, tinta, acento terracota, morado de IA, estados ok/aviso/error, pared y estante, barra inferior). *Hecho cuando:* los tokens del tema coinciden con el prototipo en ambos modos.
+- [ ] **T19.2 Tipografía.** Manrope (interfaz), DM Serif Display (títulos) y Literata (lectura) en lugar de Plus Jakarta Sans y Fraunces. *Hecho cuando:* ninguna pantalla usa las fuentes anteriores.
+- [ ] **T19.3 Formas y movimiento.** Radios, sombras y animaciones del prototipo (entrada escalonada, pop, fundidos), todas atenuadas con "reducir animaciones". *Hecho cuando:* existen como tokens reutilizables.
+- [ ] **T19.4 Componentes base.** Botones, chips, campos de texto, tarjetas, hojas inferiores y bloques de estado (vacío, cargando, error) con el nuevo estilo. *Hecho cuando:* `ui/components` usa solo los tokens nuevos.
+- [ ] **T19.5 Barra inferior y Más.** Nueva barra con pill activa y punto de pendientes, y pantalla Más. *Hecho cuando:* coinciden con el prototipo.
+- [ ] **T19.6 Onboarding.** Los 3 pasos saltables con las ilustraciones del prototipo. *Hecho cuando:* se ve igual solo la primera vez.
+
+**Biblioteca**
+- [ ] **T19.7 Cabecera de biblioteca.** Título con selector de colección, botones de búsqueda y filtros, y chips de estado. *Hecho cuando:* coincide con el prototipo.
+- [ ] **T19.8 Sigues leyendo y orden.** Tarjeta "Sigues leyendo", etiqueta de orden y selector de vista (estantes, cuadrícula, lista). *Hecho cuando:* la vista elegida persiste.
+- [ ] **T19.9 Vista de estantes.** Pared, estantes y portadas con progreso, insignias "Nuevo" y "Físico", entrada escalonada y botón flotante. *Hecho cuando:* los libros se ven como en el prototipo.
+- [ ] **T19.10 Cuadrícula y lista.** Las otras dos vistas con el nuevo estilo. *Hecho cuando:* coinciden con el prototipo.
+- [ ] **T19.11 Búsqueda y filtros.** Campo de búsqueda con contador y hoja de ordenar y filtrar. *Hecho cuando:* coinciden con el prototipo.
+- [ ] **T19.12 Colecciones y selección.** Selector de colecciones, nueva colección, menú al mantener pulsado y selección múltiple. *Hecho cuando:* coinciden con el prototipo.
+- [ ] **T19.13 Importación.** Estados "Importando 3 de 7…" y error con Reintentar/Descartar. *Hecho cuando:* coinciden con el prototipo.
+
+**Libro**
+- [ ] **T19.14 Agregar libro.** Formulario de libro físico. *Hecho cuando:* coincide con el prototipo.
+- [ ] **T19.15 Detalle del libro.** Portada, progreso, estado, pestañas Resumen, Notas, Fichas y Sesiones. *Hecho cuando:* coincide con el prototipo.
+
+**Lector**
+- [ ] **T19.16 Lector: barras y selección.** Overlay superior e inferior y barra contextual de selección. *Hecho cuando:* coinciden con el prototipo.
+- [ ] **T19.17 Lector: ajustes, índice y búsqueda.** Hoja "Aa", índice, marcadores y buscar en el libro. *Hecho cuando:* coinciden con el prototipo.
+
+**IA y captura**
+- [ ] **T19.18 Explicador.** Bloques, etiqueta "Generado con IA", texto original colapsable y estados. *Hecho cuando:* coincide con el prototipo.
+- [ ] **T19.19 Cámara y recorte.** Marco guía, disparo, galería y recorte. *Hecho cuando:* coinciden con el prototipo.
+- [ ] **T19.20 Texto reconocido.** Texto editable con aviso de dudas y error de OCR. *Hecho cuando:* coincide con el prototipo.
+- [ ] **T19.21 Ahora tú.** Entrada del usuario y respuesta con bien, incompleto y confuso. *Hecho cuando:* coincide con el prototipo.
+
+**Repaso y progreso**
+- [ ] **T19.22 Repasar.** Pestaña con Hoy, Por libro y Por etiqueta, y estado vacío. *Hecho cuando:* coincide con el prototipo.
+- [ ] **T19.23 Sesión y resumen de fichas.** Tarjeta con volteo, botones de dificultad y resumen. *Hecho cuando:* coinciden con el prototipo.
+- [ ] **T19.24 Quiz.** Pregunta, corrección, salida y resultado. *Hecho cuando:* coinciden con el prototipo.
+- [ ] **T19.25 Progreso.** Anillo de meta, racha, gráfica semanal y libros del año. *Hecho cuando:* coincide con el prototipo.
+
+**Notas y ajustes**
+- [ ] **T19.26 Notas.** Todas las notas, lista por libro, editor y hoja de grabación de voz. *Hecho cuando:* coinciden con el prototipo.
+- [ ] **T19.27 Ajustes, privacidad y respaldo.** *Hecho cuando:* coinciden con el prototipo.
+- [ ] **T19.28 Revisión final.** Recorrer las 23 pantallas en claro y oscuro, con reducir animaciones, y corregir diferencias. Actualizar capturas del README. *Hecho cuando:* no queda ninguna pantalla con el estilo anterior.
+
 ## 10. Riesgos técnicos (en orden)
 
 1. Lector de EPUB/PDF con selección de texto (por eso queda aislado en B1 y B2).
