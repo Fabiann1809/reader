@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,29 +28,29 @@ import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 fun AnalysisBlocks(analysis: InterpretationAnalysis, modifier: Modifier = Modifier) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = modifier) {
         analysis.understood?.let {
-            AnalysisBlock(R.drawable.ic_check_circle, R.string.interpretation_understood, it, ReaderTheme.colors.success)
+            AnalysisBlock(R.drawable.ic_check_circle, R.string.interpretation_understood, it, ReaderTheme.colors.success, ReaderTheme.colors.successContainer, ReaderTheme.colors.onSuccessContainer)
         }
         analysis.incomplete?.let {
-            AnalysisBlock(R.drawable.ic_warning_circle, R.string.interpretation_incomplete, it, ReaderTheme.colors.warning)
+            AnalysisBlock(R.drawable.ic_warning_circle, R.string.interpretation_incomplete, it, ReaderTheme.colors.warning, ReaderTheme.colors.warningContainer, ReaderTheme.colors.onWarningContainer)
         }
         analysis.confused?.let {
-            AnalysisBlock(R.drawable.ic_x, R.string.interpretation_confused, it, MaterialTheme.colorScheme.error)
+            AnalysisBlock(R.drawable.ic_x, R.string.interpretation_confused, it, MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer)
         }
     }
 }
 
 @Composable
-private fun AnalysisBlock(@DrawableRes icon: Int, @StringRes title: Int, text: String, color: Color) {
+private fun AnalysisBlock(@DrawableRes icon: Int, @StringRes title: Int, text: String, color: Color, container: Color, ink: Color) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .background(color.copy(alpha = 0.14f), MaterialTheme.shapes.medium)
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+            .background(container, RoundedCornerShape(18.dp))
+            .padding(14.dp),
     ) {
-        Icon(painterResource(icon), contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
+        Icon(painterResource(icon), contentDescription = null, tint = color, modifier = Modifier.size(22.dp))
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(stringResource(title), style = MaterialTheme.typography.labelLarge, color = color)
+            Text(stringResource(title), style = MaterialTheme.typography.titleSmall, color = ink)
             Text(text, style = MaterialTheme.typography.bodyMedium)
         }
     }

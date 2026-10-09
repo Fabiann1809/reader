@@ -1,6 +1,13 @@
 package io.github.fabiann1809.reader.ui.interpretation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +21,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,7 +40,7 @@ import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.AiButton
 import io.github.fabiann1809.reader.ui.quiz.PARAGRAPH_QUIZ_SIZE
 import io.github.fabiann1809.reader.ui.components.OutlineButton
-import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
+import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.aiErrorMessageRes
 import io.github.fabiann1809.reader.ui.components.readerTextFieldColors
 import io.github.fabiann1809.reader.ui.components.readerTextFieldShape
@@ -66,54 +74,83 @@ fun InterpretationContent(
     modifier: Modifier = Modifier,
     onQuiz: (title: String) -> Unit = {},
 ) {
-    Scaffold(
-        modifier = modifier,
-        topBar = { ReaderTopAppBar(title = stringResource(R.string.interpretation_title), onNavigateUp = onNavigateUp) },
-    ) { innerPadding ->
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .imePadding()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+        Column(Modifier.statusBarsPadding().imePadding()) {
+            Header(onNavigateUp)
+            Body(uiState, onOwnWordsChange, onAnalyze, onNavigateUp, onQuiz, Modifier.weight(1f))
+        }
+    }
+}
+
+/** Back arrow and "Ahora tú". */
+@Composable
+private fun Header(onNavigateUp: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 4.dp, top = 8.dp, bottom = 4.dp)) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(48.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onNavigateUp),
         ) {
-            Quote(uiState.sourceText)
-            Text(stringResource(R.string.interpretation_prompt), style = MaterialTheme.typography.bodyMedium)
-            OutlinedTextField(
-                shape = readerTextFieldShape,
-                colors = readerTextFieldColors(),
-                value = uiState.ownWords,
-                onValueChange = onOwnWordsChange,
-                label = { Text(stringResource(R.string.interpretation_field)) },
-                minLines = OWN_WORDS_MIN_LINES,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                modifier = Modifier.fillMaxWidth(),
-            )
-            AiButton(
-                text = stringResource(R.string.interpretation_analyze),
-                onClick = onAnalyze,
-                enabled = uiState.canAnalyze,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            AnalysisSection(uiState.analysis)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (uiState.analysis is AnalysisState.Done) {
-                    val title = stringResource(R.string.quiz_title_paragraph)
-                    AiButton(
-                        text = stringResource(R.string.quiz_try_me),
-                        onClick = { onQuiz(title) },
-                        icon = null,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                OutlineButton(
-                    text = stringResource(R.string.interpretation_close),
-                    onClick = onNavigateUp,
+            Icon(painterResource(R.drawable.ic_arrow_left), contentDescription = stringResource(R.string.navigate_up))
+        }
+        Text(stringResource(R.string.interpretation_title), style = MaterialTheme.typography.headlineSmall)
+    }
+}
+
+@Composable
+private fun Body(
+    uiState: InterpretationUiState,
+    onOwnWordsChange: (String) -> Unit,
+    onAnalyze: () -> Unit,
+    onNavigateUp: () -> Unit,
+    onQuiz: (title: String) -> Unit,
+    modifier: Modifier,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 40.dp),
+    ) {
+        Quote(uiState.sourceText)
+        Text(
+            stringResource(R.string.interpretation_prompt),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        OutlinedTextField(
+            shape = readerTextFieldShape,
+            colors = readerTextFieldColors(),
+            value = uiState.ownWords,
+            onValueChange = onOwnWordsChange,
+            label = { Text(stringResource(R.string.interpretation_field)) },
+            minLines = OWN_WORDS_MIN_LINES,
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        PrimaryButton(
+            text = stringResource(R.string.interpretation_analyze),
+            onClick = onAnalyze,
+            enabled = uiState.canAnalyze,
+            icon = R.drawable.ic_sparkle,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        AnalysisSection(uiState.analysis)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (uiState.analysis is AnalysisState.Done) {
+                val title = stringResource(R.string.quiz_title_paragraph)
+                AiButton(
+                    text = stringResource(R.string.quiz_try_me),
+                    onClick = { onQuiz(title) },
+                    icon = null,
                     modifier = Modifier.weight(1f),
                 )
             }
+            OutlineButton(
+                text = stringResource(R.string.interpretation_close),
+                onClick = onNavigateUp,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }
