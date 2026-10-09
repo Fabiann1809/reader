@@ -538,12 +538,20 @@
     <string name="goal_pages">Páginas</string>
     <string name="goal_minutes_a_day">Minutos al día</string>
     <string name="goal_pages_a_day">Páginas al día</string>
-    <plurals name="progress_streak_days">
-        <item quantity="one">día seguido\nleyendo</item>
-        <item quantity="other">días seguidos\nleyendo</item>
+    <plurals name="progress_streak_title">
+        <item quantity="one">%d día seguido</item>
+        <item quantity="other">%d días seguidos</item>
     </plurals>
+    <string name="progress_streak_hint">Leyendo cada día</string>
+    <string name="progress_goal_done">¡Meta de hoy cumplida!</string>
+    <string name="progress_goal_left_minutes">Te faltan %d min para tu meta de hoy.</string>
+    <plurals name="progress_goal_left_pages">
+        <item quantity="one">Te falta %d página para tu meta de hoy.</item>
+        <item quantity="other">Te faltan %d páginas para tu meta de hoy.</item>
+    </plurals>
+    <string name="progress_goal_edit_hint">Toca el anillo para cambiar</string>
     <string name="progress_this_week">Esta semana</string>
-    <string name="progress_week_summary">%1$s esta semana · %2$d min de media</string>
+    <string name="progress_week_average">%d min de media</string>
     <string name="progress_hours_minutes">%1$d h %2$d m</string>
     <string name="progress_minutes">%d min</string>
     <string name="progress_finished_books">Libros terminados</string>

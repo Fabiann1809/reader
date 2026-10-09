@@ -4,11 +4,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.runtime.remember
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +30,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.prefs.ReadingGoal
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
-import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.components.StatusMessage
 
 @Composable
@@ -44,14 +50,10 @@ fun ProgressContent(
     onCelebrated: () -> Unit = {},
 ) {
     var editingGoal by rememberSaveable { mutableStateOf(false) }
-    Scaffold(
-        modifier = modifier,
-        topBar = { ReaderTopAppBar(title = stringResource(R.string.tab_progress)) },
-    ) { innerPadding ->
+    Column(modifier.fillMaxSize().statusBarsPadding()) {
+        ProgressHeader()
         val stats = uiState.stats
-        val content = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
+        val content = Modifier.weight(1f).fillMaxWidth()
         when {
             stats == null -> Box(content, contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             uiState.isEmpty -> Box(content, contentAlignment = Alignment.Center) {
@@ -62,12 +64,13 @@ fun ProgressContent(
                 )
             }
             else -> Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
                 modifier = content
                     .verticalScroll(rememberScrollState())
-                    .padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp),
+                    .padding(start = 20.dp, top = 12.dp, end = 20.dp, bottom = NAV_BAR_CLEARANCE),
             ) {
-                GoalCard(stats, celebrate = uiState.celebrate, onCelebrated = onCelebrated, onEditGoal = { editingGoal = true })
+                GoalCard(stats, onEditGoal = { editingGoal = true })
+                StreakCard(stats, celebrate = uiState.celebrate, onCelebrated = onCelebrated)
                 WeekCard(stats)
                 FinishedBooksCard(stats)
             }
@@ -85,3 +88,20 @@ fun ProgressContent(
         )
     }
 }
+
+/** "Progreso" and today's date. */
+@Composable
+private fun ProgressHeader() {
+    val today = remember { LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", Locale.getDefault())) }
+    Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp)) {
+        Text(stringResource(R.string.tab_progress), style = MaterialTheme.typography.displaySmall)
+        Text(
+            text = today.replaceFirstChar { it.titlecase(Locale.getDefault()) },
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+// Room for the floating bottom bar.
+private val NAV_BAR_CLEARANCE = 120.dp

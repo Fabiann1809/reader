@@ -48,7 +48,7 @@ fun StreakFlame(celebrate: Boolean, onCelebrated: () -> Unit) {
         tint = ReaderTheme.colors.warning,
         modifier = Modifier
             .testTag(STREAK_FLAME_TAG)
-            .size(22.dp)
+            .size(30.dp)
             .graphicsLayer {
                 scaleX = scale.value
                 scaleY = scale.value

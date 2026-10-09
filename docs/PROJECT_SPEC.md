@@ -355,7 +355,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T19.22 Repasar.** Pestaña con Hoy, Por libro y Por etiqueta, y estado vacío. *Hecho cuando:* coincide con el prototipo.
 - [x] **T19.23 Sesión y resumen de fichas.** Tarjeta con volteo, botones de dificultad y resumen. *Hecho cuando:* coinciden con el prototipo.
 - [x] **T19.24 Quiz.** Pregunta, corrección, salida y resultado. Incluye elegir el número de preguntas y "Repetir" (pedido del usuario). *Hecho cuando:* coinciden con el prototipo.
-- [ ] **T19.25 Progreso.** Anillo de meta, racha, gráfica semanal y libros del año. *Hecho cuando:* coincide con el prototipo.
+- [x] **T19.25 Progreso.** Anillo de meta, racha, gráfica semanal y libros del año. *Hecho cuando:* coincide con el prototipo.
 
 **Notas y ajustes**
 - [ ] **T19.26 Notas.** Todas las notas, lista por libro, editor y hoja de grabación de voz. *Hecho cuando:* coinciden con el prototipo.
