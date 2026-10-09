@@ -544,8 +544,8 @@
     <string name="about_version">Versión %1$s</string>
     <string name="about_tagline">Tu biblioteca, tu progreso y un tutor que te ayuda a entender lo que lees.</string>
     <string name="about_licenses">Licencias de terceros</string>
-    <string name="about_font_plus_jakarta">Fuente Plus Jakarta Sans</string>
-    <string name="about_font_fraunces">Fuente Fraunces</string>
+    <string name="about_font_manrope">Fuente Manrope</string>
+    <string name="about_font_dm_serif_display">Fuente DM Serif Display</string>
     <string name="about_font_literata">Fuente Literata</string>
     <string name="about_font_merriweather">Fuente Merriweather</string>
     <string name="about_font_source_serif">Fuente Source Serif</string>

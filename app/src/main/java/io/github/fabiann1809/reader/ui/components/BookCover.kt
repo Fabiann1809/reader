@@ -47,7 +47,7 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.isNew
-import io.github.fabiann1809.reader.ui.theme.Fraunces
+import io.github.fabiann1809.reader.ui.theme.DmSerifDisplay
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import kotlin.math.roundToInt
 
@@ -139,7 +139,7 @@ fun BookCover(
                 Text(
                     text = book.title,
                     color = Color.White,
-                    fontFamily = Fraunces,
+                    fontFamily = DmSerifDisplay,
                     fontSize = titleSize,
                     lineHeight = titleSize * 1.15f,
                     style = MaterialTheme.typography.titleSmall,
