@@ -29,6 +29,9 @@ object Motion {
     /** Overshoot used by the "pop" of active icons and the book entrance. */
     val PopEasing = CubicBezierEasing(0.3f, 1.4f, 0.5f, 1f)
 
+    /** The cover of "Continuar leyendo" swinging open before the reader appears. */
+    const val BOOK_OPEN_MILLIS = 750
+
     /** Delay between consecutive items of a staggered entrance (shelves, lists). */
     const val STAGGER_MILLIS = 30
 

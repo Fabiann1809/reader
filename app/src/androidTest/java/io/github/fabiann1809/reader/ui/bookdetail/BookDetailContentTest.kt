@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
+import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.collection.Collection
 import io.github.fabiann1809.reader.data.note.Note
@@ -42,6 +43,7 @@ class BookDetailContentTest {
         flashcards: List<Flashcard> = emptyList(),
         sessions: List<ReadingSession> = emptyList(),
         onCapturePage: () -> Unit = {},
+        onRead: () -> Unit = {},
         onDeleteBook: () -> Unit = {},
         collections: List<Collection> = emptyList(),
         onFavoriteChange: (Boolean) -> Unit = {},
@@ -60,6 +62,7 @@ class BookDetailContentTest {
                     onAddNote = {},
                     onNoteClick = {},
                     onCapturePage = onCapturePage,
+                    onRead = onRead,
                 )
             }
         }
@@ -144,6 +147,19 @@ class BookDetailContentTest {
         composeRule.onNodeWithText(string(R.string.capture_title)).performClick()
 
         assertTrue(captured)
+    }
+
+    @Test
+    fun continueReadingOpensTheCoverFirstAndThenTheReader() {
+        var opened = false
+        val digital = book.copy(kind = BookKind.DIGITAL, lastOpenedAt = 1L)
+        setContent(notes = emptyList(), book = digital, onRead = { opened = true })
+
+        composeRule.onNodeWithText(string(R.string.detail_continue_reading)).performClick()
+
+        // The cover swings open for 750 ms before the reader follows.
+        assertFalse(opened)
+        composeRule.waitUntil(timeoutMillis = 3_000) { opened }
     }
 
     @Test

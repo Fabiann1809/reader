@@ -36,6 +36,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import io.github.fabiann1809.reader.ui.components.Motion
+import io.github.fabiann1809.reader.ui.components.rememberReduceMotion
+import kotlinx.coroutines.delay
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -138,6 +142,16 @@ fun BookDetailContent(
     var showProgressDialog by rememberSaveable { mutableStateOf(false) }
     var showCollectionSheet by rememberSaveable { mutableStateOf(false) }
     var showNewCollectionDialog by rememberSaveable { mutableStateOf(false) }
+    // "Continuar leyendo": the cover swings open first and the reader follows (nothing to wait for with Reduce Motion).
+    var isOpening by remember { mutableStateOf(false) }
+    val reduceMotion = rememberReduceMotion()
+    LaunchedEffect(isOpening) {
+        if (isOpening) {
+            delay(Motion.BOOK_OPEN_MILLIS.toLong())
+            onRead()
+        }
+    }
+    val readBook = { if (reduceMotion) onRead() else isOpening = true }
 
     Scaffold(
         modifier = modifier,
@@ -173,7 +187,8 @@ fun BookDetailContent(
                 onDeleteClick = { showDeleteDialog = true },
                 onUpdateProgressClick = { showProgressDialog = true },
                 onCapturePage = onCapturePage,
-                onRead = onRead,
+                onRead = readBook,
+                isOpening = isOpening,
                 onAddNote = onAddNote,
                 onAddFlashcard = onAddFlashcard,
                 onNoteClick = onNoteClick,
@@ -299,6 +314,7 @@ private fun BookDetailBody(
     onUpdateProgressClick: () -> Unit,
     onCapturePage: () -> Unit,
     onRead: () -> Unit,
+    isOpening: Boolean,
     onAddNote: () -> Unit,
     onAddFlashcard: () -> Unit = {},
     onNoteClick: (Long) -> Unit,
@@ -320,6 +336,7 @@ private fun BookDetailBody(
                 book = state.book,
                 onNavigateUp = onNavigateUp,
                 onFavoriteChange = onFavoriteChange,
+                isOpening = isOpening,
                 menu = { MoreMenu(onAddToCollectionClick = onCollectionClick, onDeleteClick = onDeleteClick) },
             )
         }

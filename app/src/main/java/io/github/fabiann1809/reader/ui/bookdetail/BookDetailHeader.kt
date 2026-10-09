@@ -1,6 +1,10 @@
 package io.github.fabiann1809.reader.ui.bookdetail
 
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -59,6 +63,8 @@ private val CoverHeight = 208.dp
 private val PaperColor = Color(0xFFFBF7F0)
 private val PaperLine = Color(0xFFE3D6C4)
 private const val COVER_TURN_DEGREES = 40f
+private const val COVER_OPEN_DEGREES = 152f
+private val CoverSwingEasing = CubicBezierEasing(0.5f, 0f, 0.3f, 1f)
 
 /**
  * The top of the detail: a wash of the cover's color behind the back, favorite and menu buttons, the
@@ -69,6 +75,7 @@ fun DetailHero(
     book: Book,
     onNavigateUp: () -> Unit,
     onFavoriteChange: (Boolean) -> Unit,
+    isOpening: Boolean,
     menu: @Composable () -> Unit,
 ) {
     val wash = coverStyle(book.title).cover.copy(alpha = 0.18f)
@@ -86,7 +93,7 @@ fun DetailHero(
                 FavoriteButton(book.isFavorite, onFavoriteChange)
                 menu()
             }
-            OpeningCover(book)
+            OpeningCover(book, isOpening)
             Text(
                 text = book.title,
                 style = MaterialTheme.typography.headlineMedium,
@@ -134,9 +141,17 @@ private fun FavoriteButton(isFavorite: Boolean, onChange: (Boolean) -> Unit) {
     )
 }
 
-/** The cover turns open on its spine when the screen appears, over a sheet of lined paper. */
+/**
+ * The cover turns in when the screen appears, over a sheet of lined paper, and swings open on its
+ * spine when [isOpening] ("Continuar leyendo").
+ */
 @Composable
-private fun OpeningCover(book: Book) {
+private fun OpeningCover(book: Book, isOpening: Boolean) {
+    val swing by animateFloatAsState(
+        targetValue = if (isOpening) 1f else 0f,
+        animationSpec = tween(Motion.BOOK_OPEN_MILLIS, easing = CoverSwingEasing),
+        label = "coverSwing",
+    )
     val progress = rememberEntranceProgress(durationMillis = 600, easing = Motion.PopEasing)
     val density = LocalDensity.current.density
     Box(
@@ -163,7 +178,20 @@ private fun OpeningCover(book: Book) {
                 Box(Modifier.fillMaxWidth(fraction).height(4.dp).background(PaperLine, RoundedCornerShape(2.dp)))
             }
         }
-        BookCover(book = book, titleSize = 24.sp, modifier = Modifier.matchParentSize().offset(x = (-3).dp))
+        BookCover(
+            book = book,
+            titleSize = 24.sp,
+            modifier = Modifier
+                .matchParentSize()
+                .offset(x = (-3).dp)
+                .graphicsLayer {
+                    transformOrigin = TransformOrigin(0f, 0.5f)
+                    cameraDistance = 12f * density
+                    rotationY = -COVER_OPEN_DEGREES * swing
+                    // Past the edge-on point the back of the cover would show: it is hidden, like backface-visibility.
+                    alpha = if (swing * COVER_OPEN_DEGREES > 90f) 0f else 1f
+                },
+        )
     }
 }
 
