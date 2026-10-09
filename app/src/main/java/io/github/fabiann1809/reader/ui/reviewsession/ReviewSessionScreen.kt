@@ -26,6 +26,7 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.flashcard.ReviewGrade
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
+import io.github.fabiann1809.reader.ui.components.SessionHeader
 
 /** A review session (T14.4); at the end its summary (T14.5), whose "Listo" closes it ([onFinished]). */
 @Composable

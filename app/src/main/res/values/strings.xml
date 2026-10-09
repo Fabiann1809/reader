@@ -426,8 +426,8 @@
     <string name="quiz_counter">%1$s · Pregunta %2$d/%3$d</string>
     <string name="quiz_loading">Preparando tus preguntas…</string>
     <string name="quiz_retry">Reintentar</string>
-    <string name="quiz_feedback_correct">Correcto. %s</string>
-    <string name="quiz_feedback_wrong">No es esa. %s</string>
+    <string name="quiz_feedback_correct">¡Correcto!</string>
+    <string name="quiz_feedback_wrong">No exactamente</string>
     <string name="quiz_next">Siguiente</string>
     <string name="quiz_see_result">Ver resultado</string>
     <string name="quiz_finished_title">¡Terminaste!</string>

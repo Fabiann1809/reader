@@ -1,4 +1,4 @@
-package io.github.fabiann1809.reader.ui.reviewsession
+package io.github.fabiann1809.reader.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
 
-/** Close button, "7 / 20" and a thin progress bar. [counter] and [progress] are null while loading or finished. */
+/** Close button, a centered counter (e.g. "7 / 20") and a thin progress bar. [counter] and [progress] are null while loading or finished. */
 @Composable
 fun SessionHeader(counter: String?, progress: Float?, onClose: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier) {

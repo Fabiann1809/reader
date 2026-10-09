@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -26,23 +27,30 @@ import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
-/** How an option looks (design "QuizOption"): before answering, or once the answer is shown. */
+/** How an option looks: before answering, or once the answer is shown. */
 enum class OptionLook { NORMAL, CORRECT, WRONG, DIMMED }
 
 /** One of the four answers: its letter (or ✓ / ✗ once answered) and its text. */
 @Composable
 fun QuizOption(letter: Char, text: String, look: OptionLook, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = ReaderTheme.colors
+    val scheme = MaterialTheme.colorScheme
     val accent = when (look) {
-        OptionLook.CORRECT -> ReaderTheme.colors.success
-        OptionLook.WRONG -> MaterialTheme.colorScheme.error
+        OptionLook.CORRECT -> colors.success
+        OptionLook.WRONG -> scheme.error
         else -> null
+    }
+    val container = when (look) {
+        OptionLook.CORRECT -> colors.successContainer
+        OptionLook.WRONG -> scheme.errorContainer
+        else -> scheme.surfaceContainerLowest
     }
     Surface(
         onClick = onClick,
         enabled = look == OptionLook.NORMAL,
-        shape = MaterialTheme.shapes.medium,
-        color = accent?.copy(alpha = 0.15f) ?: Color.Transparent,
-        border = BorderStroke(if (accent != null) 1.5.dp else 1.dp, accent ?: MaterialTheme.colorScheme.outline),
+        shape = RoundedCornerShape(18.dp),
+        color = container,
+        border = BorderStroke(1.5.dp, accent ?: scheme.outlineVariant),
         modifier = modifier
             .fillMaxWidth()
             .alpha(if (look == OptionLook.DIMMED) 0.5f else 1f),
@@ -51,14 +59,14 @@ fun QuizOption(letter: Char, text: String, look: OptionLook, onClick: () -> Unit
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .heightIn(min = 56.dp)
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+                .heightIn(min = 58.dp)
+                .padding(horizontal = 14.dp, vertical = 10.dp),
         ) {
             OptionBadge(letter, look, accent)
             Text(
                 text = text,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = if (accent != null) FontWeight.SemiBold else null,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
             )
         }
     }
@@ -66,7 +74,7 @@ fun QuizOption(letter: Char, text: String, look: OptionLook, onClick: () -> Unit
 
 @Composable
 private fun OptionBadge(letter: Char, look: OptionLook, accent: Color?) {
-    val badge = Modifier.size(28.dp)
+    val badge = Modifier.size(30.dp)
     if (accent != null) {
         Box(badge.background(accent, CircleShape), contentAlignment = Alignment.Center) {
             Icon(
@@ -77,8 +85,8 @@ private fun OptionBadge(letter: Char, look: OptionLook, accent: Color?) {
             )
         }
     } else {
-        Box(badge.border(1.dp, MaterialTheme.colorScheme.outline, CircleShape), contentAlignment = Alignment.Center) {
-            Text(letter.toString(), style = MaterialTheme.typography.labelMedium)
+        Box(badge.border(1.5.dp, MaterialTheme.colorScheme.outline, CircleShape), contentAlignment = Alignment.Center) {
+            Text(letter.toString(), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold))
         }
     }
 }
