@@ -34,6 +34,8 @@ val LightWall = Color(0xFFF2E8DA)
 val LightWallShade = Color(0xFFE4D7C5)
 val LightShelfTop = Color(0xFF5B463A)
 val LightShelfFront = Color(0xFF2A1F19)
+val LightNavBar = Color(0xFFFFFAF3)
+val LightNavActive = Color(0xFFEFE3D2)
 
 // Dark mode
 val DarkBg = Color(0xFF15110E)
@@ -64,6 +66,8 @@ val DarkWall = Color(0xFF2A211B)
 val DarkWallShade = Color(0xFF211A15)
 val DarkShelfTop = Color(0xFF4A382D)
 val DarkShelfFront = Color(0xFF0E0A08)
+val DarkNavBar = Color(0xFF261F1B)
+val DarkNavActive = Color(0xFF3D3027)
 
 // Muted colors for generated covers, picked by title hash.
 val CoverPalette = listOf(

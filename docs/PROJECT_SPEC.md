@@ -317,7 +317,8 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T19.2 Tipografía.** Manrope (interfaz), DM Serif Display (títulos) y Literata (lectura) en lugar de Plus Jakarta Sans y Fraunces. *Hecho cuando:* ninguna pantalla usa las fuentes anteriores.
 - [x] **T19.3 Formas y movimiento.** Radios, sombras y animaciones del prototipo (entrada escalonada, pop, fundidos), todas atenuadas con "reducir animaciones". *Hecho cuando:* existen como tokens reutilizables.
 - [x] **T19.4 Componentes base.** Botones, chips, campos de texto, tarjetas, hojas inferiores y bloques de estado (vacío, cargando, error) con el nuevo estilo. *Hecho cuando:* `ui/components` usa solo los tokens nuevos.
-- [ ] **T19.5 Barra inferior y Más.** Nueva barra con pill activa y punto de pendientes, y pantalla Más. *Hecho cuando:* coinciden con el prototipo.
+- [x] **T19.5a Barra inferior.** Barra flotante redondeada con pill que se desliza a la pestaña activa y punto de pendientes. *Hecho cuando:* coincide con el prototipo.
+- [ ] **T19.5b Pantalla Más.** Título, lista en tarjeta con iconos circulares y subtítulos, tarjeta de clave de Gemini y conteo de notas (decisión del usuario 2026-10-08: sin interruptor de modo oscuro). *Hecho cuando:* coincide con el prototipo.
 - [ ] **T19.6 Onboarding.** Los 3 pasos saltables con las ilustraciones del prototipo. *Hecho cuando:* se ve igual solo la primera vez.
 
 **Biblioteca**
