@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.longClick
@@ -217,8 +218,8 @@ class LibraryContentTest {
         }
 
         composeRule.onNodeWithContentDescription(string(R.string.library_search)).performClick()
-        composeRule.onNodeWithText(string(R.string.library_search_hint)).performTextInput("dune")
-        composeRule.onNodeWithContentDescription(string(R.string.library_search_close)).performClick()
+        composeRule.onNode(hasSetTextAction()).performTextInput("dune")
+        composeRule.onNodeWithText(string(R.string.library_search_cancel)).performClick()
 
         // The keyboard may send one more empty change while the field closes; only first and last matter.
         assertEquals("dune", queries.first())
@@ -378,7 +379,7 @@ class LibraryContentTest {
     }
 
     @Test
-    fun sheetChangesViewAndBooksPerRow() {
+    fun sheetChangesBooksPerRow() {
         val layouts = mutableListOf<LibraryLayout>()
         composeRule.setContent {
             ReaderTheme {
@@ -392,10 +393,9 @@ class LibraryContentTest {
         }
 
         composeRule.onNodeWithContentDescription(string(R.string.library_arrange)).performClick()
-        composeRule.onNodeWithText(string(R.string.view_collections)).performClick()
         composeRule.onNodeWithText("4").performClick()
 
-        assertEquals(listOf(LibraryLayout(view = LibraryView.COLLECTIONS), LibraryLayout(booksPerRow = 4)), layouts)
+        assertEquals(listOf(LibraryLayout(booksPerRow = 4)), layouts)
     }
 
     private fun setContentWithMenu(book: Book, actions: LibraryBookActions, onBookClick: (Long) -> Unit = {}) {

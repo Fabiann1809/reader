@@ -36,9 +36,11 @@ fun LibraryBooks(
     header: (@Composable () -> Unit)? = null,
     collectionsActions: CollectionsActions = CollectionsActions(),
 ) {
-    val isShelves = uiState.layout.view == LibraryView.SHELVES
+    // Searching in the Colecciones view shows the matching books on the shelves instead.
+    val view = if (uiState.layout.view == LibraryView.COLLECTIONS && uiState.query.isNotBlank()) LibraryView.SHELVES else uiState.layout.view
+    val isShelves = view == LibraryView.SHELVES
     // The Colecciones view lists every collection, so what the shown one lacks does not make it empty.
-    val empty = if (uiState.layout.view == LibraryView.COLLECTIONS && !uiState.libraryIsEmpty) null else empty
+    val empty = if (view == LibraryView.COLLECTIONS && !uiState.libraryIsEmpty) null else empty
     val columns = booksPerRow(uiState.layout.booksPerRow)
     when {
         uiState.isLoading && isShelves -> Bookcase(contentPadding, columns, itemCount = PLACEHOLDER_COUNT) { _, width ->
@@ -56,7 +58,7 @@ fun LibraryBooks(
                 action = { PrimaryButton(text = empty.action, onClick = empty.onAction, icon = empty.actionIcon) },
             )
         }
-        else -> when (uiState.layout.view) {
+        else -> when (view) {
             LibraryView.SHELVES -> Bookcase(
                 contentPadding,
                 columns,

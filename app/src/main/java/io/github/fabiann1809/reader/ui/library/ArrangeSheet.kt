@@ -1,14 +1,21 @@
 package io.github.fabiann1809.reader.ui.library
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -17,11 +24,13 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import io.github.fabiann1809.reader.ui.components.ReaderFilterChip
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.BookKind
@@ -30,14 +39,20 @@ import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.book.LibraryArrangement
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
 import io.github.fabiann1809.reader.data.prefs.LibraryView
+import io.github.fabiann1809.reader.ui.components.PrimaryButton
+import io.github.fabiann1809.reader.ui.components.ReaderFilterChip
 import io.github.fabiann1809.reader.ui.components.labelRes
 
-/** View, order and filters: every change applies at once, so the shelves update behind the sheet. */
+/**
+ * Order, filters and books per shelf: every change applies at once, so the shelves update behind
+ * the sheet. The button at the bottom shows how many books the current filters leave.
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ArrangeSheet(
     arrangement: LibraryArrangement,
     layout: LibraryLayout,
+    resultCount: Int,
     onChange: (LibraryArrangement) -> Unit,
     onLayoutChange: (LibraryLayout) -> Unit,
     onDismiss: () -> Unit,
@@ -47,73 +62,117 @@ fun ArrangeSheet(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
-                .padding(start = 24.dp, end = 24.dp, bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(start = 20.dp, end = 20.dp, bottom = 16.dp),
         ) {
-            Text(stringResource(R.string.library_arrange), style = MaterialTheme.typography.titleMedium)
-
-            Section(R.string.arrange_view) {
-                LibraryView.entries.forEach { view ->
-                    OptionChip(stringResource(view.labelRes()), isSelected = layout.view == view) {
-                        onLayoutChange(layout.copy(view = view))
-                    }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.library_arrange), style = MaterialTheme.typography.headlineSmall)
+                TextButton(onClick = { onChange(arrangement.withoutFilters()) }, enabled = arrangement.hasFilters) {
+                    Text(stringResource(R.string.arrange_clear), style = MaterialTheme.typography.labelLarge)
                 }
             }
-            // The list shows one book per row, so the count only applies to shelves and grid.
-            if (layout.view != LibraryView.LIST) {
-                Section(R.string.arrange_books_per_row) {
+            SectionTitle(R.string.arrange_sort_title)
+            BookSort.entries.forEach { sort ->
+                SortRow(stringResource(sort.labelRes()), isSelected = arrangement.sort == sort) {
+                    onChange(arrangement.copy(sort = sort))
+                }
+            }
+            // Only the shelves use the count: the other views ignore it.
+            if (layout.view == LibraryView.SHELVES) {
+                SectionTitle(R.string.arrange_books_per_row)
+                Chips {
                     LibraryLayout.BooksPerRowRange.forEach { count ->
-                        OptionChip(count.toString(), isSelected = layout.booksPerRow == count) {
-                            onLayoutChange(layout.copy(booksPerRow = count))
-                        }
+                        ReaderFilterChip(
+                            selected = layout.booksPerRow == count,
+                            onClick = { onLayoutChange(layout.copy(booksPerRow = count)) },
+                            label = { Text(count.toString()) },
+                        )
                     }
                 }
             }
-            Section(R.string.arrange_sort_title) {
-                BookSort.entries.forEach { sort ->
-                    OptionChip(stringResource(sort.labelRes()), isSelected = arrangement.sort == sort) {
-                        onChange(arrangement.copy(sort = sort))
-                    }
-                }
-            }
-            Section(R.string.arrange_status) {
+            SectionTitle(R.string.arrange_status)
+            Chips {
                 BookStatus.entries.forEach { status ->
                     OptionChip(stringResource(status.labelRes()), isSelected = status in arrangement.statuses) {
                         onChange(arrangement.copy(statuses = arrangement.statuses.toggle(status)))
                     }
                 }
             }
-            Section(R.string.arrange_format) {
+            SectionTitle(R.string.arrange_format)
+            Chips {
                 BookFormat.entries.forEach { format ->
                     OptionChip(stringResource(format.labelRes()), isSelected = format in arrangement.formats) {
                         onChange(arrangement.copy(formats = arrangement.formats.toggle(format)))
                     }
                 }
             }
-            Section(R.string.arrange_kind) {
+            SectionTitle(R.string.arrange_kind)
+            Chips {
                 BookKind.entries.forEach { kind ->
                     OptionChip(stringResource(kind.labelRes()), isSelected = kind in arrangement.kinds) {
                         onChange(arrangement.copy(kinds = arrangement.kinds.toggle(kind)))
                     }
                 }
             }
-            TextButton(onClick = { onChange(arrangement.withoutFilters()) }, enabled = arrangement.hasFilters) {
-                Text(stringResource(R.string.arrange_clear_filters))
-            }
+            PrimaryButton(
+                text = stringResource(
+                    R.string.arrange_show,
+                    pluralStringResource(R.plurals.library_book_count, resultCount, resultCount),
+                ),
+                onClick = onDismiss,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 22.dp),
+            )
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Section(@StringRes title: Int, chips: @Composable () -> Unit) {
+private fun SectionTitle(@StringRes title: Int) {
     Text(
         text = stringResource(title),
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 8.dp),
+        modifier = Modifier.padding(top = 14.dp, bottom = 6.dp),
     )
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { chips() }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun Chips(content: @Composable () -> Unit) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { content() }
+}
+
+/** One order option: its name and a ring that fills when it is the chosen one. */
+@Composable
+private fun SortRow(label: String, isSelected: Boolean, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .clickable(role = Role.RadioButton, onClick = onClick),
+    ) {
+        Text(label, style = MaterialTheme.typography.titleSmall)
+        Box(
+            Modifier
+                .size(22.dp)
+                .border(2.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+        ) {
+            if (isSelected) {
+                Box(
+                    Modifier
+                        .size(22.dp)
+                        .border(6.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                )
+            }
+        }
+    }
 }
 
 // Selected chips show a check.

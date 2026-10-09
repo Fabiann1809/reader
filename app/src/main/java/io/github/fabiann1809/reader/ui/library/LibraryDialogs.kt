@@ -53,6 +53,7 @@ fun CollectionDialogs(
         LibraryDialog.ARRANGE -> ArrangeSheet(
             arrangement = uiState.arrangement,
             layout = uiState.layout,
+            resultCount = uiState.books.size,
             onChange = actions.onArrangementChange,
             onLayoutChange = actions.onLayoutChange,
             onDismiss = close,

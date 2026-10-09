@@ -33,8 +33,8 @@ fun LibraryTopBar(
     onClearSelection: () -> Unit,
     onSelectFilter: (LibraryFilter) -> Unit,
 ) {
-    // The selection and search bars are still dark: their status bar icons must be light.
-    if (uiState.isSelecting || isSearchOpen) LightStatusBarIcons()
+    // The selection bar is still dark: its status bar icons must be light.
+    if (uiState.isSelecting) LightStatusBarIcons()
     when {
         uiState.isSelecting -> SelectionTopBar(
             count = uiState.selectedIds.size,
@@ -44,6 +44,7 @@ fun LibraryTopBar(
         )
         isSearchOpen -> LibrarySearchBar(
             query = uiState.query,
+            resultCount = uiState.books.size,
             onQueryChange = onSearch,
             onClose = {
                 onSearchOpenChange(false)
