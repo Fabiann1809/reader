@@ -547,13 +547,12 @@
     <string name="review_mode_by_book">Por libro</string>
     <string name="review_mode_by_tag">Por etiqueta</string>
     <string name="review_no_tag">Sin etiqueta</string>
-    <plurals name="review_due_count">
-        <item quantity="one">%d ficha para hoy</item>
-        <item quantity="other">%d fichas para hoy</item>
-    </plurals>
-    <plurals name="review_start">
-        <item quantity="one">Empezar (%d ficha)</item>
-        <item quantity="other">Empezar (%d fichas)</item>
+    <string name="review_subtitle">Repetición espaciada de tus fichas</string>
+    <string name="review_for_today">Para hoy</string>
+    <string name="review_start_session">Empezar sesión</string>
+    <plurals name="review_cards_unit">
+        <item quantity="one">ficha</item>
+        <item quantity="other">fichas</item>
     </plurals>
     <string name="review_session_counter">%1$d / %2$d</string>
     <string name="review_tap_to_flip">Toca la ficha para ver la respuesta</string>

@@ -7,19 +7,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,8 +25,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.ui.components.ReaderFilterChip
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
-import io.github.fabiann1809.reader.ui.components.PrimaryButton
-import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.components.StatusMessage
 import io.github.fabiann1809.reader.ui.voice.label
 
@@ -53,30 +49,35 @@ fun ReviewContent(
     modifier: Modifier = Modifier,
     onStartSession: () -> Unit = {},
 ) {
-    Scaffold(
-        modifier = modifier,
-        topBar = { ReaderTopAppBar(title = stringResource(R.string.tab_review)) },
-    ) { innerPadding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            ModeChips(uiState.mode, onSelectMode)
-            when {
-                uiState.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-                uiState.dueCards.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    StatusMessage(
-                        icon = R.drawable.ic_cards,
-                        title = stringResource(R.string.review_empty_title),
-                        message = stringResource(R.string.review_empty_message),
-                    )
-                }
-                else -> DueCards(uiState, onStartSession)
+    Column(modifier.fillMaxSize().statusBarsPadding()) {
+        Header()
+        ModeChips(uiState.mode, onSelectMode)
+        when {
+            uiState.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-        }
+            uiState.dueCards.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                StatusMessage(
+                    icon = R.drawable.ic_cards,
+                    title = stringResource(R.string.review_empty_title),
+                    message = stringResource(R.string.review_empty_message),
+            )
+            }
+            else -> DueCards(uiState, onStartSession)
+            }
+    }
+}
+
+/** "Repasar" and what the tab is for. */
+@Composable
+private fun Header() {
+    Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 14.dp)) {
+        Text(stringResource(R.string.tab_review), style = MaterialTheme.typography.displaySmall)
+        Text(
+            stringResource(R.string.review_subtitle),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -84,7 +85,7 @@ fun ReviewContent(
 private fun ModeChips(selected: ReviewMode, onSelect: (ReviewMode) -> Unit) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+        modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp),
     ) {
         ReviewMode.entries.forEach { mode ->
             ReaderFilterChip(
@@ -99,24 +100,15 @@ private fun ModeChips(selected: ReviewMode, onSelect: (ReviewMode) -> Unit) {
 @Composable
 private fun DueCards(uiState: ReviewUiState, onStartSession: () -> Unit) {
     LazyColumn(
-        contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 24.dp),
+        contentPadding = PaddingValues(start = 20.dp, top = 8.dp, end = 20.dp, bottom = NAV_BAR_CLEARANCE),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item(key = "count") {
-            val count = uiState.dueCards.size
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = pluralStringResource(R.plurals.review_due_count, count, count),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                // Design 03 §3.7: "Empezar (12 fichas)".
-                PrimaryButton(
-                    text = pluralStringResource(R.plurals.review_start, count, count),
-                    onClick = onStartSession,
-                    icon = R.drawable.ic_cards,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
+        item(key = "today") {
+            TodayCard(
+                count = uiState.dueCards.size,
+                bookTitles = uiState.dueCards.map { it.bookTitle }.distinct(),
+                onStartSession = onStartSession,
+            )
         }
         uiState.groups.forEach { group ->
             if (uiState.mode != ReviewMode.TODAY) {
@@ -124,8 +116,8 @@ private fun DueCards(uiState: ReviewUiState, onStartSession: () -> Unit) {
                     val tag = group.tag
                     Text(
                         text = group.title ?: stringResource(tag?.label() ?: R.string.review_no_tag),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(top = 8.dp),
                     )
                 }
@@ -134,6 +126,8 @@ private fun DueCards(uiState: ReviewUiState, onStartSession: () -> Unit) {
         }
     }
 }
+
+private val NAV_BAR_CLEARANCE = 120.dp
 
 @StringRes
 private fun ReviewMode.label(): Int = when (this) {
