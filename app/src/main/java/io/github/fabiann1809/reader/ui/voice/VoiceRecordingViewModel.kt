@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader.ui.voice
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.TranscribeAudio
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteRepository
@@ -139,10 +140,13 @@ class VoiceRecordingViewModel(
             val result = transcribe.invoke(path)
             updateRecorded { recorded ->
                 if (recorded.path != path) return@updateRecorded recorded
-                recorded.copy(transcript = result.fold({ Transcript.Ready(it) }, { Transcript.Failed(it) }))
+                recorded.copy(transcript = result.fold({ Transcript.Ready(it) }, { it.asTranscript() }))
             }
         }
     }
+
+    private fun Throwable.asTranscript(): Transcript =
+        if (this is AiError.TranscriptionNotSupported) Transcript.Unsupported else Transcript.Failed(this)
 
     private fun updateRecorded(change: (VoiceRecordingUiState.Recorded) -> VoiceRecordingUiState.Recorded) =
         _uiState.update { state -> if (state is VoiceRecordingUiState.Recorded) change(state) else state }

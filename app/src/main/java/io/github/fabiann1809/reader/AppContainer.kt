@@ -250,6 +250,7 @@ class AppContainer(context: Context) {
                     model = config.model,
                     strictSchema = true,
                     sendTemperature = false,
+                    transcribes = true,
                 )
                 AiProviderKind.COMPATIBLE -> OpenAiProvider(
                     apiKeyStore = apiKeyStore,

@@ -270,4 +270,20 @@ class VoiceRecordingViewModelTest {
         viewModel.retryTranscription()
         assertEquals(Transcript.Ready("Una idea sobre el capítulo"), recorded().transcript)
     }
+
+    @Test
+    fun aProviderWithoutAudioStillLetsTheNoteBeSavedWithTheRecordingAlone() {
+        aiProvider.transcription = Result.failure(AiError.TranscriptionNotSupported())
+        viewModel.start()
+        viewModel.stop()
+
+        assertEquals(Transcript.Unsupported, recorded().transcript)
+        assertTrue(recorded().canSave)
+
+        viewModel.save(bookId = 7, location = null, page = null)
+
+        val note = noteRepository.currentNotes.single()
+        assertEquals("", note.content)
+        assertEquals(storedPath, note.audioPath)
+    }
 }

@@ -207,4 +207,54 @@ class OpenAiProviderTest {
 
         assertFalse(error?.message.orEmpty().contains("sk-test-123"))
     }
+
+    private fun transcriber(transcribes: Boolean = true) = OpenAiProvider(
+        apiKeyStore = keyStore,
+        httpClient = OkHttpClient.Builder().readTimeout(1, TimeUnit.SECONDS).build(),
+        baseUrl = baseUrl(),
+        model = "gpt-test",
+        strictSchema = true,
+        sendTemperature = false,
+        requireHttps = false,
+        transcribes = transcribes,
+    )
+
+    @Test
+    fun transcribesTheAudioWithTheKeyInTheHeader() = runTest {
+        enqueue(200, """{"text":"  Una idea del capítulo  "}""")
+
+        val text = transcriber().transcribe(byteArrayOf(1, 2, 3, 4), "audio/mp4").getOrThrow()
+
+        assertEquals("Una idea del capítulo", text)
+        val request = server.takeRequest()
+        assertEquals("/v1/audio/transcriptions", request.url.encodedPath)
+        assertEquals("Bearer sk-test-123", request.headers["Authorization"])
+        assertTrue(request.headers["Content-Type"]!!.startsWith("multipart/form-data"))
+        val body = request.body!!.utf8()
+        assertTrue(body.contains("whisper-1"))
+        assertTrue(body.contains("filename=\"nota.m4a\""))
+        assertTrue(body.contains("audio/mp4"))
+    }
+
+    @Test
+    fun silenceIsAnEmptyTranscriptNotAnError() = runTest {
+        enqueue(200, """{"text":""}""")
+
+        assertEquals("", transcriber().transcribe(byteArrayOf(1), "audio/mp4").getOrThrow())
+    }
+
+    @Test
+    fun aCompatibleServiceDoesNotTranscribe() = runTest {
+        val result = transcriber(transcribes = false).transcribe(byteArrayOf(1), "audio/mp4")
+
+        assertTrue(result.exceptionOrNull() is AiError.TranscriptionNotSupported)
+        assertEquals(0, server.requestCount)
+    }
+
+    @Test
+    fun aTranscriptionErrorIsTranslatedLikeAnyOther() = runTest {
+        enqueue(401, """{"error":{"message":"bad key"}}""")
+
+        assertTrue(transcriber().transcribe(byteArrayOf(1), "audio/mp4").exceptionOrNull() is AiError.InvalidApiKey)
+    }
 }

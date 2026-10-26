@@ -33,6 +33,7 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -55,6 +56,8 @@ class OpenAiProvider(
     private val sendTemperature: Boolean,
     // The key travels in every request, so the address must be encrypted; only tests turn this off.
     private val requireHttps: Boolean = true,
+    // Only OpenAI itself has the audio endpoint; compatible services may not.
+    private val transcribes: Boolean = false,
     private val explainerInstruction: String = ExplainerPrompt.SYSTEM_INSTRUCTION,
     private val flashcardInstruction: String = FlashcardPrompt.SYSTEM_INSTRUCTION,
     private val interpretationInstruction: String = InterpretationPrompt.SYSTEM_INSTRUCTION,
@@ -75,8 +78,26 @@ class OpenAiProvider(
             AiResponses::explanation,
         )
 
-    override suspend fun transcribe(audio: ByteArray, mimeType: String): Result<String> =
-        Result.failure(AiError.Unknown("Transcription is not available with this provider yet"))
+    override suspend fun transcribe(audio: ByteArray, mimeType: String): Result<String> {
+        if (!transcribes) return Result.failure(AiError.TranscriptionNotSupported())
+        val apiKey = apiKeyStore.getApiKey() ?: return Result.failure(AiError.MissingApiKey())
+        val form = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart("model", TRANSCRIPTION_MODEL)
+            .addFormDataPart("response_format", "json")
+            .addFormDataPart("file", "nota.m4a", audio.toRequestBody(mimeType.toMediaType()))
+            .build()
+        val request = Request.Builder()
+            .url("${baseUrl.trimEnd('/')}/audio/transcriptions")
+            .header("Authorization", "Bearer $apiKey")
+            .post(form)
+            .build()
+        // Silence is a valid answer: an empty transcript, not an error.
+        return withContext(Dispatchers.IO) { runAiCall { transcriptText(execute(request)) } }
+    }
+
+    private fun transcriptText(responseBody: String): String =
+        ((json.parseToJsonElement(responseBody).jsonObject["text"]) as? JsonPrimitive)?.content.orEmpty().trim()
 
     override suspend fun makeFlashcard(text: String): Result<FlashcardDraft> =
         ask(flashcardInstruction, text, "flashcard", FlashcardSchema, AiResponses::flashcard)
@@ -146,12 +167,16 @@ class OpenAiProvider(
             .header("Authorization", "Bearer $apiKey")
             .post(body.toRequestBody(JSON_MEDIA_TYPE))
             .build()
+        return answerText(execute(request))
+    }
+
+    /** The body of a successful response; a failed one is an [AiError]. */
+    private fun execute(request: Request): String =
         httpClient.newCall(request).execute().use { response ->
             val responseBody = response.body.string()
             if (!response.isSuccessful) throw OpenAiErrorParser.parse(response.code, responseBody)
-            return answerText(responseBody)
+            responseBody
         }
-    }
 
     private fun answerText(responseBody: String): String {
         val choice = json.parseToJsonElement(responseBody).jsonObject["choices"]?.jsonArray?.firstOrNull()?.jsonObject
@@ -170,6 +195,7 @@ class OpenAiProvider(
     companion object {
         const val OPENAI_BASE_URL = "https://api.openai.com/v1"
         private const val TEMPERATURE = 0.4
+        private const val TRANSCRIPTION_MODEL = "whisper-1"
         private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
     }
 }

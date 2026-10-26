@@ -252,6 +252,7 @@
     <string name="voice_transcript_empty">No se entendió ninguna palabra. Puedes escribir la nota aquí.</string>
     <string name="voice_transcript_retry">Reintentar</string>
     <string name="voice_transcript_off">La transcripción automática está apagada.</string>
+    <string name="voice_transcript_unsupported">Este proveedor no transcribe audio, pero la nota se guardará con la grabación. Gemini y OpenAI sí transcriben: puedes cambiarlo en Ajustes.</string>
     <string name="voice_transcript_request">Pasar a texto</string>
     <string name="voice_save">Guardar nota</string>
     <string name="voice_saved">Nota de voz guardada</string>

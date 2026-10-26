@@ -53,6 +53,12 @@ fun TranscriptField(
             )
             TextButton(onClick = onRetry) { Text(stringResource(R.string.voice_transcript_request)) }
         }
+        Transcript.Unsupported -> Text(
+            text = stringResource(R.string.voice_transcript_unsupported),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = modifier.fillMaxWidth(),
+        )
         is Transcript.Ready -> OutlinedTextField(
             shape = readerTextFieldShape,
             colors = readerTextFieldColors(),
