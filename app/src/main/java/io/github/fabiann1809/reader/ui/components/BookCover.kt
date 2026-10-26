@@ -95,7 +95,7 @@ fun BookCover(
         modifier = modifier
             .aspectRatio(aspect)
             .scale(if (pressed) 0.97f else 1f)
-            .shadow(elevation = if (pressed) 2.dp else 6.dp, shape = CoverShape)
+            .shadow(elevation = if (pressed) 2.dp else 8.dp, shape = CoverShape)
             .clip(CoverShape)
             .background(style.cover)
             .then(
@@ -116,7 +116,7 @@ fun BookCover(
                 if (onClick != null) role = Role.Button
             },
     ) {
-        // The real cover replaces the generated one; the gloss, spine and progress stay on top of both.
+        // The real cover replaces the generated one; the finish (gloss, spine, edges) and progress stay on top of both.
         if (coverImage != null) {
             Image(
                 bitmap = coverImage,
@@ -125,26 +125,9 @@ fun BookCover(
                 modifier = Modifier.fillMaxSize(),
             )
         } else {
-            GeneratedCoverText(book, style, titleSize)
+            GeneratedCover(book, style, titleSize)
         }
-        // Soft diagonal gloss.
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.linearGradient(
-                        0f to Color.White.copy(alpha = 0.1f),
-                        0.55f to Color.Transparent,
-                    ),
-                ),
-        )
-        // Spine shade on the left edge.
-        Box(
-            Modifier
-                .fillMaxHeight()
-                .width(6.dp)
-                .background(Brush.horizontalGradient(listOf(Color.Black.copy(alpha = 0.22f), Color.Transparent))),
-        )
+        CoverFinish()
         if (showBadges) {
             CoverBadges(book, Modifier.align(Alignment.TopEnd))
         }
@@ -167,47 +150,6 @@ fun BookCover(
         }
     }
 }
-
-/** The band across the top, the author in small capitals and the title in serif, all in the cover's ink. */
-@Composable
-private fun GeneratedCoverText(book: Book, style: CoverStyle, titleSize: TextUnit) {
-    Box(Modifier.fillMaxSize()) {
-        Box(
-            Modifier
-                .padding(top = 12.dp)
-                .fillMaxWidth()
-                .height(4.dp)
-                .background(style.band),
-        )
-        Column(
-            verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(start = 10.dp, end = 8.dp, top = 24.dp, bottom = 12.dp),
-        ) {
-            Text(
-                text = book.author.uppercase(),
-                color = style.ink.copy(alpha = 0.8f),
-                fontSize = titleSize * AUTHOR_SIZE_RATIO,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 0.12.em,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = book.title,
-                color = style.ink,
-                fontFamily = DmSerifDisplay,
-                fontSize = titleSize,
-                lineHeight = titleSize * 1.05f,
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
-}
-
-private const val AUTHOR_SIZE_RATIO = 0.55f
 
 /** Same title, same look: a stable hash so a book keeps its colors across launches. */
 @Composable

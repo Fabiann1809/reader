@@ -377,6 +377,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 ### Fase 21 — Pulido posterior
 - [x] **T21.1 Indicador de carga en los botones.** Mientras la IA o el lector trabajan, el botón muestra un círculo que gira y no acepta otro toque. Se usa en "Proponer con IA" (fichas), "Analizar" (Ahora tú), "Probar clave" y "Ponme a prueba" del menú del lector (que lee el capítulo antes). *Hecho cuando:* cada uno muestra la espera. Petición del usuario (2026-10-26).
 - [x] **T21.2 Biblioteca más limpia.** Se quita el "3 libros" bajo el título (la ficha "Todos (3)" ya lo dice) y los adornos del estante (sujetalibros, jarrón y pila de libros): los estantes quedan solo con libros. *Hecho cuando:* no aparecen. Petición del usuario (2026-10-26); cambia el prototipo de T19.
+- [x] **T21.3 Portadas con volumen y variedad.** Todas las portadas (generadas o reales) llevan acabado de libro: brillo, bisagra junto al lomo, luz en el borde superior, canto de las hojas y sombra abajo. Las generadas tienen 6 dibujos (franja, círculos, diagonales, sol, puntos, panel) y 3 disposiciones del texto, fijos por título; en miniaturas solo la franja. *Hecho cuando:* los libros ya no se ven todos iguales. Petición del usuario (2026-10-26).
 
 ## 10. Riesgos técnicos (en orden)
 
