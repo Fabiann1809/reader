@@ -35,9 +35,6 @@ private val WallEdge = 30.dp
 // The tallest generated cover is 1.62 times its width; the shelf leaves room for it.
 private const val TALLEST_BOOK = 1.62f
 
-// With three books per shelf, a decoration takes the fourth place (as in the prototype).
-private const val DECORATED_COLUMNS = 3
-
 /** Flat wall of the library: the wall color with a darker strip at each edge. */
 fun Modifier.libraryWall(): Modifier = composed {
     val colors = ReaderTheme.colors
@@ -50,8 +47,8 @@ fun Modifier.libraryWall(): Modifier = composed {
 }
 
 /**
- * One shelf: a row of up to [columns] slots standing on a full-bleed plank, with a decoration
- * when [columns] is three. [slot] draws the item at each index (a cover, a placeholder or nothing).
+ * One shelf: a row of up to [columns] slots standing on a full-bleed plank. [slot] draws the item
+ * at each index (a cover, a placeholder or nothing).
  */
 @Composable
 fun Shelf(
@@ -59,10 +56,8 @@ fun Shelf(
     bookWidth: Dp,
     itemCount: Int,
     modifier: Modifier = Modifier,
-    shelfIndex: Int = 0,
     slot: @Composable (index: Int, width: Dp) -> Unit,
 ) {
-    val decor = ShelfDecor.entries[shelfIndex % ShelfDecor.entries.size].takeIf { columns == DECORATED_COLUMNS }
     Column(modifier.fillMaxWidth()) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -70,19 +65,14 @@ fun Shelf(
             modifier = Modifier
                 .fillMaxWidth()
                 .libraryWall()
-                .height(SpaceAboveBooks + maxOf(bookWidth * TALLEST_BOOK, ShelfDecor.VASE.height))
+                .height(SpaceAboveBooks + bookWidth * TALLEST_BOOK)
                 .padding(top = SpaceAboveBooks, start = ShelfSidePadding, end = ShelfSidePadding),
         ) {
-            // The vase stands first on its shelf, the other decorations last.
-            if (decor == ShelfDecor.VASE) ShelfDecorItem(decor, delayMillis = DECOR_DELAY_MILLIS)
             repeat(minOf(itemCount, columns)) { index -> slot(index, bookWidth) }
-            if (decor != null && decor != ShelfDecor.VASE) ShelfDecorItem(decor, delayMillis = DECOR_DELAY_MILLIS)
         }
         Plank()
     }
 }
-
-private const val DECOR_DELAY_MILLIS = 260
 
 @Composable
 private fun Plank() {
@@ -108,11 +98,9 @@ private fun Plank() {
     )
 }
 
-/** Width of each book so that [columns] books (and the decoration, when there is one) fill the shelf. */
-fun shelfBookWidth(shelfWidth: Dp, columns: Int): Dp {
-    val decor = if (columns == DECORATED_COLUMNS) ShelfDecorSlot + MinBookGap else 0.dp
-    return (shelfWidth - ShelfSidePadding * 2 - decor - MinBookGap * (columns - 1)) / columns
-}
+/** Width of each book so that [columns] books fill the shelf. */
+fun shelfBookWidth(shelfWidth: Dp, columns: Int): Dp =
+    (shelfWidth - ShelfSidePadding * 2 - MinBookGap * (columns - 1)) / columns
 
 /** A few books lean slightly on their shelf; which ones is fixed by the title. */
 fun Modifier.shelfTilt(title: String): Modifier =

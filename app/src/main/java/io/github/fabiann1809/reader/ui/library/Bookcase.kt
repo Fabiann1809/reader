@@ -60,7 +60,7 @@ fun Bookcase(
             header?.let { item { it() } }
             items(count = shelves) { shelf ->
                 val first = shelf * columns
-                Shelf(columns = columns, bookWidth = bookWidth, itemCount = itemCount - first, shelfIndex = shelf) { i, width ->
+                Shelf(columns = columns, bookWidth = bookWidth, itemCount = itemCount - first) { i, width ->
                     slot(first + i, width)
                 }
             }

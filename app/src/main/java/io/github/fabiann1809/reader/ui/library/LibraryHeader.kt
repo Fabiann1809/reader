@@ -99,14 +99,6 @@ private fun TitleBlock(uiState: LibraryUiState, onClick: () -> Unit, modifier: M
             )
             Icon(painterResource(R.drawable.ic_caret_down), contentDescription = null, modifier = Modifier.size(20.dp))
         }
-        if (!uiState.isLoading) {
-            Text(
-                text = pluralStringResource(R.plurals.library_book_count, uiState.books.size, uiState.books.size),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp),
-            )
-        }
     }
 }
 
