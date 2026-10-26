@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.reader.OpenProblem
+import io.github.fabiann1809.reader.data.reader.readaloud.ReadAloudStatus
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.ImmersiveMode
 import io.github.fabiann1809.reader.ui.components.OutlineButton
@@ -81,6 +83,9 @@ fun ReaderScreen(
                 var epubFragment by remember { mutableStateOf<EpubReaderFragment?>(null) }
                 var pdfFragment by remember { mutableStateOf<PdfReaderFragment?>(null) }
                 val scope = rememberCoroutineScope()
+                val readAloud: ReadAloudViewModel = viewModel(factory = AppViewModelProvider.Factory)
+                val readAloudState by readAloud.uiState.collectAsStateWithLifecycle()
+                var readAloudSettings by rememberSaveable { mutableStateOf(false) }
                 BookNavigator(
                     state.bookId,
                     state.format,
@@ -124,8 +129,34 @@ fun ReaderScreen(
                     onRecord = viewModel::startVoiceNote,
                     onNotes = viewModel::showNotes,
                     onSearch = viewModel::openSearch,
+                    onReadAloud = {
+                        // The page is what matters while it reads: the controls go away and the voice panel stays.
+                        if (readAloudState.status == ReadAloudStatus.OFF) {
+                            viewModel.toggleControls()
+                            readAloud.start()
+                        }
+                    },
                     onMenu = viewModel::showMenu,
                 )
+                ReadAloudPanel(
+                    state = readAloudState,
+                    onPlayPause = readAloud::playPause,
+                    onPrevious = readAloud::previousSentence,
+                    onNext = readAloud::nextSentence,
+                    onSettings = { readAloudSettings = true },
+                    onStop = readAloud::stop,
+                    // Above the bottom bar while the controls show.
+                    modifier = pageModifier.align(Alignment.BottomCenter).padding(bottom = if (state.controlsVisible) ControlsBarClearance else 0.dp),
+                )
+                if (readAloudSettings && readAloudState.status != ReadAloudStatus.OFF) {
+                    ReadAloudSheet(
+                        state = readAloudState,
+                        onSpeed = readAloud::setSpeed,
+                        onVoice = readAloud::setVoice,
+                        onSleepTimer = readAloud::setSleepTimer,
+                        onDismiss = { readAloudSettings = false },
+                    )
+                }
                 state.search?.let { search ->
                     ReaderSearch(
                         bookTitle = state.title,

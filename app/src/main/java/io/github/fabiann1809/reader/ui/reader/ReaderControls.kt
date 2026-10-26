@@ -96,6 +96,7 @@ fun ReaderControls(
     onNotes: () -> Unit = {},
     onRecord: () -> Unit = {},
     onSearch: () -> Unit = {},
+    onReadAloud: () -> Unit = {},
 ) {
     val reduceMotion = rememberReduceMotion()
     val colors = barColors(state)
@@ -106,7 +107,7 @@ fun ReaderControls(
             exit = barExit(toTop = true, reduceMotion),
             modifier = Modifier.align(Alignment.TopCenter),
         ) {
-            TopBar(state, colors, onBack = onBack, onSearch = onSearch, onBookmark = onBookmark, onMenu = onMenu)
+            TopBar(state, colors, onBack = onBack, onSearch = onSearch, onReadAloud = onReadAloud, onBookmark = onBookmark, onMenu = onMenu)
         }
         AnimatedVisibility(
             visible = state.controlsVisible,
@@ -152,6 +153,7 @@ private fun TopBar(
     colors: BarColors,
     onBack: () -> Unit,
     onSearch: () -> Unit,
+    onReadAloud: () -> Unit,
     onBookmark: () -> Unit,
     onMenu: () -> Unit,
 ) {
@@ -187,6 +189,8 @@ private fun TopBar(
             }
             // Only an EPUB can be searched for text.
             if (state.format == BookFormat.EPUB) BarIcon(R.drawable.ic_magnifying_glass, R.string.reader_search_description, onSearch)
+            // Reading aloud needs the book's text, which only an EPUB (or a TXT, shown as one) has.
+            if (state.format == BookFormat.EPUB) BarIcon(R.drawable.ic_speaker_high, R.string.reader_voice_description, onReadAloud)
             if (state.pageIsBookmarked) {
                 BarIcon(R.drawable.ic_bookmark_simple_fill, R.string.reader_bookmark_remove, onBookmark, tint = MaterialTheme.colorScheme.primary)
             } else {

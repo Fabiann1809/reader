@@ -10,6 +10,15 @@ import org.readium.r2.shared.publication.Locator
 /** The decoration group of the reader's highlights in Readium. */
 const val HIGHLIGHTS_GROUP = "highlights"
 
+/** The decoration group of the sentence being read aloud (T11.15). */
+const val READ_ALOUD_GROUP = "read-aloud"
+
+private const val SPOKEN_SENTENCE_TINT = 0x66FFC857
+
+/** The Readium decoration that marks the sentence being read aloud. */
+fun spokenSentenceDecoration(locator: Locator) =
+    Decoration(id = "spoken-sentence", locator = locator, style = Decoration.Style.Highlight(tint = SPOKEN_SENTENCE_TINT))
+
 /** Each highlight color as ARGB (design 2.1: "Resaltados del lector"). */
 fun HighlightColor.argb(): Int = when (this) {
     HighlightColor.YELLOW -> 0xFFFFE27A

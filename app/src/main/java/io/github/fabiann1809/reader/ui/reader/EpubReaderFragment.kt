@@ -10,8 +10,10 @@ import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import io.github.fabiann1809.reader.ReaderApplication
 import io.github.fabiann1809.reader.data.prefs.PageEffect
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
+import io.github.fabiann1809.reader.data.reader.readaloud.ReadAloud
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
@@ -30,6 +32,9 @@ class EpubReaderFragment : NavigatorHostFragment() {
 
     /** Set by ReaderScreen: the text selected on the page, or null when the selection ends (T11.10). */
     var onSelection: (TextSelection?) -> Unit = {}
+
+    private val readAloud: ReadAloud
+        get() = (requireActivity().application as ReaderApplication).container.readAloud
 
     override val onPinch: (Float) -> Unit = { scale ->
         val current = session.adjustments.fontSize ?: session.readingSettings.value.fontSize
@@ -52,6 +57,12 @@ class EpubReaderFragment : NavigatorHostFragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { session.readingSettings.collect(::applyPreferences) }
+                // The sentence being read aloud (T11.15) is marked on the page.
+                launch {
+                    readAloud.sentence.collect { sentence ->
+                        (navigator as? EpubNavigatorFragment)?.applyDecorations(listOfNotNull(sentence?.let(::spokenSentenceDecoration)), READ_ALOUD_GROUP)
+                    }
+                }
                 // Readium redraws only what changed in the group (T11.12).
                 launch {
                     session.highlights.collect { highlights ->

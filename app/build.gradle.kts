@@ -104,6 +104,7 @@ dependencies {
     implementation(libs.readium.navigator)
     implementation(libs.readium.adapter.pdfium.document)
     implementation(libs.readium.adapter.pdfium.navigator)
+    implementation(libs.readium.navigator.media.tts)
 
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)

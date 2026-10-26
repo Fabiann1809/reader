@@ -1,10 +1,15 @@
 package io.github.fabiann1809.reader
 
+import io.github.fabiann1809.reader.data.prefs.DataStoreReadAloudPreferences
+import io.github.fabiann1809.reader.data.prefs.ReadAloudPreferences
+import io.github.fabiann1809.reader.data.reader.readaloud.ReadAloud
+import io.github.fabiann1809.reader.data.reader.readaloud.ReadiumReadAloud
 import io.github.fabiann1809.reader.data.voice.MediaVoicePlayer
 import io.github.fabiann1809.reader.data.voice.MediaVoiceRecorder
 import io.github.fabiann1809.reader.data.voice.VoiceFiles
 import io.github.fabiann1809.reader.data.voice.VoicePlayer
 import io.github.fabiann1809.reader.data.voice.VoiceRecorder
+import android.app.Application
 import android.content.Context
 import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.AnalyzeInterpretation
@@ -162,6 +167,12 @@ class AppContainer(context: Context) {
     val readingPreferences: ReadingPreferences by lazy { DataStoreReadingPreferences(appContext) }
 
     val appSettings: AppSettingsStore by lazy { DataStoreAppSettingsStore(appContext) }
+
+    private val readAloudPreferences: ReadAloudPreferences by lazy { DataStoreReadAloudPreferences(appContext) }
+
+    val readAloud: ReadAloud by lazy {
+        ReadiumReadAloud(appContext as Application, readerSession, readAloudPreferences, applicationScope)
+    }
 
     val backupRepository: BackupRepository by lazy {
         DefaultBackupRepository(
