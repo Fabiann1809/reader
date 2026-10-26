@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader.ai.gemini
 
 import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.AiProvider
+import io.github.fabiann1809.reader.ai.AiResponses
 import io.github.fabiann1809.reader.ai.Explanation
 import io.github.fabiann1809.reader.ai.ExplanationChange
 import io.github.fabiann1809.reader.ai.ExplainerPrompt
@@ -70,7 +71,7 @@ class GeminiProvider(
                 responseSchema = ExplanationSchema,
             ),
         )
-        return generate(request) { answer -> json.decodeFromString<Explanation>(answer.requireText()).normalized() }
+        return generate(request) { answer -> AiResponses.explanation(answer.requireText()) }
     }
 
     override suspend fun transcribe(audio: ByteArray, mimeType: String): Result<String> {
@@ -99,9 +100,7 @@ class GeminiProvider(
                 responseSchema = FlashcardSchema,
             ),
         )
-        return generate(request) { answer ->
-            json.decodeFromString<FlashcardDraft>(answer.requireText()).let { FlashcardDraft(it.front.trim(), it.back.trim()) }
-        }
+        return generate(request) { answer -> AiResponses.flashcard(answer.requireText()) }
     }
 
     override suspend fun analyzeInterpretation(text: String, interpretation: String): Result<InterpretationAnalysis> {
@@ -116,15 +115,7 @@ class GeminiProvider(
                 responseSchema = InterpretationSchema,
             ),
         )
-        return generate(request) { answer ->
-            val analysis = json.decodeFromString<InterpretationAnalysis>(answer.requireText())
-            // Models sometimes write "" instead of leaving a part out.
-            InterpretationAnalysis(
-                understood = analysis.understood.orBlankAsNull(),
-                incomplete = analysis.incomplete.orBlankAsNull(),
-                confused = analysis.confused.orBlankAsNull(),
-            )
-        }
+        return generate(request) { answer -> AiResponses.interpretation(answer.requireText()) }
     }
 
     override suspend fun generateQuiz(text: String, questionCount: Int): Result<Quiz> {
@@ -137,22 +128,8 @@ class GeminiProvider(
                 responseSchema = QuizSchema,
             ),
         )
-        return generate(request) { answer ->
-            val quiz = json.decodeFromString<Quiz>(answer.requireText())
-            Quiz(
-                quiz.questions.map { question ->
-                    question.copy(
-                        question = question.question.trim(),
-                        options = question.options.map { it.trim() },
-                        explanation = question.explanation.trim(),
-                        topic = question.topic.trim(),
-                    )
-                },
-            )
-        }
+        return generate(request) { answer -> AiResponses.quiz(answer.requireText()) }
     }
-
-    private fun String?.orBlankAsNull(): String? = this?.trim()?.takeIf { it.isNotEmpty() }
 
     /** Sends [request], falling back to [fallbackModel] when [model] is overloaded, and [parse]s the answer. */
     private suspend fun <T> generate(request: GenerateContentRequest, parse: (String) -> T): Result<T> {
@@ -208,14 +185,6 @@ class GeminiProvider(
     }
 
     private fun String.requireText(): String = ifEmpty { throw AiError.Unknown("Gemini returned no text") }
-
-    // Models sometimes return "" instead of null for an empty caveat.
-    private fun Explanation.normalized(): Explanation = copy(
-        mainIdea = mainIdea.trim(),
-        simpleExplanation = simpleExplanation.trim(),
-        analogy = analogy.trim(),
-        caveat = caveat?.trim()?.takeIf { it.isNotEmpty() },
-    )
 
     companion object {
         const val DEFAULT_BASE_URL = "https://generativelanguage.googleapis.com"

@@ -24,7 +24,14 @@ import io.github.fabiann1809.reader.ai.TranscribeAudio
 import io.github.fabiann1809.reader.ai.ExplainerPrompt
 import io.github.fabiann1809.reader.ai.gemini.GeminiProvider
 import io.github.fabiann1809.reader.data.AppDatabase
+import io.github.fabiann1809.reader.ai.AiProviderKind
+import io.github.fabiann1809.reader.ai.ConfiguredAiProvider
+import io.github.fabiann1809.reader.ai.UnavailableAiProvider
+import io.github.fabiann1809.reader.data.aiconfig.AiConfigStore
+import io.github.fabiann1809.reader.data.aiconfig.DataStoreAiConfigStore
+import io.github.fabiann1809.reader.data.apikey.ActiveApiKeyStore
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
+import io.github.fabiann1809.reader.data.apikey.ProviderKeyStore
 import io.github.fabiann1809.reader.data.apikey.KeystoreApiKeyStore
 import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookOrganizer
@@ -168,7 +175,13 @@ class AppContainer(context: Context) {
 
     val bookOrganizer: BookOrganizer by lazy { BookOrganizer(bookRepository, collectionRepository) }
 
-    val apiKeyStore: ApiKeyStore by lazy { KeystoreApiKeyStore(appContext) }
+    // The AI provider and model the user chose, and one key per provider (T20.1).
+    val aiConfigStore: AiConfigStore by lazy { DataStoreAiConfigStore(appContext) }
+
+    private val providerKeys: ProviderKeyStore by lazy { KeystoreApiKeyStore(appContext) }
+
+    // The key of the provider in use: it changes when the user picks another one.
+    val apiKeyStore: ApiKeyStore by lazy { ActiveApiKeyStore(providerKeys, aiConfigStore) }
 
     val appPreferences: AppPreferences by lazy { DataStoreAppPreferences(appContext) }
 
@@ -219,11 +232,19 @@ class AppContainer(context: Context) {
     }
 
     val aiProvider: AiProvider by lazy {
-        GeminiProvider(
-            apiKeyStore = apiKeyStore,
-            systemInstruction = ExplainerPrompt.SYSTEM_INSTRUCTION,
-            httpClient = httpClient,
-        )
+        ConfiguredAiProvider(aiConfigStore) { config ->
+            when (config.provider) {
+                AiProviderKind.GEMINI -> GeminiProvider(
+                    apiKeyStore = apiKeyStore,
+                    systemInstruction = ExplainerPrompt.SYSTEM_INSTRUCTION,
+                    httpClient = httpClient,
+                    model = config.model,
+                    // The lighter model is only a stand-in for the default one when it is overloaded.
+                    fallbackModel = GeminiProvider.DEFAULT_FALLBACK_MODEL.takeIf { config.model == GeminiProvider.DEFAULT_MODEL },
+                )
+                else -> UnavailableAiProvider(config.provider.name)
+            }
+        }
     }
 
     val explainText: ExplainText by lazy { ExplainText(aiProvider) }
