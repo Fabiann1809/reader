@@ -89,6 +89,7 @@ fun LibraryScreen(
         onDeleteCollection = viewModel::deleteCurrentCollection,
         onRenameCollectionOf = viewModel::renameCollection,
         onDeleteCollectionOf = viewModel::deleteCollection,
+        onAddBookHintDismiss = viewModel::dismissAddBookHint,
     )
 }
 
@@ -118,6 +119,7 @@ fun LibraryContent(
     bookCollections: BookCollections? = null,
     bookActions: LibraryBookActions = LibraryBookActions(),
     selectionActions: LibrarySelectionActions = LibrarySelectionActions(),
+    onAddBookHintDismiss: () -> Unit = {},
 ) {
     var dialog by rememberSaveable { mutableStateOf(LibraryDialog.NONE) }
     var selectionDialog by rememberSaveable { mutableStateOf(SelectionDialog.NONE) }
@@ -168,7 +170,13 @@ fun LibraryContent(
             )
         },
         floatingActionButton = {
-            if (showFab) LibraryFab(uiState.bookToContinue, onContinue = onOpenBook, onAddBook = { showAddBookSheet = true })
+            if (showFab) LibraryFab(
+                    uiState.bookToContinue,
+                    onContinue = onOpenBook,
+                    onAddBook = { showAddBookSheet = true },
+                    showHint = uiState.showAddBookHint,
+                    onHintDismiss = onAddBookHintDismiss,
+                )
         },
     ) { innerPadding ->
         val empty = emptyState(uiState, { showAddBookSheet = true }, onSearch, onArrangementChange, onSelectFilter)

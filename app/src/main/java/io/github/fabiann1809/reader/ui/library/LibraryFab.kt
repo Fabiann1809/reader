@@ -18,6 +18,7 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -33,6 +34,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.book.Book
+import kotlinx.coroutines.delay
 
 /**
  * The library's floating button (design 03 §FAB, 7.3). With a book to continue it is "Continuar":
@@ -40,7 +42,13 @@ import io.github.fabiann1809.reader.data.book.Book
  * "Añadir libro"; Captura and Nota de voz come in later phases). Otherwise it is "Añadir libro".
  */
 @Composable
-fun LibraryFab(bookToContinue: Book?, onContinue: (Long) -> Unit, onAddBook: () -> Unit) {
+fun LibraryFab(
+    bookToContinue: Book?,
+    onContinue: (Long) -> Unit,
+    onAddBook: () -> Unit,
+    showHint: Boolean = false,
+    onHintDismiss: () -> Unit = {},
+) {
     if (bookToContinue == null) {
         PrimaryFab(R.drawable.ic_plus_circle, stringResource(R.string.library_add_book), onClick = onAddBook)
         return
@@ -48,6 +56,7 @@ fun LibraryFab(bookToContinue: Book?, onContinue: (Long) -> Unit, onAddBook: () 
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     BackHandler(enabled = isExpanded) { isExpanded = false }
     Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        if (showHint && !isExpanded) HintBubble(onHintDismiss)
         if (isExpanded) {
             MiniAction(R.drawable.ic_plus_circle, stringResource(R.string.library_add_book)) {
                 isExpanded = false
@@ -59,14 +68,41 @@ fun LibraryFab(bookToContinue: Book?, onContinue: (Long) -> Unit, onAddBook: () 
             label = stringResource(R.string.library_continue),
             description = stringResource(R.string.library_continue_description, bookToContinue.title),
             onLongClickLabel = stringResource(R.string.library_more_actions),
-            onLongClick = { isExpanded = !isExpanded },
+            onLongClick = {
+                isExpanded = !isExpanded
+                onHintDismiss()
+            },
             onClick = {
                 isExpanded = false
+                onHintDismiss()
                 onContinue(bookToContinue.id)
             },
         )
     }
 }
+
+/** The one-time hint above "Continuar": a tap, a long press or a few seconds put it away for good. */
+@Composable
+private fun HintBubble(onDismiss: () -> Unit) {
+    LaunchedEffect(Unit) {
+        delay(HINT_MILLIS)
+        onDismiss()
+    }
+    Surface(
+        onClick = onDismiss,
+        shape = MaterialTheme.shapes.small,
+        color = MaterialTheme.colorScheme.inverseSurface,
+        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+    ) {
+        Text(
+            stringResource(R.string.library_add_book_hint),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+        )
+    }
+}
+
+private const val HINT_MILLIS = 8_000L
 
 /** Extended FAB (56 dp, primary). A Surface rather than ExtendedFloatingActionButton, which has no long press. */
 @Composable

@@ -18,6 +18,14 @@ class FakeAppPreferences(seenOnboarding: Boolean = false) : AppPreferences {
         seen.value = true
     }
 
+    private val addBookHintSeen = MutableStateFlow(false)
+
+    override val hasSeenAddBookHint: Flow<Boolean> = addBookHintSeen
+
+    override suspend fun markAddBookHintSeen() {
+        addBookHintSeen.value = true
+    }
+
     private val filter = MutableStateFlow<LibraryFilter>(LibraryFilter.Default)
 
     override val libraryFilter: Flow<LibraryFilter> = filter

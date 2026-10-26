@@ -73,8 +73,8 @@ class LibraryViewModel(
         },
         query,
         // combine() takes at most five typed flows, so the display state travels together.
-        combine(preferences.libraryArrangement, preferences.libraryLayout, selection, ::Triple),
-    ) { (filter, collection, books), collections, whole, query, (arrangement, layout, selection) ->
+        combine(preferences.libraryArrangement, preferences.libraryLayout, selection, preferences.hasSeenAddBookHint, ::Display),
+    ) { (filter, collection, books), collections, whole, query, (arrangement, layout, selection, hintSeen) ->
         val shown = books.filter { it.matchesSearch(query) }.arrangedBy(arrangement)
         LibraryUiState(
             books = shown,
@@ -87,6 +87,7 @@ class LibraryViewModel(
             smartCounts = whole.smartCounts,
             collectionGroups = whole.groups,
             allBooks = whole.books,
+            showAddBookHint = !hintSeen && whole.bookToContinue != null,
             query = query,
             arrangement = arrangement,
             layout = layout,
@@ -98,6 +99,13 @@ class LibraryViewModel(
         // Keeps the query alive briefly across configuration changes (e.g. rotation).
         started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
         initialValue = LibraryUiState(),
+    )
+
+    private data class Display(
+        val arrangement: LibraryArrangement,
+        val layout: LibraryLayout,
+        val selection: Set<Long>,
+        val addBookHintSeen: Boolean,
     )
 
     private class WholeLibrary(
@@ -113,6 +121,10 @@ class LibraryViewModel(
     /** Filters the shown collection by title and author as the user types. */
     fun search(text: String) {
         query.value = text
+    }
+
+    fun dismissAddBookHint() {
+        viewModelScope.launch { preferences.markAddBookHintSeen() }
     }
 
     fun setArrangement(arrangement: LibraryArrangement) {

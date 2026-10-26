@@ -114,6 +114,7 @@
     <string name="library_continue_percent">%d %%</string>
     <string name="library_continue_description">Continuar leyendo «%1$s»</string>
     <string name="library_more_actions">Más acciones</string>
+    <string name="library_add_book_hint">Mantén pulsado para añadir un libro</string>
     <string name="reader_cannot_open">No se puede abrir este libro</string>
     <string name="reader_no_file">No encontramos el archivo del libro. Puedes importarlo de nuevo.</string>
     <string name="reader_unreadable">El archivo parece dañado o protegido.</string>

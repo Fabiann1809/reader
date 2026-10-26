@@ -357,4 +357,16 @@ class LibraryViewModelTest {
 
         assertEquals("El principito", viewModel.uiState.value.bookToContinue?.title)
     }
+
+    @Test
+    fun addBookHintShowsOnceAndOnlyWithABookToContinue() = runTest {
+        val viewModel = viewModel()
+        assertFalse(viewModel.uiState.value.showAddBookHint)
+
+        books.addBook(Book(id = 3, title = "El principito", author = "", kind = BookKind.DIGITAL, lastOpenedAt = 100, createdAt = 3))
+        assertTrue(viewModel.uiState.value.showAddBookHint)
+
+        viewModel.dismissAddBookHint()
+        assertFalse(viewModel.uiState.value.showAddBookHint)
+    }
 }

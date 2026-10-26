@@ -26,6 +26,11 @@ interface AppPreferences {
 
     suspend fun markOnboardingSeen()
 
+    /** True once the library has hinted that a long press on "Continuar" adds a book. */
+    val hasSeenAddBookHint: Flow<Boolean>
+
+    suspend fun markAddBookHintSeen()
+
     /** Collection shown in the library, remembered between launches. */
     val libraryFilter: Flow<LibraryFilter>
 
@@ -53,6 +58,12 @@ class DataStoreAppPreferences(context: Context) : AppPreferences {
 
     override suspend fun markOnboardingSeen() {
         dataStore.edit { it[ONBOARDING_SEEN] = true }
+    }
+
+    override val hasSeenAddBookHint: Flow<Boolean> = dataStore.data.map { it[ADD_BOOK_HINT_SEEN] ?: false }
+
+    override suspend fun markAddBookHintSeen() {
+        dataStore.edit { it[ADD_BOOK_HINT_SEEN] = true }
     }
 
     override val libraryFilter: Flow<LibraryFilter> = dataStore.data.map { LibraryFilter.decode(it[LIBRARY_FILTER]) }
@@ -97,6 +108,7 @@ class DataStoreAppPreferences(context: Context) : AppPreferences {
     private companion object {
         const val FILE_NAME = "app_preferences"
         val ONBOARDING_SEEN = booleanPreferencesKey("onboarding_seen")
+        val ADD_BOOK_HINT_SEEN = booleanPreferencesKey("add_book_hint_seen")
         val LIBRARY_FILTER = stringPreferencesKey("library_filter")
         val LIBRARY_SORT = stringPreferencesKey("library_sort")
         val LIBRARY_STATUSES = stringSetPreferencesKey("library_statuses")

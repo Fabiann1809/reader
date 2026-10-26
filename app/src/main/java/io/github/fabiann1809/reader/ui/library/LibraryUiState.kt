@@ -33,6 +33,8 @@ data class LibraryUiState(
     val collectionGroups: List<CollectionGroup> = emptyList(),
     /** The whole library, for choosing which books go into a collection. */
     val allBooks: List<Book> = emptyList(),
+    /** True until the user has been told once that a long press on "Continuar" adds a book. */
+    val showAddBookHint: Boolean = false,
 ) {
     val isSelecting: Boolean
         get() = selectedIds.isNotEmpty()
