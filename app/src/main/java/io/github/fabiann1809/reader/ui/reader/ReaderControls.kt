@@ -118,7 +118,8 @@ fun ReaderControls(
             BottomBar(state, colors, onSeek) {
                 ControlAction(R.drawable.ic_list_bullets, R.string.reader_index, R.string.reader_index, onIndex)
                 ControlAction(R.drawable.ic_text_aa, R.string.reader_text_settings, R.string.reader_text_settings_description, onTextSettings)
-                AiAction(onAi)
+                // Only a PDF marks a zone to explain; in an EPUB the text is selected instead.
+                if (state.format == BookFormat.PDF) AiAction(onAi)
                 ControlAction(R.drawable.ic_note_pencil, R.string.reader_notes, R.string.reader_notes_description, onNotes)
                 ControlAction(R.drawable.ic_microphone, R.string.reader_record, R.string.reader_record_description, onRecord)
             }

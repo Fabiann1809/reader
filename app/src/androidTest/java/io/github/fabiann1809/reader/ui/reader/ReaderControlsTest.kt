@@ -23,9 +23,9 @@ class ReaderControlsTest {
 
     private fun string(id: Int) = composeRule.activity.getString(id)
 
-    private fun state(visible: Boolean) = ReaderUiState.Ready(
+    private fun state(visible: Boolean, format: BookFormat = BookFormat.EPUB) = ReaderUiState.Ready(
         bookId = 1,
-        format = BookFormat.EPUB,
+        format = format,
         title = "El principito",
         chapter = "Capítulo 4",
         progression = 0.4f,
@@ -41,11 +41,22 @@ class ReaderControlsTest {
         listOf(
             R.string.reader_index,
             R.string.reader_text_settings_description,
-            R.string.reader_ai_description,
             R.string.reader_record_description,
             R.string.reader_bookmark_add,
             R.string.reader_progress,
         ).forEach { composeRule.onNodeWithContentDescription(string(it)).assertIsDisplayed() }
+    }
+
+    @Test
+    fun aiActionShowsOnlyInAPdf() {
+        composeRule.setContent { ReaderTheme { ReaderControls(state(visible = true, format = BookFormat.PDF), onBack = {}, onSeek = {}) } }
+        composeRule.onNodeWithContentDescription(string(R.string.reader_ai_description)).assertIsDisplayed()
+    }
+
+    @Test
+    fun aiActionIsHiddenInAnEpub() {
+        composeRule.setContent { ReaderTheme { ReaderControls(state(visible = true), onBack = {}, onSeek = {}) } }
+        composeRule.onNodeWithContentDescription(string(R.string.reader_ai_description)).assertDoesNotExist()
     }
 
     @Test

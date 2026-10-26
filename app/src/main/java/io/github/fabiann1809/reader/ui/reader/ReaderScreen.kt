@@ -124,8 +124,8 @@ fun ReaderScreen(
                     onBookmark = viewModel::toggleBookmark,
                     onIndex = viewModel::showContents,
                     onTextSettings = viewModel::showTextSettings,
-                    // In a PDF, "IA" marks a zone to explain (T11.14); EPUB text is selected instead.
-                    onAi = if (state.format == BookFormat.PDF) viewModel::startZonePicking else ({}),
+                    // "IA" marks a zone to explain in a PDF (T11.14); it shows only there.
+                    onAi = viewModel::startZonePicking,
                     onRecord = viewModel::startVoiceNote,
                     onNotes = viewModel::showNotes,
                     onSearch = viewModel::openSearch,
