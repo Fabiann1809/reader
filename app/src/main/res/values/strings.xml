@@ -374,16 +374,6 @@
 
     <!-- Add book -->
     <string name="add_book_title">Agregar libro físico</string>
-    <string name="isbn_field">ISBN</string>
-    <string name="isbn_search">Buscar</string>
-    <string name="isbn_scan">Escanear código</string>
-    <string name="isbn_help">Opcional: rellena el título y el autor</string>
-    <string name="isbn_searching">Buscando…</string>
-    <string name="isbn_filled">Encontrado: revisa los datos</string>
-    <string name="isbn_not_valid">Ese ISBN no es válido</string>
-    <string name="isbn_not_found">No encontré ese libro</string>
-    <string name="isbn_no_connection">Sin conexión: no pude buscarlo</string>
-    <string name="isbn_scan_failed">No se pudo abrir el escáner</string>
     <string name="cover_choose">Elegir portada</string>
     <string name="cover_change">Cambiar portada</string>
     <string name="cover_remove">Quitar portada</string>

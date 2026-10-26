@@ -69,11 +69,7 @@ object AppViewModelProvider {
             )
         }
         initializer {
-            AddBookViewModel(
-                readerApplication().container.bookRepository,
-                readerApplication().container.coverStore,
-                readerApplication().container.isbnLookup,
-            )
+            AddBookViewModel(readerApplication().container.bookRepository, readerApplication().container.coverStore)
         }
         initializer {
             NewCollectionViewModel(

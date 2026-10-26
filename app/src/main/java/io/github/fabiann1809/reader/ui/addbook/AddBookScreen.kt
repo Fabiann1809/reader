@@ -69,10 +69,6 @@ fun AddBookScreen(
         onTotalPagesChange = viewModel::onTotalPagesChange,
         onCoverPicked = viewModel::onCoverPicked,
         onCoverRemoved = viewModel::onCoverRemoved,
-        onIsbnChange = viewModel::onIsbnChange,
-        onIsbnSearch = viewModel::lookUpIsbn,
-        onIsbnScanned = viewModel::lookUpIsbn,
-        onScanFailed = viewModel::onScanFailed,
         onSave = viewModel::save,
         onNavigateUp = onNavigateUp,
     )
@@ -89,10 +85,6 @@ fun AddBookContent(
     modifier: Modifier = Modifier,
     onCoverPicked: (String) -> Unit = {},
     onCoverRemoved: () -> Unit = {},
-    onIsbnChange: (String) -> Unit = {},
-    onIsbnSearch: () -> Unit = {},
-    onIsbnScanned: (String) -> Unit = {},
-    onScanFailed: () -> Unit = {},
 ) {
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Column(
@@ -110,7 +102,6 @@ fun AddBookContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 CoverPreview(uiState, onCoverPicked, onCoverRemoved)
-                IsbnSection(uiState, onIsbnChange, onIsbnSearch, onIsbnScanned, onScanFailed)
                 OutlinedTextField(
                     shape = readerTextFieldShape,
                     colors = readerTextFieldColors(),

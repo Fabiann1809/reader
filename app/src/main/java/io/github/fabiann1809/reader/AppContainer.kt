@@ -38,8 +38,6 @@ import io.github.fabiann1809.reader.data.book.folder.WatchedFolderStore
 import io.github.fabiann1809.reader.data.book.folder.WatchedFolderSync
 import io.github.fabiann1809.reader.data.book.folder.WorkManagerFolderSyncScheduler
 import io.github.fabiann1809.reader.data.book.importing.BookImporter
-import io.github.fabiann1809.reader.data.book.lookup.IsbnLookup
-import io.github.fabiann1809.reader.data.book.lookup.OpenLibraryIsbnLookup
 import io.github.fabiann1809.reader.data.book.importing.DataStoreFailedImportStore
 import io.github.fabiann1809.reader.data.book.importing.DefaultBookImporter
 import io.github.fabiann1809.reader.data.book.importing.FileAccess
@@ -217,8 +215,6 @@ class AppContainer(context: Context) {
             httpClient = httpClient,
         )
     }
-
-    val isbnLookup: IsbnLookup by lazy { OpenLibraryIsbnLookup(httpClient) }
 
     val explainText: ExplainText by lazy { ExplainText(aiProvider) }
 
