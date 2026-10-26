@@ -10,7 +10,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -32,7 +34,8 @@ fun PrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     @DrawableRes icon: Int? = null,
-) = FilledButton(text, onClick, modifier, enabled, icon, ButtonDefaults.buttonColors())
+    loading: Boolean = false,
+) = FilledButton(text, onClick, modifier, enabled, icon, ButtonDefaults.buttonColors(), loading)
 
 @Composable
 fun TonalButton(
@@ -56,12 +59,14 @@ fun AiButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     @DrawableRes icon: Int? = R.drawable.ic_sparkle,
+    loading: Boolean = false,
 ) = FilledButton(
     text, onClick, modifier, enabled, icon,
     ButtonDefaults.buttonColors(
         containerColor = MaterialTheme.colorScheme.tertiaryContainer,
         contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
     ),
+    loading,
 )
 
 @Composable
@@ -92,21 +97,26 @@ private fun FilledButton(
     enabled: Boolean,
     @DrawableRes icon: Int?,
     colors: ButtonColors,
+    loading: Boolean = false,
 ) {
     Button(
-        onClick = onClick,
+        // While it works, another tap does nothing; the button keeps its colors so the spinner stays readable.
+        onClick = { if (!loading) onClick() },
         enabled = enabled,
         shape = CircleShape,
         colors = colors,
         modifier = modifier.heightIn(min = ButtonMinHeight),
     ) {
-        ButtonContent(text, icon)
+        ButtonContent(text, icon, loading)
     }
 }
 
 @Composable
-private fun ButtonContent(text: String, @DrawableRes icon: Int?) {
-    if (icon != null) {
+private fun ButtonContent(text: String, @DrawableRes icon: Int?, loading: Boolean = false) {
+    if (loading) {
+        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = LocalContentColor.current)
+        Spacer(Modifier.width(8.dp))
+    } else if (icon != null) {
         Icon(painterResource(icon), contentDescription = null, modifier = Modifier.size(20.dp))
         Spacer(Modifier.width(8.dp))
     }

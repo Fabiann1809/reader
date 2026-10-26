@@ -374,6 +374,9 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T20.4 Transcripción con OpenAI y aviso.** Transcripción de audio con OpenAI; en los proveedores sin audio, la nota se guarda igual y el botón de transcribir dice que ese proveedor no lo permite y que Gemini u OpenAI sí. *Hecho cuando:* se transcribe con OpenAI y el aviso aparece con Anthropic.
 - [x] **T20.5 Ajustes de proveedor.** Selector de proveedor, modelo (lista corta y campo libre), dirección para el compatible, clave y guía de cómo obtenerla para cada uno; textos y estado de la clave sin mencionar solo a Gemini; privacidad al día. *Hecho cuando:* se puede elegir, guardar la clave de cada proveedor y probarla.
 
+### Fase 21 — Pulido posterior
+- [x] **T21.1 Indicador de carga en los botones.** Mientras la IA o el lector trabajan, el botón muestra un círculo que gira y no acepta otro toque. Se usa en "Proponer con IA" (fichas), "Analizar" (Ahora tú), "Probar clave" y "Ponme a prueba" del menú del lector (que lee el capítulo antes). *Hecho cuando:* cada uno muestra la espera. Petición del usuario (2026-10-26).
+
 ## 10. Riesgos técnicos (en orden)
 
 1. Lector de EPUB/PDF con selección de texto (por eso queda aislado en B1 y B2).

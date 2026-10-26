@@ -22,7 +22,13 @@ import io.github.fabiann1809.reader.ui.components.AiButton
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReaderMenuSheet(isPdf: Boolean, chapterUnreadable: Boolean, onQuiz: (count: Int) -> Unit, onDismiss: () -> Unit) {
+fun ReaderMenuSheet(
+    isPdf: Boolean,
+    chapterUnreadable: Boolean,
+    onQuiz: (count: Int) -> Unit,
+    onDismiss: () -> Unit,
+    preparingQuiz: Boolean = false,
+) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -44,6 +50,7 @@ fun ReaderMenuSheet(isPdf: Boolean, chapterUnreadable: Boolean, onQuiz: (count: 
             AiButton(
                 text = stringResource(R.string.reader_quiz_start),
                 onClick = { onQuiz(QUIZ_SIZES[1]) },
+                loading = preparingQuiz,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

@@ -131,8 +131,9 @@ private fun Body(
         PrimaryButton(
             text = stringResource(R.string.interpretation_analyze),
             onClick = onAnalyze,
-            enabled = uiState.canAnalyze,
+            enabled = uiState.canAnalyze || uiState.analysis == AnalysisState.Loading,
             icon = R.drawable.ic_sparkle,
+            loading = uiState.analysis == AnalysisState.Loading,
             modifier = Modifier.fillMaxWidth(),
         )
         AnalysisSection(uiState.analysis)

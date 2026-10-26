@@ -276,14 +276,16 @@ class ReaderViewModel(
     fun startChapterQuiz(count: Int) {
         val state = _uiState.value as? ReaderUiState.Ready ?: return
         val href = state.href ?: return
+        if (state.preparingQuiz) return
+        updateReady { it.copy(preparingQuiz = true, chapterUnreadable = false) }
         viewModelScope.launch {
             // A very long chapter is cut: its beginning is still enough for a few questions.
             val text = session.chapterText(bookId, href)?.take(MAX_QUIZ_TEXT_LENGTH)
             updateReady {
                 if (text == null) {
-                    it.copy(chapterUnreadable = true)
+                    it.copy(preparingQuiz = false, chapterUnreadable = true)
                 } else {
-                    it.copy(menuVisible = false, chapterQuiz = ChapterQuiz(text, count, state.chapter ?: state.title))
+                    it.copy(preparingQuiz = false, menuVisible = false, chapterQuiz = ChapterQuiz(text, count, state.chapter ?: state.title))
                 }
             }
         }

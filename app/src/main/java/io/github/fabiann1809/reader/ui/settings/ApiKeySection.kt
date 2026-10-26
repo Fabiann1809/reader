@@ -76,7 +76,8 @@ fun ApiKeySection(
         AiButton(
             text = stringResource(R.string.settings_test_key),
             onClick = onTestKey,
-            enabled = uiState.canTestKey,
+            enabled = uiState.canTestKey || uiState.keyTest == KeyTestState.Testing,
+            loading = uiState.keyTest == KeyTestState.Testing,
             modifier = Modifier.fillMaxWidth(),
         )
         KeyTestResult(uiState.keyTest)

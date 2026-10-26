@@ -88,7 +88,8 @@ fun FlashcardEditorContent(
                 AiButton(
                     text = stringResource(if (uiState.isSuggesting) R.string.flashcard_suggesting else R.string.flashcard_suggest),
                     onClick = onSuggest,
-                    enabled = uiState.canSuggest,
+                    enabled = uiState.canSuggest || uiState.isSuggesting,
+                    loading = uiState.isSuggesting,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 uiState.suggestionError?.let { error ->

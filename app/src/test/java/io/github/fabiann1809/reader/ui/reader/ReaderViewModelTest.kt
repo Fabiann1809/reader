@@ -362,6 +362,7 @@ class ReaderViewModelTest {
         viewModel.startChapterQuiz(count = 5)
 
         assertEquals(ChapterQuiz("Texto del capítulo", 5, "Capítulo 1"), ready(viewModel).chapterQuiz)
+        assertFalse(ready(viewModel).preparingQuiz)
         assertFalse(ready(viewModel).menuVisible)
         viewModel.chapterQuizStarted()
         assertEquals(null, ready(viewModel).chapterQuiz)
@@ -378,6 +379,7 @@ class ReaderViewModelTest {
 
         assertTrue(ready(viewModel).chapterUnreadable)
         assertTrue(ready(viewModel).menuVisible)
+        assertFalse(ready(viewModel).preparingQuiz)
     }
 
     private fun twoChapterSession() = FakeSession().apply {

@@ -46,6 +46,8 @@ sealed interface ReaderUiState {
         val search: ReaderSearchState? = null,
         val chapterQuiz: ChapterQuiz? = null,
         val chapterUnreadable: Boolean = false,
+    // The menu's quiz is reading the chapter (a moment, in a long one).
+    val preparingQuiz: Boolean = false,
         val chapterEnd: ChapterEnd? = null,
     ) : ReaderUiState {
         /** True when the open page has a bookmark: the top bar shows it filled. */

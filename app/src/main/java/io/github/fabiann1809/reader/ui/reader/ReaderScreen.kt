@@ -180,6 +180,7 @@ fun ReaderScreen(
                     ReaderMenuSheet(
                         isPdf = state.format != BookFormat.EPUB,
                         chapterUnreadable = state.chapterUnreadable,
+                        preparingQuiz = state.preparingQuiz,
                         onQuiz = viewModel::startChapterQuiz,
                         onDismiss = viewModel::hideMenu,
                     )
