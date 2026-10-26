@@ -6,6 +6,8 @@
     <!-- Used to photograph book pages; the gallery works without it. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- The daily review reminder (Android 13 and later asks for it). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Not required: devices without a camera can still pick images from the gallery. -->
     <uses-feature

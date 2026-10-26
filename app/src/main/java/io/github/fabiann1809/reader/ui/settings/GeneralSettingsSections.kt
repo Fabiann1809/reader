@@ -146,7 +146,7 @@ private fun Choice(@StringRes label: Int, control: @Composable () -> Unit) {
 }
 
 @Composable
-private fun Toggle(@StringRes title: Int, @StringRes hint: Int, checked: Boolean, onChange: (Boolean) -> Unit) {
+fun Toggle(@StringRes title: Int, @StringRes hint: Int, checked: Boolean, onChange: (Boolean) -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),

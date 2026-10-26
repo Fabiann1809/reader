@@ -62,6 +62,7 @@ fun SettingsScreen(
         generalSettings = {
             AppearanceSection(generalState, onTheme = general::setTheme, onView = general::setLibraryView, onBooksPerRow = general::setBooksPerRow)
             ReadingDefaultsSection(onOpen = general::showReadingSettings)
+            ReminderSection(generalState, onEnable = general::setReviewReminder, onTime = general::setReminderTime)
             AiFeaturesSection(generalState, onAutoTranscribe = general::setAutoTranscribe, onChapterEnd = general::setChapterEndSuggestion)
         },
     )

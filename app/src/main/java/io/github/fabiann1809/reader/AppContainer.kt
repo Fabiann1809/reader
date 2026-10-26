@@ -2,6 +2,10 @@ package io.github.fabiann1809.reader
 
 import io.github.fabiann1809.reader.data.prefs.DataStoreReadAloudPreferences
 import io.github.fabiann1809.reader.data.prefs.ReadAloudPreferences
+import io.github.fabiann1809.reader.data.reminder.AndroidReviewNotifier
+import io.github.fabiann1809.reader.data.reminder.ReviewReminder
+import io.github.fabiann1809.reader.data.reminder.ReviewReminderScheduler
+import io.github.fabiann1809.reader.data.reminder.WorkManagerReviewReminderScheduler
 import io.github.fabiann1809.reader.data.reader.readaloud.ReadAloud
 import io.github.fabiann1809.reader.data.reader.readaloud.ReadiumReadAloud
 import io.github.fabiann1809.reader.data.voice.MediaVoicePlayer
@@ -173,6 +177,12 @@ class AppContainer(context: Context) {
     val appSettings: AppSettingsStore by lazy { DataStoreAppSettingsStore(appContext) }
 
     private val readAloudPreferences: ReadAloudPreferences by lazy { DataStoreReadAloudPreferences(appContext) }
+
+    val reviewReminderScheduler: ReviewReminderScheduler by lazy { WorkManagerReviewReminderScheduler(appContext) }
+
+    val reviewReminder: ReviewReminder by lazy {
+        ReviewReminder(appSettings, flashcardRepository, AndroidReviewNotifier(appContext), reviewReminderScheduler)
+    }
 
     val readAloud: ReadAloud by lazy {
         ReadiumReadAloud(appContext as Application, readerSession, readAloudPreferences, applicationScope)

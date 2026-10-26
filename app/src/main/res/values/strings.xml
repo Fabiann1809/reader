@@ -383,6 +383,17 @@
 
     <!-- Settings -->
     <string name="settings_title">Ajustes</string>
+    <string name="settings_reminder">Recordatorio</string>
+    <string name="settings_reminder_toggle">Repaso diario</string>
+    <string name="settings_reminder_hint">Un aviso a la hora que elijas cuando tengas fichas por repasar</string>
+    <string name="settings_reminder_time">Hora del aviso</string>
+    <string name="settings_reminder_denied">Para recibir el aviso, permite las notificaciones de Reader.</string>
+    <string name="reminder_title">Hora de repasar</string>
+    <string name="reminder_channel">Recordatorio de repaso</string>
+    <plurals name="reminder_text">
+        <item quantity="one">Tienes %d ficha por repasar</item>
+        <item quantity="other">Tienes %d fichas por repasar</item>
+    </plurals>
     <string name="settings_ai_section">Funciones de IA</string>
     <string name="settings_key_status_set">Clave de API configurada. Ya puedes pedir explicaciones.</string>
     <string name="settings_key_status_missing">No hay clave de API configurada. Sin ella no se pueden generar explicaciones.</string>

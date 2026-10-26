@@ -6,6 +6,7 @@ import io.github.fabiann1809.reader.data.prefs.ReadingTheme
 import io.github.fabiann1809.reader.testing.FakeAppPreferences
 import io.github.fabiann1809.reader.testing.FakeAppSettingsStore
 import io.github.fabiann1809.reader.testing.FakeReadingPreferences
+import io.github.fabiann1809.reader.testing.FakeReviewReminderScheduler
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.test.runTest
@@ -23,8 +24,9 @@ class GeneralSettingsViewModelTest {
     private val appSettings = FakeAppSettingsStore()
     private val appPreferences = FakeAppPreferences()
     private val readingPreferences = FakeReadingPreferences()
+    private val reminderScheduler = FakeReviewReminderScheduler()
 
-    private fun viewModel() = GeneralSettingsViewModel(appSettings, appPreferences, readingPreferences)
+    private fun viewModel() = GeneralSettingsViewModel(appSettings, appPreferences, readingPreferences, reminderScheduler)
 
     @Test
     fun eachSettingIsSavedAndShown() = runTest(mainDispatcherRule.testDispatcher) {
@@ -58,5 +60,35 @@ class GeneralSettingsViewModelTest {
 
         assertEquals(ReadingTheme.SEPIA, readingPreferences.settings.value.theme)
         assertFalse(viewModel.uiState.value.readingSheetVisible)
+    }
+
+    @Test
+    fun turningTheReminderOnSetsItAtTheChosenHourAndOffCancelsIt() = runTest(mainDispatcherRule.testDispatcher) {
+        val viewModel = viewModel()
+        viewModel.uiState.launchIn(backgroundScope)
+
+        viewModel.setReviewReminder(true)
+        // 8 p. m. until another hour is picked.
+        assertEquals(listOf(20 * 60), reminderScheduler.scheduled)
+        assertTrue(viewModel.uiState.value.settings.reviewReminder)
+
+        viewModel.setReviewReminder(false)
+        assertTrue(reminderScheduler.cancelled)
+        assertFalse(viewModel.uiState.value.settings.reviewReminder)
+    }
+
+    @Test
+    fun changingTheHourMovesTheReminderOnlyWhileItIsOn() = runTest(mainDispatcherRule.testDispatcher) {
+        val viewModel = viewModel()
+        viewModel.uiState.launchIn(backgroundScope)
+
+        viewModel.setReminderTime(7 * 60 + 15)
+        assertTrue(reminderScheduler.scheduled.isEmpty())
+        assertEquals(7 * 60 + 15, viewModel.uiState.value.settings.reminderMinutes)
+
+        viewModel.setReviewReminder(true)
+        viewModel.setReminderTime(9 * 60)
+
+        assertEquals(listOf(7 * 60 + 15, 9 * 60), reminderScheduler.scheduled)
     }
 }

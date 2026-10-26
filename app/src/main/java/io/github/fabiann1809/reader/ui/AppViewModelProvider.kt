@@ -225,6 +225,7 @@ object AppViewModelProvider {
                 appSettings = readerApplication().container.appSettings,
                 appPreferences = readerApplication().container.appPreferences,
                 readingPreferences = readerApplication().container.readingPreferences,
+                reminderScheduler = readerApplication().container.reviewReminderScheduler,
             )
         }
         initializer {

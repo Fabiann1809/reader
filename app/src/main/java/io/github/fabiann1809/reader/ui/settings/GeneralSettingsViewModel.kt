@@ -6,10 +6,12 @@ import io.github.fabiann1809.reader.data.prefs.AppPreferences
 import io.github.fabiann1809.reader.data.prefs.AppSettings
 import io.github.fabiann1809.reader.data.prefs.AppSettingsStore
 import io.github.fabiann1809.reader.data.prefs.AppTheme
+import io.github.fabiann1809.reader.data.prefs.current
 import io.github.fabiann1809.reader.data.prefs.LibraryLayout
 import io.github.fabiann1809.reader.data.prefs.LibraryView
 import io.github.fabiann1809.reader.data.prefs.ReadingPreferences
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
+import io.github.fabiann1809.reader.data.reminder.ReviewReminderScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -33,6 +35,7 @@ class GeneralSettingsViewModel(
     private val appSettings: AppSettingsStore,
     private val appPreferences: AppPreferences,
     private val readingPreferences: ReadingPreferences,
+    private val reminderScheduler: ReviewReminderScheduler,
 ) : ViewModel() {
 
     private val readingSheetVisible = MutableStateFlow(false)
@@ -48,6 +51,21 @@ class GeneralSettingsViewModel(
     fun setAutoTranscribe(on: Boolean) = updateSettings { it.copy(autoTranscribe = on) }
 
     fun setChapterEndSuggestion(on: Boolean) = updateSettings { it.copy(chapterEndSuggestion = on) }
+
+    /** Turns the daily review reminder on or off; on, the first one is set for the chosen hour. */
+    fun setReviewReminder(on: Boolean) {
+        viewModelScope.launch {
+            appSettings.update { it.copy(reviewReminder = on) }
+            if (on) reminderScheduler.schedule(appSettings.current().reminderMinutes) else reminderScheduler.cancel()
+        }
+    }
+
+    fun setReminderTime(minutesOfDay: Int) {
+        viewModelScope.launch {
+            appSettings.update { it.copy(reminderMinutes = minutesOfDay) }
+            if (appSettings.current().reviewReminder) reminderScheduler.schedule(minutesOfDay)
+        }
+    }
 
     fun setLibraryView(view: LibraryView) = updateLayout { it.copy(view = view) }
 

@@ -6,8 +6,10 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
+import io.github.fabiann1809.reader.data.reminder.DEFAULT_REMINDER_MINUTES
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -25,6 +27,9 @@ data class AppSettings(
     val autoTranscribe: Boolean = true,
     // "¿Quieres repasar o probarte?" when a chapter ends (T15.5).
     val chapterEndSuggestion: Boolean = true,
+    // A daily notification when cards are due (T14.6), at [reminderMinutes] after midnight.
+    val reviewReminder: Boolean = false,
+    val reminderMinutes: Int = DEFAULT_REMINDER_MINUTES,
 )
 
 interface AppSettingsStore {
@@ -51,6 +56,8 @@ class DataStoreAppSettingsStore(context: Context, fileName: String = FILE_NAME) 
             prefs[THEME] = updated.theme.name
             prefs[AUTO_TRANSCRIBE] = updated.autoTranscribe
             prefs[CHAPTER_END_SUGGESTION] = updated.chapterEndSuggestion
+            prefs[REVIEW_REMINDER] = updated.reviewReminder
+            prefs[REMINDER_MINUTES] = updated.reminderMinutes
         }
     }
 
@@ -60,6 +67,8 @@ class DataStoreAppSettingsStore(context: Context, fileName: String = FILE_NAME) 
             theme = AppTheme.entries.find { it.name == this[THEME] } ?: defaults.theme,
             autoTranscribe = this[AUTO_TRANSCRIBE] ?: defaults.autoTranscribe,
             chapterEndSuggestion = this[CHAPTER_END_SUGGESTION] ?: defaults.chapterEndSuggestion,
+            reviewReminder = this[REVIEW_REMINDER] ?: defaults.reviewReminder,
+            reminderMinutes = this[REMINDER_MINUTES] ?: defaults.reminderMinutes,
         )
     }
 
@@ -68,5 +77,7 @@ class DataStoreAppSettingsStore(context: Context, fileName: String = FILE_NAME) 
         val THEME = stringPreferencesKey("theme")
         val AUTO_TRANSCRIBE = booleanPreferencesKey("auto_transcribe")
         val CHAPTER_END_SUGGESTION = booleanPreferencesKey("chapter_end_suggestion")
+        val REVIEW_REMINDER = booleanPreferencesKey("review_reminder")
+        val REMINDER_MINUTES = intPreferencesKey("reminder_minutes")
     }
 }
