@@ -416,7 +416,7 @@
     <string name="settings_provider_gemini">Gemini</string>
     <string name="settings_provider_openai">OpenAI</string>
     <string name="settings_provider_anthropic">Claude</string>
-    <string name="settings_provider_compatible">Otro compatible</string>
+    <string name="settings_provider_compatible">Otro</string>
     <string name="settings_model_field">Modelo</string>
     <string name="settings_model_hint">Elige uno o escribe otro nombre</string>
     <string name="settings_model_hint_compatible">El nombre del modelo de tu servicio</string>

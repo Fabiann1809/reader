@@ -5,6 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -56,6 +61,7 @@ fun ProviderSection(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ModelPicker(config: AiConfig, onModel: (String) -> Unit) {
     // Typed here and saved on every change, so the field never waits for the store.
@@ -64,26 +70,38 @@ private fun ModelPicker(config: AiConfig, onModel: (String) -> Unit) {
         model = text
         onModel(text)
     }
-    if (config.provider.suggestedModels.isNotEmpty()) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            config.provider.suggestedModels.forEach { suggested ->
-                ReaderFilterChip(selected = model == suggested, onClick = { change(suggested) }, label = { Text(suggested) })
+    val suggestions = config.provider.suggestedModels
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    // A list to pick from; the field stays editable for any other model name.
+    ExposedDropdownMenuBox(expanded = expanded && suggestions.isNotEmpty(), onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = model,
+            onValueChange = change,
+            shape = readerTextFieldShape,
+            colors = readerTextFieldColors(),
+            label = { Text(stringResource(R.string.settings_model_field)) },
+            supportingText = {
+                Text(stringResource(if (suggestions.isEmpty()) R.string.settings_model_hint_compatible else R.string.settings_model_hint))
+            },
+            trailingIcon = { if (suggestions.isNotEmpty()) ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, autoCorrectEnabled = false),
+            modifier = Modifier
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
+                .fillMaxWidth(),
+        )
+        ExposedDropdownMenu(expanded = expanded && suggestions.isNotEmpty(), onDismissRequest = { expanded = false }) {
+            suggestions.forEach { suggested ->
+                DropdownMenuItem(
+                    text = { Text(suggested) },
+                    onClick = {
+                        change(suggested)
+                        expanded = false
+                    },
+                )
             }
         }
     }
-    OutlinedTextField(
-        value = model,
-        onValueChange = change,
-        shape = readerTextFieldShape,
-        colors = readerTextFieldColors(),
-        label = { Text(stringResource(R.string.settings_model_field)) },
-        supportingText = {
-            Text(stringResource(if (config.provider.suggestedModels.isEmpty()) R.string.settings_model_hint_compatible else R.string.settings_model_hint))
-        },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, autoCorrectEnabled = false),
-        modifier = Modifier.fillMaxWidth(),
-    )
 }
 
 @Composable
