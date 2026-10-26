@@ -12,6 +12,7 @@ import io.github.fabiann1809.reader.data.collection.LibraryFilter
 import io.github.fabiann1809.reader.data.collection.SmartCollection
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.testing.FakeBookRepository
+import io.github.fabiann1809.reader.testing.FakeCoverStore
 import io.github.fabiann1809.reader.testing.FakeCollectionRepository
 import io.github.fabiann1809.reader.testing.FakeFlashcardRepository
 import io.github.fabiann1809.reader.testing.FakeHighlightRepository
@@ -38,6 +39,7 @@ class BookDetailViewModelTest {
 
     private val book = Book(id = 1, title = "Dune", author = "Frank Herbert")
     private val bookRepository = FakeBookRepository(listOf(book))
+    private val coverStore = FakeCoverStore()
     private val noteRepository = FakeNoteRepository()
     private val collectionRepository = FakeCollectionRepository(bookRepository)
     private val highlightRepository = FakeHighlightRepository()
@@ -48,6 +50,7 @@ class BookDetailViewModelTest {
         BookDetailViewModel(
             bookId = 1,
             bookRepository = bookRepository,
+            coverStore = coverStore,
             noteRepository = noteRepository,
             collectionRepository = collectionRepository,
             highlightRepository = highlightRepository,
@@ -200,5 +203,30 @@ class BookDetailViewModelTest {
         assertEquals(1, state.dueCards)
         assertEquals(1, state.sessions.size)
         assertEquals(true, state.quizSource.contains("Una nota") && state.quizSource.contains("¿Qué? — Esto"))
+    }
+
+    @Test
+    fun changeCoverStoresThePictureOnTheBook() = runTest {
+        viewModel.changeCover("content://photos/42")
+
+        assertEquals("covers/42.jpg", bookRepository.currentBooks.single().coverPath)
+    }
+
+    @Test
+    fun changeCoverKeepsTheBookAsIsWhenThePictureCannotBeRead() = runTest {
+        coverStore.fails = true
+
+        viewModel.changeCover("content://photos/42")
+
+        assertNull(bookRepository.currentBooks.single().coverPath)
+    }
+
+    @Test
+    fun removeCoverGoesBackToTheGeneratedOne() = runTest {
+        viewModel.changeCover("content://photos/42")
+
+        viewModel.removeCover()
+
+        assertNull(bookRepository.currentBooks.single().coverPath)
     }
 }

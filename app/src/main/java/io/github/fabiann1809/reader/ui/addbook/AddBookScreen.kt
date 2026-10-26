@@ -29,6 +29,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +46,7 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.components.readerTextFieldColors
+import io.github.fabiann1809.reader.ui.components.rememberCoverPicker
 import io.github.fabiann1809.reader.ui.components.readerTextFieldShape
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
@@ -65,6 +67,12 @@ fun AddBookScreen(
         onTitleChange = viewModel::onTitleChange,
         onAuthorChange = viewModel::onAuthorChange,
         onTotalPagesChange = viewModel::onTotalPagesChange,
+        onCoverPicked = viewModel::onCoverPicked,
+        onCoverRemoved = viewModel::onCoverRemoved,
+        onIsbnChange = viewModel::onIsbnChange,
+        onIsbnSearch = viewModel::lookUpIsbn,
+        onIsbnScanned = viewModel::lookUpIsbn,
+        onScanFailed = viewModel::onScanFailed,
         onSave = viewModel::save,
         onNavigateUp = onNavigateUp,
     )
@@ -79,6 +87,12 @@ fun AddBookContent(
     onSave: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
+    onCoverPicked: (String) -> Unit = {},
+    onCoverRemoved: () -> Unit = {},
+    onIsbnChange: (String) -> Unit = {},
+    onIsbnSearch: () -> Unit = {},
+    onIsbnScanned: (String) -> Unit = {},
+    onScanFailed: () -> Unit = {},
 ) {
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Column(
@@ -95,7 +109,8 @@ fun AddBookContent(
                     .padding(horizontal = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                CoverPreview(uiState)
+                CoverPreview(uiState, onCoverPicked, onCoverRemoved)
+                IsbnSection(uiState, onIsbnChange, onIsbnSearch, onIsbnScanned, onScanFailed)
                 OutlinedTextField(
                     shape = readerTextFieldShape,
                     colors = readerTextFieldColors(),
@@ -169,19 +184,31 @@ private fun AddBookHeader(onNavigateUp: () -> Unit) {
 
 /** The cover as the library will draw it, changing with the title while it is typed. */
 @Composable
-private fun CoverPreview(uiState: AddBookUiState) {
+private fun CoverPreview(uiState: AddBookUiState, onCoverPicked: (String) -> Unit, onCoverRemoved: () -> Unit) {
     val preview = Book(
         title = uiState.title.trim().ifEmpty { stringResource(R.string.add_book_preview_title) },
         author = uiState.author.trim(),
+        coverPath = uiState.coverPath,
     )
+    val pickCover = rememberCoverPicker(onCoverPicked)
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(top = 14.dp)) {
         BookCover(book = preview, titleSize = 20.sp, modifier = Modifier.width(120.dp))
-        Text(
-            text = stringResource(R.string.add_book_cover_hint),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 12.dp),
-        )
+        if (uiState.coverPath == null) {
+            Text(
+                text = stringResource(R.string.add_book_cover_hint),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 12.dp),
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(onClick = pickCover) {
+                Text(stringResource(if (uiState.coverPath == null) R.string.cover_choose else R.string.cover_change))
+            }
+            if (uiState.coverPath != null) {
+                TextButton(onClick = onCoverRemoved) { Text(stringResource(R.string.cover_remove)) }
+            }
+        }
     }
 }
 

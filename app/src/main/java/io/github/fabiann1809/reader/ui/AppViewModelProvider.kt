@@ -69,7 +69,11 @@ object AppViewModelProvider {
             )
         }
         initializer {
-            AddBookViewModel(readerApplication().container.bookRepository)
+            AddBookViewModel(
+                readerApplication().container.bookRepository,
+                readerApplication().container.coverStore,
+                readerApplication().container.isbnLookup,
+            )
         }
         initializer {
             NewCollectionViewModel(
@@ -83,6 +87,7 @@ object AppViewModelProvider {
             BookDetailViewModel(
                 bookId = createSavedStateHandle().toRoute<BookDetailRoute>().bookId,
                 bookRepository = readerApplication().container.bookRepository,
+                coverStore = readerApplication().container.coverStore,
                 noteRepository = readerApplication().container.noteRepository,
                 collectionRepository = readerApplication().container.collectionRepository,
                 highlightRepository = readerApplication().container.highlightRepository,

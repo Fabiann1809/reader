@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.mlkit.text.recognition)
+    implementation(libs.play.services.code.scanner)
 
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.documentfile)

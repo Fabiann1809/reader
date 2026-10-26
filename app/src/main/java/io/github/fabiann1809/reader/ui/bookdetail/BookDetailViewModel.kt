@@ -6,6 +6,7 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookKind
 import io.github.fabiann1809.reader.data.book.BookRepository
+import io.github.fabiann1809.reader.data.book.CoverStore
 import io.github.fabiann1809.reader.data.book.withStatus
 import io.github.fabiann1809.reader.data.book.BookStatus
 import io.github.fabiann1809.reader.data.collection.Collection
@@ -62,6 +63,7 @@ sealed interface BookDetailUiState {
 class BookDetailViewModel(
     private val bookId: Long,
     private val bookRepository: BookRepository,
+    private val coverStore: CoverStore,
     noteRepository: NoteRepository,
     collectionRepository: CollectionRepository,
     highlightRepository: HighlightRepository,
@@ -118,6 +120,17 @@ class BookDetailViewModel(
                 sessionRepository.addSession(ReadingSession(bookId = bookId, startedAt = at, endedAt = at, pagesRead = pagesRead))
             }
         }
+    }
+
+    fun changeCover(uri: String) {
+        viewModelScope.launch {
+            val path = coverStore.save(uri) ?: return@launch
+            bookRepository.setCover(bookId, path)
+        }
+    }
+
+    fun removeCover() {
+        viewModelScope.launch { bookRepository.setCover(bookId, null) }
     }
 
     fun setFavorite(isFavorite: Boolean) {

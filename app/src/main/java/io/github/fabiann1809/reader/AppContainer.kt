@@ -25,6 +25,8 @@ import io.github.fabiann1809.reader.data.apikey.KeystoreApiKeyStore
 import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookOrganizer
 import io.github.fabiann1809.reader.data.book.BookRepository
+import io.github.fabiann1809.reader.data.book.ContentCoverStore
+import io.github.fabiann1809.reader.data.book.CoverStore
 import io.github.fabiann1809.reader.data.book.DefaultBookRepository
 import io.github.fabiann1809.reader.data.book.FileHashBackfill
 import io.github.fabiann1809.reader.data.book.ReadiumToolkit
@@ -36,6 +38,8 @@ import io.github.fabiann1809.reader.data.book.folder.WatchedFolderStore
 import io.github.fabiann1809.reader.data.book.folder.WatchedFolderSync
 import io.github.fabiann1809.reader.data.book.folder.WorkManagerFolderSyncScheduler
 import io.github.fabiann1809.reader.data.book.importing.BookImporter
+import io.github.fabiann1809.reader.data.book.lookup.IsbnLookup
+import io.github.fabiann1809.reader.data.book.lookup.OpenLibraryIsbnLookup
 import io.github.fabiann1809.reader.data.book.importing.DataStoreFailedImportStore
 import io.github.fabiann1809.reader.data.book.importing.DefaultBookImporter
 import io.github.fabiann1809.reader.data.book.importing.FileAccess
@@ -93,6 +97,8 @@ class AppContainer(context: Context) {
     private val readium: ReadiumToolkit by lazy { ReadiumToolkit(appContext) }
 
     val readerSession: ReaderSession by lazy { ReadiumReaderSession(readium, bookFiles, appContext.cacheDir) }
+
+    val coverStore: CoverStore by lazy { ContentCoverStore(appContext.contentResolver, bookFiles) }
 
     val bookRepository: BookRepository by lazy { DefaultBookRepository(database.bookDao(), bookFiles) }
 
@@ -211,6 +217,8 @@ class AppContainer(context: Context) {
             httpClient = httpClient,
         )
     }
+
+    val isbnLookup: IsbnLookup by lazy { OpenLibraryIsbnLookup(httpClient) }
 
     val explainText: ExplainText by lazy { ExplainText(aiProvider) }
 

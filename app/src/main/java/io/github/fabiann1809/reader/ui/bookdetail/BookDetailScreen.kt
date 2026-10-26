@@ -30,6 +30,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import io.github.fabiann1809.reader.ui.components.rememberCoverPicker
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -103,6 +104,8 @@ fun BookDetailScreen(
         onUpdateProgress = viewModel::updateProgress,
         onDeleteBook = viewModel::deleteBook,
         onFavoriteChange = viewModel::setFavorite,
+        onCoverPicked = viewModel::changeCover,
+        onCoverRemoved = viewModel::removeCover,
         onCollectionChange = viewModel::setInCollection,
         onCreateCollection = viewModel::createCollectionWithBook,
         onAddNote = onAddNote,
@@ -137,6 +140,8 @@ fun BookDetailContent(
     voiceNotes: VoiceNoteControls = VoiceNoteControls(),
     onReviewBook: () -> Unit = {},
     onQuizBook: (source: String, title: String) -> Unit = { _, _ -> },
+    onCoverPicked: (String) -> Unit = {},
+    onCoverRemoved: () -> Unit = {},
 ) {
     var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
     var showProgressDialog by rememberSaveable { mutableStateOf(false) }
@@ -185,6 +190,8 @@ fun BookDetailContent(
                 onStatusChange = { status -> onUpdateProgress(uiState.book.currentPage, status) },
                 onCollectionClick = { showCollectionSheet = true },
                 onDeleteClick = { showDeleteDialog = true },
+                onCoverPicked = onCoverPicked,
+                onCoverRemoved = onCoverRemoved,
                 onUpdateProgressClick = { showProgressDialog = true },
                 onCapturePage = onCapturePage,
                 onRead = readBook,
@@ -265,8 +272,15 @@ fun BookDetailContent(
 }
 
 @Composable
-private fun MoreMenu(onAddToCollectionClick: () -> Unit, onDeleteClick: () -> Unit) {
+private fun MoreMenu(
+    hasCover: Boolean,
+    onAddToCollectionClick: () -> Unit,
+    onCoverPicked: (String) -> Unit,
+    onCoverRemoved: () -> Unit,
+    onDeleteClick: () -> Unit,
+) {
     var expanded by remember { mutableStateOf(false) }
+    val pickCover = rememberCoverPicker(onCoverPicked)
     Box {
         Box(
             contentAlignment = Alignment.Center,
@@ -290,6 +304,24 @@ private fun MoreMenu(onAddToCollectionClick: () -> Unit, onDeleteClick: () -> Un
                 },
             )
             DropdownMenuItem(
+                text = { Text(stringResource(R.string.cover_change)) },
+                leadingIcon = { Icon(painterResource(R.drawable.ic_book), contentDescription = null) },
+                onClick = {
+                    expanded = false
+                    pickCover()
+                },
+            )
+            if (hasCover) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.cover_remove)) },
+                    leadingIcon = { Icon(painterResource(R.drawable.ic_x), contentDescription = null) },
+                    onClick = {
+                        expanded = false
+                        onCoverRemoved()
+                    },
+                )
+            }
+            DropdownMenuItem(
                 text = { Text(stringResource(R.string.delete_book_title), color = MaterialTheme.colorScheme.error) },
                 leadingIcon = {
                     Icon(painterResource(R.drawable.ic_trash), contentDescription = null, tint = MaterialTheme.colorScheme.error)
@@ -311,6 +343,8 @@ private fun BookDetailBody(
     onStatusChange: (BookStatus) -> Unit,
     onCollectionClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    onCoverPicked: (String) -> Unit,
+    onCoverRemoved: () -> Unit,
     onUpdateProgressClick: () -> Unit,
     onCapturePage: () -> Unit,
     onRead: () -> Unit,
@@ -337,7 +371,15 @@ private fun BookDetailBody(
                 onNavigateUp = onNavigateUp,
                 onFavoriteChange = onFavoriteChange,
                 isOpening = isOpening,
-                menu = { MoreMenu(onAddToCollectionClick = onCollectionClick, onDeleteClick = onDeleteClick) },
+                menu = {
+                    MoreMenu(
+                        hasCover = state.book.coverPath != null,
+                        onAddToCollectionClick = onCollectionClick,
+                        onCoverPicked = onCoverPicked,
+                        onCoverRemoved = onCoverRemoved,
+                        onDeleteClick = onDeleteClick,
+                    )
+                },
             )
         }
         item(key = "progress") {

@@ -20,6 +20,9 @@ interface BookRepository {
 
     suspend fun updateBook(book: Book)
 
+    /** Gives the book a new cover (or none, with null) and deletes the one it had. */
+    suspend fun setCover(bookId: Long, coverPath: String?)
+
     /** Also deletes the book's notes (cascade). */
     suspend fun deleteBook(book: Book)
 }
@@ -36,6 +39,12 @@ class DefaultBookRepository(private val bookDao: BookDao, private val bookFiles:
     override suspend fun addBook(book: Book): Long = bookDao.insert(book)
 
     override suspend fun updateBook(book: Book) = bookDao.update(book)
+
+    override suspend fun setCover(bookId: Long, coverPath: String?) {
+        val book = bookDao.getById(bookId) ?: return
+        bookDao.update(book.copy(coverPath = coverPath))
+        withContext(Dispatchers.IO) { bookFiles.delete(book.coverPath) }
+    }
 
     /** Also removes the imported file and the cover, which nothing else points to. */
     override suspend fun deleteBook(book: Book) {

@@ -33,6 +33,10 @@ class FakeBookRepository(initialBooks: List<Book> = emptyList()) : BookRepositor
         books.update { list -> list.map { if (it.id == book.id) book else it } }
     }
 
+    override suspend fun setCover(bookId: Long, coverPath: String?) {
+        books.update { list -> list.map { if (it.id == bookId) it.copy(coverPath = coverPath) else it } }
+    }
+
     override suspend fun deleteBook(book: Book) {
         books.update { list -> list.filterNot { it.id == book.id } }
     }
