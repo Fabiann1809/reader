@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.ai.AiProviderKind
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 import io.github.fabiann1809.reader.ui.reader.ReadingSettingsSheet
@@ -52,6 +53,9 @@ fun SettingsScreen(
     SettingsContent(
         uiState = uiState,
         onKeyInputChange = viewModel::onKeyInputChange,
+        onProvider = viewModel::selectProvider,
+        onModel = viewModel::setModel,
+        onCompatibleUrl = viewModel::setCompatibleUrl,
         onSaveKey = viewModel::saveKey,
         onClearKey = viewModel::clearKey,
         onTestKey = viewModel::testKey,
@@ -87,6 +91,9 @@ fun SettingsContent(
     onOpenPrivacy: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
+    onProvider: (AiProviderKind) -> Unit = {},
+    onModel: (String) -> Unit = {},
+    onCompatibleUrl: (String) -> Unit = {},
     generalSettings: @Composable () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -118,6 +125,7 @@ fun SettingsContent(
                 .padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(22.dp),
         ) {
+            ProviderSection(uiState.config, onProvider, onModel, onCompatibleUrl)
             ApiKeySection(uiState, onKeyInputChange, onSaveKey, onClearKey, onTestKey)
             generalSettings()
             PrivacyCard(onClick = onOpenPrivacy)

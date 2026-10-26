@@ -364,8 +364,8 @@
 
     <!-- AI errors -->
     <string name="ai_error_missing_key">Primero configura tu clave de API en Ajustes.</string>
-    <string name="ai_error_invalid_key">La clave de API no es válida. Revísala o crea una nueva en Google AI Studio.</string>
-    <string name="ai_error_quota_exhausted">Se agotó la cuota gratuita de hoy. Vuelve a intentarlo mañana.</string>
+    <string name="ai_error_invalid_key">La clave de API no es válida para este proveedor. Revísala o crea una nueva.</string>
+    <string name="ai_error_quota_exhausted">Se agotó la cuota o el saldo de tu cuenta. Revisa tu plan en el proveedor o vuelve a intentarlo más tarde.</string>
     <string name="ai_error_rate_limited">Demasiadas peticiones seguidas. Espera un minuto y vuelve a intentarlo.</string>
     <string name="ai_error_no_internet">No hay conexión a internet. Revisa tu conexión y vuelve a intentarlo.</string>
     <string name="ai_error_timeout">La IA tardó demasiado en responder. Vuelve a intentarlo.</string>
@@ -411,12 +411,32 @@
     <string name="settings_test_key">Probar clave</string>
     <string name="settings_testing_key">Probando la clave…</string>
     <string name="settings_test_success">¡La clave funciona!</string>
+    <string name="settings_provider_section">Proveedor de IA</string>
+    <string name="settings_provider_hint">Usa tu propia clave con el servicio que prefieras. Cada proveedor guarda la suya.</string>
+    <string name="settings_provider_gemini">Gemini</string>
+    <string name="settings_provider_openai">OpenAI</string>
+    <string name="settings_provider_anthropic">Claude</string>
+    <string name="settings_provider_compatible">Otro compatible</string>
+    <string name="settings_model_field">Modelo</string>
+    <string name="settings_model_hint">Elige uno o escribe otro nombre</string>
+    <string name="settings_model_hint_compatible">El nombre del modelo de tu servicio</string>
+    <string name="settings_url_field">Dirección del servicio</string>
+    <string name="settings_url_hint">Compatible con OpenAI, por ejemplo https://openrouter.ai/api/v1</string>
+    <string name="settings_url_not_https">La dirección debe empezar con https</string>
+    <string name="settings_guide_title_paid">Cómo obtener tu clave</string>
+    <string name="settings_guide_title_compatible">Cómo usar otro servicio</string>
+    <string name="settings_guide_openai_step2">2. Inicia sesión y añade saldo si te lo pide: la API se cobra aparte de ChatGPT.</string>
+    <string name="settings_guide_openai_step3">3. Pulsa «Create new secret key» y cópiala.</string>
+    <string name="settings_guide_anthropic_step2">2. Inicia sesión y añade crédito si te lo pide: la API se cobra aparte de Claude.ai.</string>
+    <string name="settings_guide_anthropic_step3">3. Pulsa «Create Key» y cópiala.</string>
+    <string name="settings_guide_compatible_step1">1. Busca en tu servicio (OpenRouter, Groq, DeepSeek…) su dirección base, el nombre del modelo y tu clave.</string>
+    <string name="settings_guide_compatible_step2">2. Escribe arriba la dirección (con https) y el modelo.</string>
     <string name="settings_guide_title">Cómo obtener tu clave gratuita</string>
     <string name="settings_guide_step1">1. Abre</string>
     <string name="settings_guide_step2">2. Inicia sesión con tu cuenta de Google.</string>
     <string name="settings_guide_step3">3. Pulsa «Crear clave de API» y cópiala.</string>
     <string name="settings_guide_step4">4. Pégala arriba y pulsa «Guardar clave».</string>
-    <string name="settings_guide_privacy">Tu clave se guarda cifrada en este teléfono y solo se envía a Google al pedir una explicación. Puedes borrarla cuando quieras.</string>
+    <string name="settings_guide_privacy">Tu clave se guarda cifrada en este teléfono y solo se envía a tu proveedor de IA al pedir algo. Puedes borrarla cuando quieras.</string>
 
     <!-- Explanation -->
     <string name="explanation_title">Explicación</string>
@@ -439,18 +459,20 @@
 
     <!-- Privacy -->
     <string name="settings_privacy">Privacidad</string>
-    <string name="settings_privacy_summary">Tus libros y notas no salen del teléfono. Solo el fragmento que pides explicar se envía a Google Gemini con tu propia clave.</string>
+    <string name="settings_privacy_summary">Tus libros y notas no salen del teléfono. Solo el fragmento que pides explicar se envía al proveedor de IA que elegiste, con tu propia clave.</string>
     <string name="privacy_title">Privacidad</string>
     <string name="privacy_intro">Reader no tiene servidores propios: tus datos se quedan en tu teléfono. Lo único que sale de él son los fragmentos que pides explicar.</string>
     <string name="privacy_sent_title">Qué se envía a la IA</string>
     <string name="privacy_sent_body">Solo el texto que revisas y envías con el botón «Explicar»: un fragmento de hasta %1$d caracteres (más o menos una página). Nunca se envía el libro completo, tus otras notas ni las fotos.</string>
     <string name="privacy_provider_title">A quién se envía</string>
-    <string name="privacy_provider_body">Al proveedor de IA que elegiste al configurar tu clave, hoy Google Gemini. El envío se hace directamente desde tu teléfono y se rige por las condiciones de Google. Según ellas, en el nivel gratuito Google puede usar los textos enviados para mejorar sus servicios, así que no envíes información personal o confidencial.</string>
+    <string name="privacy_provider_body">Al proveedor de IA que elegiste en Ajustes: Google Gemini, OpenAI, Anthropic (Claude) o el servicio compatible que indicaste. El envío se hace directamente desde tu teléfono y se rige por las condiciones de ese proveedor. Algunos pueden usar los textos enviados para mejorar sus servicios, sobre todo en los niveles gratuitos, así que no envíes información personal o confidencial.</string>
     <string name="privacy_provider_terms">Ver las condiciones de la API de Gemini</string>
+    <string name="privacy_provider_terms_openai">Ver las condiciones de OpenAI</string>
+    <string name="privacy_provider_terms_anthropic">Ver las condiciones de Anthropic</string>
     <string name="privacy_local_title">Qué se queda en tu teléfono</string>
     <string name="privacy_local_body">Tus libros, tu progreso y tus notas se guardan solo en este teléfono. El texto de las fotos se reconoce en el propio teléfono, y cada foto se guarda de forma temporal y se borra al tomar la siguiente.</string>
     <string name="privacy_key_title">Tu clave de API</string>
-    <string name="privacy_key_body">Se guarda cifrada en este teléfono, solo se envía a Google al pedir una explicación y nunca aparece en registros. Puedes borrarla cuando quieras desde Ajustes.</string>
+    <string name="privacy_key_body">Se guarda cifrada en este teléfono, solo se envía a tu proveedor de IA al pedir algo y nunca aparece en registros. Puedes borrarla cuando quieras desde Ajustes.</string>
 
     <!-- Bottom navigation -->
     <string name="tab_library">Biblioteca</string>
@@ -532,7 +554,7 @@
     <string name="settings_auto_transcribe_hint">Al terminar de grabar. Cada nota usa tu clave de IA.</string>
     <string name="settings_chapter_end">Sugerir repaso al terminar un capítulo</string>
     <string name="settings_chapter_end_hint">Una tarjeta discreta con Repasar y Ponme a prueba</string>
-    <string name="settings_api_key_section">Clave de API · Google Gemini</string>
+    <string name="settings_api_key_section">Clave de API</string>
     <string name="detail_tab_summary">Resumen</string>
     <string name="detail_tab_notes">Notas</string>
     <string name="detail_tab_cards">Fichas</string>
@@ -663,9 +685,9 @@
     <string name="backup_import_unreadable">No se pudo leer el archivo. No se cambió nada.</string>
     <string name="backup_export_failed">No se pudo guardar el respaldo. Prueba en otra carpeta.</string>
     <string name="about_title">Acerca de</string>
-    <string name="more_key_active">Clave de Gemini activa</string>
+    <string name="more_key_active">Clave de IA activa</string>
     <string name="more_key_active_note">Solo se envían fragmentos</string>
-    <string name="more_key_missing">Sin clave de Gemini</string>
+    <string name="more_key_missing">Sin clave de IA</string>
     <string name="more_key_missing_note">Añádela en Ajustes</string>
     <string name="more_notes_empty">Aún no hay notas</string>
     <string name="more_notes_summary">%1$s en %2$s</string>
@@ -707,7 +729,7 @@
     <string name="onboarding_understand_title">Fotografía lo difícil</string>
     <string name="onboarding_understand_text">Apunta la cámara a un párrafo o selecciónalo en el lector. Reader extrae el texto por ti.</string>
     <string name="onboarding_remember_title">Entiéndelo y no lo olvides</string>
-    <string name="onboarding_remember_text">La IA lo explica con el método Feynman usando tu propia clave de Gemini. Guárdalo como nota o ficha y repásalo después.</string>
+    <string name="onboarding_remember_text">La IA lo explica con el método Feynman usando tu propia clave de IA. Guárdalo como nota o ficha y repásalo después.</string>
     <string name="onboarding_demo_paper">La atención no es un recurso infinito. Cada vez que cambiamos de tarea dejamos atrás un residuo: parte de la mente sigue ocupada en lo anterior mientras intentamos empezar lo siguiente.</string>
     <string name="onboarding_demo_idea_label">Idea central</string>
     <string name="onboarding_demo_idea">Cambiar de tarea deja un rastro mental que resta atención.</string>

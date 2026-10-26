@@ -1,6 +1,8 @@
 package io.github.fabiann1809.reader.ui.settings
 
 import io.github.fabiann1809.reader.ai.AiError
+import io.github.fabiann1809.reader.ai.AiProviderKind
+import io.github.fabiann1809.reader.testing.FakeAiConfigStore
 import io.github.fabiann1809.reader.testing.FakeAiProvider
 import io.github.fabiann1809.reader.testing.FakeApiKeyStore
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
@@ -24,9 +26,10 @@ class SettingsViewModelTest {
 
     private val keyStore = FakeApiKeyStore()
     private val aiProvider = FakeAiProvider()
+    private val configStore = FakeAiConfigStore()
 
     // Lazy so it is built after MainDispatcherRule swaps Dispatchers.Main (viewModelScope needs it).
-    private val viewModel by lazy { SettingsViewModel(keyStore, aiProvider) }
+    private val viewModel by lazy { SettingsViewModel(keyStore, aiProvider, configStore) }
 
     private fun TestScope.collectUiState() {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
@@ -111,5 +114,57 @@ class SettingsViewModelTest {
         viewModel.testKey()
 
         assertEquals(KeyTestState.Failure(error), viewModel.uiState.value.keyTest)
+    }
+
+    @Test
+    fun choosingAProviderSavesItAndDropsWhatWasTypedForTheOther() = runTest {
+        collectUiState()
+        viewModel.onKeyInputChange("clave-de-gemini")
+
+        viewModel.selectProvider(AiProviderKind.OPENAI)
+
+        assertEquals(AiProviderKind.OPENAI, viewModel.uiState.value.config.provider)
+        assertEquals("", viewModel.uiState.value.keyInput)
+    }
+
+    @Test
+    fun theModelIsSavedForTheProviderInUseOnly() = runTest {
+        collectUiState()
+        viewModel.selectProvider(AiProviderKind.ANTHROPIC)
+
+        viewModel.setModel("  claude-sonnet-5-5 ")
+
+        val config = viewModel.uiState.value.config
+        assertEquals("claude-sonnet-5-5", config.model)
+        assertEquals("gemini-flash-latest", config.modelOf(AiProviderKind.GEMINI))
+    }
+
+    @Test
+    fun theCompatibleAddressIsSavedWithoutSpaces() = runTest {
+        collectUiState()
+        viewModel.selectProvider(AiProviderKind.COMPATIBLE)
+
+        viewModel.setCompatibleUrl(" https://api.groq.com/openai/v1 ")
+
+        assertEquals("https://api.groq.com/openai/v1", viewModel.uiState.value.config.compatibleUrl)
+    }
+
+    @Test
+    fun eachProviderShowsItsOwnKeyStatus() = runTest {
+        // Same wiring as the app: the key in use follows the chosen provider.
+        val keys = io.github.fabiann1809.reader.testing.FakeProviderKeyStore()
+        val active = io.github.fabiann1809.reader.data.apikey.ActiveApiKeyStore(keys, configStore)
+        val model = SettingsViewModel(active, aiProvider, configStore)
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { model.uiState.collect() }
+
+        model.onKeyInputChange("clave-de-gemini")
+        model.saveKey()
+        assertTrue(model.uiState.value.hasApiKey)
+
+        model.selectProvider(AiProviderKind.OPENAI)
+        assertFalse(model.uiState.value.hasApiKey)
+
+        model.selectProvider(AiProviderKind.GEMINI)
+        assertTrue(model.uiState.value.hasApiKey)
     }
 }

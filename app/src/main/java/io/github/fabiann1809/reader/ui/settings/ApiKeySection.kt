@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.ai.AiProviderKind
 import io.github.fabiann1809.reader.ui.components.AiButton
 import io.github.fabiann1809.reader.ui.components.OutlineButton
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
@@ -45,9 +46,7 @@ import io.github.fabiann1809.reader.ui.components.readerTextFieldColors
 import io.github.fabiann1809.reader.ui.components.readerTextFieldShape
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
-private const val API_KEY_URL = "https://aistudio.google.com/apikey"
-
-/** "Clave de API · Google Gemini": its status, the field, save / clear / test and how to get a key. */
+/** "Clave de API": its status, the field, save / clear / test and how to get a key from the provider in use. */
 @Composable
 fun ApiKeySection(
     uiState: SettingsUiState,
@@ -81,7 +80,7 @@ fun ApiKeySection(
             modifier = Modifier.fillMaxWidth(),
         )
         KeyTestResult(uiState.keyTest)
-        ApiKeyGuide()
+        ApiKeyGuide(uiState.config.provider)
     }
 }
 
@@ -178,7 +177,8 @@ private fun ResultBanner(@DrawableRes icon: Int, accent: Color, container: Color
 }
 
 @Composable
-private fun ApiKeyGuide() {
+private fun ApiKeyGuide(provider: AiProviderKind) {
+    val guide = provider.guide()
     Column(
         verticalArrangement = Arrangement.spacedBy(6.dp),
         modifier = Modifier
@@ -186,26 +186,26 @@ private fun ApiKeyGuide() {
             .background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(18.dp))
             .padding(14.dp),
     ) {
-        Text(stringResource(R.string.settings_guide_title), style = MaterialTheme.typography.titleSmall)
+        Text(stringResource(guide.title), style = MaterialTheme.typography.titleSmall)
         val linkColor = MaterialTheme.colorScheme.primary
-        Text(
-            text = buildAnnotatedString {
-                append(stringResource(R.string.settings_guide_step1))
-                append(" ")
-                withLink(
-                    LinkAnnotation.Url(
-                        url = API_KEY_URL,
-                        styles = TextLinkStyles(SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline)),
-                    ),
-                ) {
-                    append(API_KEY_URL)
-                }
-            },
-            style = MaterialTheme.typography.bodyMedium,
-        )
-        Text(stringResource(R.string.settings_guide_step2), style = MaterialTheme.typography.bodyMedium)
-        Text(stringResource(R.string.settings_guide_step3), style = MaterialTheme.typography.bodyMedium)
-        Text(stringResource(R.string.settings_guide_step4), style = MaterialTheme.typography.bodyMedium)
+        if (guide.url != null) {
+            Text(
+                text = buildAnnotatedString {
+                    append(stringResource(R.string.settings_guide_step1))
+                    append(" ")
+                    withLink(
+                        LinkAnnotation.Url(
+                            url = guide.url,
+                            styles = TextLinkStyles(SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline)),
+                        ),
+                    ) {
+                        append(guide.url)
+                    }
+                },
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+        guide.steps.forEach { Text(stringResource(it), style = MaterialTheme.typography.bodyMedium) }
         Text(
             text = stringResource(R.string.settings_guide_privacy),
             style = MaterialTheme.typography.bodySmall,

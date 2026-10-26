@@ -2,7 +2,10 @@ package io.github.fabiann1809.reader.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.fabiann1809.reader.ai.AiConfig
 import io.github.fabiann1809.reader.ai.AiProvider
+import io.github.fabiann1809.reader.ai.AiProviderKind
+import io.github.fabiann1809.reader.data.aiconfig.AiConfigStore
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -32,6 +35,8 @@ data class SettingsUiState(
     val keyInput: String = "",
     val message: SettingsMessage? = null,
     val keyTest: KeyTestState = KeyTestState.Idle,
+    // The provider and model in use (T20.5).
+    val config: AiConfig = AiConfig(),
 ) {
     val canSaveKey: Boolean get() = keyInput.isNotBlank()
 
@@ -41,17 +46,38 @@ data class SettingsUiState(
 class SettingsViewModel(
     private val apiKeyStore: ApiKeyStore,
     private val aiProvider: AiProvider,
+    private val aiConfigStore: AiConfigStore,
 ) : ViewModel() {
 
     private val formState = MutableStateFlow(SettingsUiState())
 
     val uiState: StateFlow<SettingsUiState> =
-        combine(formState, apiKeyStore.hasApiKey) { form, hasKey -> form.copy(hasApiKey = hasKey) }
+        combine(formState, apiKeyStore.hasApiKey, aiConfigStore.config) { form, hasKey, config ->
+            form.copy(hasApiKey = hasKey, config = config)
+        }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS),
                 initialValue = SettingsUiState(),
             )
+
+    /** Switches the provider: each one keeps its own key, so what was typed for the other is dropped. */
+    fun selectProvider(provider: AiProviderKind) {
+        formState.update { it.copy(keyInput = "", keyTest = KeyTestState.Idle) }
+        viewModelScope.launch { aiConfigStore.update { it.copy(provider = provider) } }
+    }
+
+    fun setModel(model: String) {
+        viewModelScope.launch {
+            aiConfigStore.update { config -> config.copy(models = config.models + (config.provider to model.trim())) }
+        }
+        formState.update { it.copy(keyTest = KeyTestState.Idle) }
+    }
+
+    fun setCompatibleUrl(url: String) {
+        viewModelScope.launch { aiConfigStore.update { it.copy(compatibleUrl = url.trim()) } }
+        formState.update { it.copy(keyTest = KeyTestState.Idle) }
+    }
 
     fun onKeyInputChange(input: String) = formState.update { it.copy(keyInput = input) }
 

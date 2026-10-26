@@ -48,7 +48,7 @@ class SettingsContentTest {
         var saved = false
         setContent(SettingsUiState(keyInput = "AIza-123"), onSaveKey = { saved = true })
         composeRule.onNodeWithText("Ajustes").assertIsDisplayed()
-        composeRule.onNodeWithText("Clave de API · Google Gemini").assertIsDisplayed()
+        composeRule.onNodeWithText("Proveedor de IA").assertIsDisplayed()
         composeRule.onNodeWithText("Guardar clave").assertIsEnabled().performClick()
         assertEquals(true, saved)
     }

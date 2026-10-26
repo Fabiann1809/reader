@@ -35,6 +35,8 @@ import io.github.fabiann1809.reader.ai.MAX_TEXT_LENGTH
 import io.github.fabiann1809.reader.ui.components.ReaderTopAppBar
 
 private const val GEMINI_TERMS_URL = "https://ai.google.dev/gemini-api/terms"
+private const val OPENAI_TERMS_URL = "https://openai.com/policies"
+private const val ANTHROPIC_TERMS_URL = "https://www.anthropic.com/legal/commercial-terms"
 
 /** Static explanation of what data leaves the phone. No ViewModel: there is no state to hold. */
 @Composable
@@ -59,7 +61,7 @@ fun PrivacyScreen(onNavigateUp: () -> Unit, modifier: Modifier = Modifier) {
             }
             Section(R.string.privacy_provider_title) {
                 Paragraph(stringResource(R.string.privacy_provider_body))
-                TermsLink()
+                TermsLinks()
             }
             Section(R.string.privacy_local_title) {
                 Paragraph(stringResource(R.string.privacy_local_body))
@@ -108,17 +110,24 @@ private fun Paragraph(text: String) {
 }
 
 @Composable
-private fun TermsLink() {
+private fun TermsLinks() {
+    TermsLink(GEMINI_TERMS_URL, R.string.privacy_provider_terms)
+    TermsLink(OPENAI_TERMS_URL, R.string.privacy_provider_terms_openai)
+    TermsLink(ANTHROPIC_TERMS_URL, R.string.privacy_provider_terms_anthropic)
+}
+
+@Composable
+private fun TermsLink(url: String, @StringRes label: Int) {
     val linkColor = MaterialTheme.colorScheme.primary
     Text(
         text = buildAnnotatedString {
             withLink(
                 LinkAnnotation.Url(
-                    url = GEMINI_TERMS_URL,
+                    url = url,
                     styles = TextLinkStyles(SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline)),
                 ),
             ) {
-                append(stringResource(R.string.privacy_provider_terms))
+                append(stringResource(label))
             }
         },
         style = MaterialTheme.typography.bodyMedium,

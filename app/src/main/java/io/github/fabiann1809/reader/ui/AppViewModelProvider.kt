@@ -231,6 +231,7 @@ object AppViewModelProvider {
         initializer {
             SettingsViewModel(
                 apiKeyStore = readerApplication().container.apiKeyStore,
+                aiConfigStore = readerApplication().container.aiConfigStore,
                 aiProvider = readerApplication().container.aiProvider,
             )
         }
