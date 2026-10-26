@@ -30,7 +30,7 @@ class ReaderSessionTest {
     private val context = ApplicationProvider.getApplicationContext<Context>()
     private val filesDir = File(context.cacheDir, "reader-session-test").apply { mkdirs() }
     private val bookFiles = BookFiles(filesDir)
-    private val session = ReadiumReaderSession(ReadiumToolkit(context), bookFiles)
+    private val session = ReadiumReaderSession(ReadiumToolkit(context), bookFiles, File(filesDir, "cache"))
 
     @After
     fun tearDown() {
@@ -66,9 +66,18 @@ class ReaderSessionTest {
     }
 
     @Test
-    fun otherFormatsAreNotReadYet() = runTest {
-        assertEquals(OpenProblem.NOT_SUPPORTED_YET, session.open(bookWith("cuento_de_navidad.txt", BookFormat.TXT)))
-        assertEquals(OpenProblem.NOT_SUPPORTED_YET, session.open(bookWith("mafalda_tomo_1.cbz", BookFormat.CBZ)))
+    fun aTxtOpensAsAnEpubMadeFromIt() = runTest {
+        assertNull(session.open(bookWith("cuento_de_navidad.txt", BookFormat.TXT)))
+
+        assertTrue(session.publication(1)?.readingOrder?.isNotEmpty() == true)
+        assertTrue(session.chapterText(1, session.publication(1)!!.readingOrder.first().href.toString())!!.contains("Marley estaba muerto"))
+    }
+
+    @Test
+    fun aCbzOpensAsImages() = runTest {
+        assertNull(session.open(bookWith("mafalda_tomo_1.cbz", BookFormat.CBZ)))
+
+        assertTrue(session.publication(1)?.readingOrder?.isNotEmpty() == true)
     }
 
     @Test

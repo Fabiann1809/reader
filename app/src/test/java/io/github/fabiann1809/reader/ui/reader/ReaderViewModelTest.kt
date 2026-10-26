@@ -602,9 +602,9 @@ class ReaderViewModelTest {
 
     @Test
     fun aBookThatCannotOpenSaysWhy() {
-        val viewModel = viewModel(bookId = 1, session = FakeSession(OpenProblem.NOT_SUPPORTED_YET))
+        val viewModel = viewModel(bookId = 1, session = FakeSession(OpenProblem.UNREADABLE))
 
-        assertEquals(ReaderUiState.CannotOpen(OpenProblem.NOT_SUPPORTED_YET), viewModel.uiState.value)
+        assertEquals(ReaderUiState.CannotOpen(OpenProblem.UNREADABLE), viewModel.uiState.value)
     }
 
     @Test

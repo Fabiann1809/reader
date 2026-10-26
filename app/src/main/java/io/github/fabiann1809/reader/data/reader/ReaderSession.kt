@@ -4,6 +4,7 @@ import io.github.fabiann1809.reader.data.book.Book
 import io.github.fabiann1809.reader.data.book.BookFiles
 import io.github.fabiann1809.reader.data.book.BookFormat
 import io.github.fabiann1809.reader.data.book.ReadiumToolkit
+import io.github.fabiann1809.reader.data.book.TxtEpub
 import io.github.fabiann1809.reader.data.highlight.Highlight
 import io.github.fabiann1809.reader.data.prefs.ReadingSettings
 import kotlinx.coroutines.Dispatchers
@@ -15,6 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.IOException
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Link
@@ -31,9 +34,6 @@ import org.readium.r2.shared.util.getOrElse
 enum class OpenProblem {
     /** A paper book, or an imported one whose file is gone. */
     NO_FILE,
-
-    /** A format the reader does not show yet (TXT and CBZ). */
-    NOT_SUPPORTED_YET,
 
     /** The file exists but Readium could not read it (e.g. damaged). */
     UNREADABLE,
@@ -143,7 +143,11 @@ interface ReaderSession {
  * [ReaderSession] with Readium. Keeps one book in memory at a time: Readium's navigator gets the
  * publication from here when Android recreates the reader (e.g. on rotation), not through a Bundle.
  */
-class ReadiumReaderSession(private val readium: ReadiumToolkit, private val bookFiles: BookFiles) : ReaderSession {
+class ReadiumReaderSession(
+    private val readium: ReadiumToolkit,
+    private val bookFiles: BookFiles,
+    private val cacheDir: File,
+) : ReaderSession {
 
     private var openBookId: Long? = null
     private var openPublication: Publication? = null
@@ -179,11 +183,11 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
     override suspend fun open(book: Book, startAt: String?): OpenProblem? {
         if (book.id == openBookId && openPublication != null) return null
         val path = book.filePath ?: return OpenProblem.NO_FILE
-        if (book.format !in READABLE_FORMATS) return OpenProblem.NOT_SUPPORTED_YET
         val file = bookFiles.resolve(path)
         val publication = withContext(Dispatchers.IO) {
             if (!file.exists()) return@withContext null
-            readium.asset(file)?.let { readium.open(it) }
+            val readable = if (book.format == BookFormat.TXT) txtAsEpub(book, file) else file
+            readable?.let { readium.asset(it) }?.let { readium.open(it) }
         } ?: return if (file.exists()) OpenProblem.UNREADABLE else OpenProblem.NO_FILE
         closeCurrent()
         openBookId = book.id
@@ -285,8 +289,16 @@ class ReadiumReaderSession(private val readium: ReadiumToolkit, private val book
         after = text.after.orEmpty(),
     )
 
-    private companion object {
-        val READABLE_FORMATS = setOf(BookFormat.EPUB, BookFormat.PDF)
+    // The EPUB made from a TXT is kept in the cache; null when the text can't be read.
+    private fun txtAsEpub(book: Book, txt: File): File? {
+        val epub = File(cacheDir, "txt/${book.id}.epub")
+        if (epub.exists() && epub.lastModified() >= txt.lastModified()) return epub
+        return try {
+            TxtEpub.write(txt, book.title, book.language, epub)
+            epub
+        } catch (e: IOException) {
+            null
+        }
     }
 }
 

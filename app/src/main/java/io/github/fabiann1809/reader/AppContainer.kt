@@ -87,7 +87,7 @@ class AppContainer(context: Context) {
 
     private val readium: ReadiumToolkit by lazy { ReadiumToolkit(appContext) }
 
-    val readerSession: ReaderSession by lazy { ReadiumReaderSession(readium, bookFiles) }
+    val readerSession: ReaderSession by lazy { ReadiumReaderSession(readium, bookFiles, appContext.cacheDir) }
 
     val bookRepository: BookRepository by lazy { DefaultBookRepository(database.bookDao(), bookFiles) }
 

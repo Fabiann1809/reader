@@ -147,7 +147,7 @@ fun ReaderScreen(
                 }
                 if (state.menuVisible) {
                     ReaderMenuSheet(
-                        isPdf = state.format == BookFormat.PDF,
+                        isPdf = state.format != BookFormat.EPUB,
                         chapterUnreadable = state.chapterUnreadable,
                         onQuiz = viewModel::startChapterQuiz,
                         onDismiss = viewModel::hideMenu,
@@ -182,7 +182,7 @@ fun ReaderScreen(
                 if (state.textSettingsVisible) {
                     ReadingSettingsSheet(
                         settings = state.readingSettings,
-                        isPdf = state.format == BookFormat.PDF,
+                        isPdf = state.format != BookFormat.EPUB,
                         onChange = viewModel::updateReadingSettings,
                         onDismiss = viewModel::hideTextSettings,
                     )
@@ -278,7 +278,8 @@ private fun BookNavigator(
     }
     when (format) {
         BookFormat.PDF -> AndroidFragment<PdfReaderFragment>(arguments = arguments, modifier = fragmentModifier, onUpdate = connect)
-        // The session only opens EPUB and PDF (see ReadiumReaderSession).
+        BookFormat.CBZ -> AndroidFragment<ImageReaderFragment>(arguments = arguments, modifier = fragmentModifier, onUpdate = connect)
+        // A TXT arrives here as an EPUB (see ReaderViewModel).
         else -> AndroidFragment<EpubReaderFragment>(arguments = arguments, modifier = fragmentModifier, onUpdate = connect)
     }
 }
@@ -287,7 +288,6 @@ private fun BookNavigator(
 private fun CannotOpen(problem: OpenProblem, onNavigateUp: () -> Unit) {
     val message = when (problem) {
         OpenProblem.NO_FILE -> R.string.reader_no_file
-        OpenProblem.NOT_SUPPORTED_YET -> R.string.reader_not_supported_yet
         OpenProblem.UNREADABLE -> R.string.reader_unreadable
     }
     StatusMessage(

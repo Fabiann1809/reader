@@ -331,14 +331,15 @@ class ReaderViewModel(
         val settings = readingPreferences.settings.first()
         session.applyReadingSettings(settings)
         val problem = session.open(book, startAt)
-        // The session only opens books with a readable format, so a null format here is a book without a file.
+        // A null format here is a book without a file.
         val format = book.format
         if (problem != null || format == null) return ReaderUiState.CannotOpen(problem ?: OpenProblem.NO_FILE)
         markOpened()
         sessionTracker.start(bookId)
         return ReaderUiState.Ready(
             bookId,
-            format,
+            // The session shows a TXT as an EPUB, so the reader treats it as one.
+            if (format == BookFormat.TXT) BookFormat.EPUB else format,
             book.title,
             tableOfContents = session.tableOfContents(bookId),
             positionCount = session.positionCount(bookId),

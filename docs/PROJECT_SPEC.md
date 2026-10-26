@@ -235,7 +235,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T10.1 Importar archivo.** Selector del sistema (SAF; incluye Drive y Dropbox si están instalados), copia a almacenamiento interno y lectura de metadatos (título y autor) con Readium para EPUB y PDF. *Hecho cuando:* un EPUB y un PDF aparecen en el estante con sus datos.
 - [x] **T10.2 Portadas reales.** Portada del EPUB y primera página del PDF (PdfRenderer) guardadas en el almacenamiento interno; `BookCover` usa la imagen si existe. *Hecho cuando:* se ven las portadas.
 - [x] **T10.3 Estados de importación.** "Importando 3 de 7…", error con Reintentar o Descartar (lámina 1f). *Hecho cuando:* se ven al importar varios archivos y uno dañado.
-- [ ] **T10.4 TXT y CBZ.** Formatos simples que Readium o el propio código soportan. *Hecho cuando:* se abren.
+- [x] **T10.4 TXT y CBZ.** Formatos simples que Readium o el propio código soportan. *Hecho cuando:* se abren.
 - [x] **T10.5 Compartir hacia Reader.** Intent filter para recibir archivos desde otras apps. *Hecho cuando:* "Compartir → Reader" importa el libro.
 - [x] **T10.6 Carpeta vigilada.** Carpeta elegida con permiso persistente, revisada con WorkManager. *Hecho cuando:* un archivo nuevo en la carpeta aparece en la biblioteca.
 - [ ] **T10.7 Libro físico con portada e ISBN.** Foto de portada y escaneo de ISBN (ML Kit Barcode + Open Library, gratis), con edición manual. *Hecho cuando:* el ISBN autocompleta título y autor.

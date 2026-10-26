@@ -116,7 +116,6 @@
     <string name="library_more_actions">Más acciones</string>
     <string name="reader_cannot_open">No se puede abrir este libro</string>
     <string name="reader_no_file">No encontramos el archivo del libro. Puedes importarlo de nuevo.</string>
-    <string name="reader_not_supported_yet">Por ahora el lector abre libros EPUB y PDF. Los demás formatos llegarán pronto.</string>
     <string name="reader_unreadable">El archivo parece dañado o protegido.</string>
     <string name="reader_bookmark">Marcador</string>
     <string name="reader_bookmark_add">Marcar esta página</string>
@@ -181,7 +180,7 @@
     <string name="reading_settings_keep_screen_on">Mantener la pantalla encendida</string>
     <string name="reader_page_of">%1$d / %2$d</string>
     <string name="reader_battery">%1$d %%</string>
-    <string name="reading_settings_pdf">Los ajustes de texto cambian los libros EPUB. Los PDF se muestran tal como son.</string>
+    <string name="reading_settings_pdf">Los ajustes de texto cambian los libros EPUB. Los PDF y los cómics se muestran tal como son.</string>
     <string name="reading_theme_day">Día</string>
     <string name="reading_theme_sepia">Sepia</string>
     <string name="reading_theme_paper_gray">Gris papel</string>
