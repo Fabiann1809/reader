@@ -17,5 +17,6 @@ fun aiErrorMessageRes(error: Throwable): Int = when (error) {
     is AiError.ContentBlocked -> R.string.ai_error_blocked
     is AiError.ModelNotFound -> R.string.ai_error_model_not_found
     is AiError.NotConfigured -> R.string.ai_error_not_configured
+    is AiError.TranscriptionNotSupported -> R.string.ai_error_no_transcription
     else -> R.string.ai_error_unknown
 }

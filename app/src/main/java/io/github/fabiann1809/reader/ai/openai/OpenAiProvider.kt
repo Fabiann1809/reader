@@ -16,11 +16,11 @@ import io.github.fabiann1809.reader.ai.gemini.ExplanationSchema
 import io.github.fabiann1809.reader.ai.gemini.FlashcardSchema
 import io.github.fabiann1809.reader.ai.gemini.InterpretationSchema
 import io.github.fabiann1809.reader.ai.gemini.QuizSchema
+import io.github.fabiann1809.reader.ai.runAiCall
 import io.github.fabiann1809.reader.ai.toJsonSchema
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -36,8 +36,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.IOException
-import java.net.SocketTimeoutException
 
 /**
  * [AiProvider] for OpenAI and for any service that speaks its chat API (`/chat/completions`).
@@ -106,22 +104,7 @@ class OpenAiProvider(
         val apiKey = apiKeyStore.getApiKey() ?: return Result.failure(AiError.MissingApiKey())
         val schema = geminiSchema.toJsonSchema(strict = strictSchema)
         val body = requestBody(instruction, message, schemaName, schema)
-        return withContext(Dispatchers.IO) {
-            try {
-                Result.success(parse(AiResponses.unwrapJson(send(apiKey, body))))
-            } catch (e: AiError) {
-                Result.failure(e)
-            } catch (e: SocketTimeoutException) {
-                Result.failure(AiError.Timeout(e))
-            } catch (e: IOException) {
-                // DNS failures, refused connections, dropped connections...: treat as connectivity problems.
-                Result.failure(AiError.NoInternet(e))
-            } catch (e: SerializationException) {
-                Result.failure(AiError.Unknown("Unexpected response", e))
-            } catch (e: IllegalArgumentException) {
-                Result.failure(AiError.Unknown("Unexpected response", e))
-            }
-        }
+        return withContext(Dispatchers.IO) { runAiCall { parse(AiResponses.unwrapJson(send(apiKey, body))) } }
     }
 
     private fun requestBody(instruction: String, message: String, schemaName: String, schema: JsonObject): String =

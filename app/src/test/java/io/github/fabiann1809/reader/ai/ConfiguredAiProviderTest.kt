@@ -53,11 +53,4 @@ class ConfiguredAiProviderTest {
         assertEquals(listOf("t" to 3), gemini.quizRequests)
         assertTrue(gemini.audios.size == 1)
     }
-
-    @Test
-    fun aProviderNotAvailableYetFailsWithAnAiError() = runTest {
-        val result = UnavailableAiProvider("OPENAI").explain("texto")
-
-        assertTrue(result.exceptionOrNull() is AiError)
-    }
 }

@@ -26,7 +26,7 @@ import io.github.fabiann1809.reader.ai.gemini.GeminiProvider
 import io.github.fabiann1809.reader.data.AppDatabase
 import io.github.fabiann1809.reader.ai.AiProviderKind
 import io.github.fabiann1809.reader.ai.ConfiguredAiProvider
-import io.github.fabiann1809.reader.ai.UnavailableAiProvider
+import io.github.fabiann1809.reader.ai.anthropic.AnthropicProvider
 import io.github.fabiann1809.reader.ai.openai.OpenAiProvider
 import io.github.fabiann1809.reader.data.aiconfig.AiConfigStore
 import io.github.fabiann1809.reader.data.aiconfig.DataStoreAiConfigStore
@@ -259,7 +259,7 @@ class AppContainer(context: Context) {
                     strictSchema = false,
                     sendTemperature = true,
                 )
-                else -> UnavailableAiProvider(config.provider.name)
+                AiProviderKind.ANTHROPIC -> AnthropicProvider(apiKeyStore = apiKeyStore, httpClient = httpClient, model = config.model)
             }
         }
     }

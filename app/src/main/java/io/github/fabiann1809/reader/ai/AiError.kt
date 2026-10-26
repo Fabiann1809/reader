@@ -33,5 +33,8 @@ sealed class AiError(message: String, cause: Throwable? = null) : Exception(mess
     /** The service address or the model is missing or not usable (the address must be https). */
     class NotConfigured : AiError("The provider's address or model is not set")
 
+    /** The provider in use can't write down a voice note (only some models take audio). */
+    class TranscriptionNotSupported : AiError("This provider does not transcribe audio")
+
     class Unknown(message: String, cause: Throwable? = null) : AiError(message, cause)
 }
