@@ -24,4 +24,19 @@ object ExplainerPrompt {
         - Usa ortografía correcta, con todas las tildes y signos del idioma.
         - Escribe en texto plano, sin formato Markdown (sin asteriscos ni almohadillas).
     """.trimIndent()
+
+    /** The user's message to change an explanation: the text, what was said about it, and what to do. */
+    fun refineMessage(text: String, previous: Explanation, change: ExplanationChange): String {
+        val request = when (change) {
+            ExplanationChange.SIMPLER ->
+                "Explícalo de nuevo con palabras todavía más simples y frases más cortas, como a alguien sin ningún conocimiento previo. Mantén las mismas ideas."
+            ExplanationChange.ANOTHER_EXAMPLE ->
+                "Explícalo de nuevo con una analogía y un ejemplo distintos de los anteriores, de otro ámbito de la vida diaria. Mantén las mismas ideas."
+        }
+        return "Fragmento:\n$text\n\nExplicación anterior:\n" +
+            "Idea central: ${previous.mainIdea}\n" +
+            "Explicación sencilla: ${previous.simpleExplanation}\n" +
+            "Analogía: ${previous.analogy}\n\n" +
+            request
+    }
 }

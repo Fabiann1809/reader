@@ -1,5 +1,7 @@
 package io.github.fabiann1809.reader.ai.gemini
 
+import io.github.fabiann1809.reader.testing.testExplanation
+import io.github.fabiann1809.reader.ai.ExplanationChange
 import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.KeyTerm
 import io.github.fabiann1809.reader.testing.FakeApiKeyStore
@@ -325,5 +327,18 @@ class GeminiProviderTest {
             "analogy":"Como el calor del sol.","keyTerms":[{"term":"Fotón","definition":"Partícula de luz."}],
             "caveat":null}
         """.trimIndent().replace("\n", "")
+    }
+
+    @Test
+    fun refineSendsTheTextThePreviousExplanationAndWhatIsAsked() = runTest {
+        enqueueAnswer(EXPLANATION_JSON)
+
+        provider.refine("A hard paragraph", testExplanation(), ExplanationChange.ANOTHER_EXAMPLE)
+
+        val body = server.takeRequest().body!!.utf8()
+        assertTrue(body.contains("A hard paragraph"))
+        assertTrue(body.contains(testExplanation().analogy))
+        assertTrue(body.contains("analogía y un ejemplo distintos"))
+        assertTrue(body.contains("\"responseSchema\""))
     }
 }

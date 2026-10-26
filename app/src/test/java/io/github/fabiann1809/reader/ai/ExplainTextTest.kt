@@ -55,4 +55,19 @@ class ExplainTextTest {
     fun acceptsTextAtTheLimit() = runTest {
         assertTrue(explainText("a".repeat(MAX_TEXT_LENGTH)).isSuccess)
     }
+
+    @Test
+    fun refineSendsTheTrimmedFragmentWithThePreviousExplanation() = runTest {
+        explainText.refine("  La luz.  ", testExplanation(), ExplanationChange.ANOTHER_EXAMPLE)
+
+        assertEquals(listOf(Triple("La luz.", testExplanation(), ExplanationChange.ANOTHER_EXAMPLE)), provider.refinements)
+    }
+
+    @Test
+    fun refineRejectsBlankTextWithoutCallingTheProvider() = runTest {
+        val result = explainText.refine("  ", testExplanation(), ExplanationChange.SIMPLER)
+
+        assertTrue(result.exceptionOrNull() is IllegalArgumentException)
+        assertTrue(provider.refinements.isEmpty())
+    }
 }

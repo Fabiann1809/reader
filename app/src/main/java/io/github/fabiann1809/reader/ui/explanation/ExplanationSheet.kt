@@ -13,6 +13,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.fabiann1809.reader.ai.ExplanationChange
 
 /**
  * The explainer as a bottom sheet over the reader (T11.11): "Explicación" with the AI label, the
@@ -25,6 +26,7 @@ fun ExplanationSheet(
     onRetry: () -> Unit,
     onSaveAsNote: () -> Unit,
     onDismiss: () -> Unit,
+    onRefine: ((ExplanationChange) -> Unit)? = null,
     onCreateFlashcard: (() -> Unit)? = null,
     onNowYou: (() -> Unit)? = null,
     onQuiz: (() -> Unit)? = null,
@@ -46,7 +48,7 @@ fun ExplanationSheet(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp, vertical = 4.dp),
             )
-            ExplanationActions(uiState, onSaveAsNote, onCreateFlashcard, onNowYou, onQuiz)
+            ExplanationActions(uiState, onSaveAsNote, onRefine, onCreateFlashcard, onNowYou, onQuiz)
         }
     }
 }

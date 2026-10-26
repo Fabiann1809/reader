@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.ai.ExplanationChange
 import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.Explanation
 import io.github.fabiann1809.reader.ai.KeyTerm
@@ -89,6 +90,7 @@ fun ExplanationScreen(
         uiState = uiState,
         onRetry = viewModel::retry,
         onSaveAsNote = viewModel::saveAsNote,
+        onRefine = viewModel::refine,
         onNavigateUp = onNavigateUp,
         onCreateFlashcard = { onCreateFlashcard(uiState.sourceText) },
         onNowYou = { onNowYou(uiState.sourceText) },
@@ -103,6 +105,7 @@ fun ExplanationContent(
     onSaveAsNote: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
+    onRefine: ((ExplanationChange) -> Unit)? = null,
     onCreateFlashcard: (() -> Unit)? = null,
     onNowYou: (() -> Unit)? = null,
     onQuiz: (() -> Unit)? = null,
@@ -118,7 +121,7 @@ fun ExplanationContent(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp, vertical = 8.dp),
             )
-            ExplanationActions(uiState, onSaveAsNote, onCreateFlashcard, onNowYou, onQuiz)
+            ExplanationActions(uiState, onSaveAsNote, onRefine, onCreateFlashcard, onNowYou, onQuiz)
         }
     }
 }
@@ -240,6 +243,7 @@ private fun SourceText(text: String) {
 fun ExplanationActions(
     uiState: ExplanationUiState,
     onSaveAsNote: () -> Unit,
+    onRefine: ((ExplanationChange) -> Unit)?,
     onCreateFlashcard: (() -> Unit)?,
     onNowYou: (() -> Unit)?,
     onQuiz: (() -> Unit)?,
@@ -252,6 +256,12 @@ fun ExplanationActions(
             verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 24.dp),
         ) {
+            onRefine?.let { refine ->
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    AiButton(stringResource(R.string.explanation_simpler), { refine(ExplanationChange.SIMPLER) }, Modifier.weight(1f), icon = null)
+                    AiButton(stringResource(R.string.explanation_another_example), { refine(ExplanationChange.ANOTHER_EXAMPLE) }, Modifier.weight(1f), icon = null)
+                }
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 PrimaryButton(
                     text = stringResource(

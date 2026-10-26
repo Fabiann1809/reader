@@ -2,6 +2,7 @@ package io.github.fabiann1809.reader.testing
 
 import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.Explanation
+import io.github.fabiann1809.reader.ai.ExplanationChange
 import io.github.fabiann1809.reader.ai.FlashcardDraft
 import io.github.fabiann1809.reader.ai.InterpretationAnalysis
 import io.github.fabiann1809.reader.ai.Quiz
@@ -17,6 +18,13 @@ class FakeAiProvider(
 
     override suspend fun explain(text: String): Result<Explanation> {
         requests += text
+        return result
+    }
+
+    val refinements = mutableListOf<Triple<String, Explanation, ExplanationChange>>()
+
+    override suspend fun refine(text: String, previous: Explanation, change: ExplanationChange): Result<Explanation> {
+        refinements += Triple(text, previous, change)
         return result
     }
 

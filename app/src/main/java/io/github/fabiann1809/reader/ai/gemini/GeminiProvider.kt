@@ -3,6 +3,8 @@ package io.github.fabiann1809.reader.ai.gemini
 import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.Explanation
+import io.github.fabiann1809.reader.ai.ExplanationChange
+import io.github.fabiann1809.reader.ai.ExplainerPrompt
 import io.github.fabiann1809.reader.ai.FlashcardDraft
 import io.github.fabiann1809.reader.ai.FlashcardPrompt
 import io.github.fabiann1809.reader.ai.InterpretationAnalysis
@@ -53,10 +55,15 @@ class GeminiProvider(
         explicitNulls = false
     }
 
-    override suspend fun explain(text: String): Result<Explanation> {
+    override suspend fun explain(text: String): Result<Explanation> = explainWith(text)
+
+    override suspend fun refine(text: String, previous: Explanation, change: ExplanationChange): Result<Explanation> =
+        explainWith(ExplainerPrompt.refineMessage(text, previous, change))
+
+    private suspend fun explainWith(message: String): Result<Explanation> {
         val request = GenerateContentRequest(
             systemInstruction = Content(parts = listOf(Part(text = systemInstruction))),
-            contents = listOf(Content(role = "user", parts = listOf(Part(text = text)))),
+            contents = listOf(Content(role = "user", parts = listOf(Part(text = message)))),
             generationConfig = GenerationConfig(
                 temperature = TEMPERATURE,
                 responseMimeType = "application/json",

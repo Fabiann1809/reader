@@ -4,6 +4,7 @@ import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.AiProvider
 import io.github.fabiann1809.reader.ai.ExplainText
 import io.github.fabiann1809.reader.ai.Explanation
+import io.github.fabiann1809.reader.ai.ExplanationChange
 import io.github.fabiann1809.reader.ai.FlashcardDraft
 import io.github.fabiann1809.reader.ai.InterpretationAnalysis
 import io.github.fabiann1809.reader.ai.Quiz
@@ -37,6 +38,8 @@ class ExplanationViewModelTest {
         val answer = CompletableDeferred<Result<Explanation>>()
         val slowProvider = object : AiProvider {
             override suspend fun explain(text: String) = answer.await()
+
+            override suspend fun refine(text: String, previous: Explanation, change: ExplanationChange) = answer.await()
 
             override suspend fun transcribe(audio: ByteArray, mimeType: String) = Result.success("")
 
@@ -121,5 +124,55 @@ class ExplanationViewModelTest {
         viewModel.saveAsNote()
 
         assertTrue(noteRepository.currentNotes.isEmpty())
+    }
+
+    @Test
+    fun refineAsksForAnotherVersionKnowingTheOneOnScreen() {
+        val provider = FakeAiProvider(Result.success(testExplanation()))
+        val viewModel = viewModel(provider)
+        val simpler = testExplanation().copy(simpleExplanation = "Más fácil todavía.")
+        provider.result = Result.success(simpler)
+
+        viewModel.refine(ExplanationChange.SIMPLER)
+
+        assertEquals(listOf(Triple(sourceText, testExplanation(), ExplanationChange.SIMPLER)), provider.refinements)
+        assertEquals(ExplanationState.Success(simpler), viewModel.uiState.value.explanation)
+    }
+
+    @Test
+    fun refineAllowsSavingTheNewVersionEvenIfTheOldOneWasSaved() {
+        val viewModel = viewModel(FakeAiProvider(Result.success(testExplanation())))
+        viewModel.saveAsNote()
+        assertEquals(SaveState.SAVED, viewModel.uiState.value.saveState)
+
+        viewModel.refine(ExplanationChange.ANOTHER_EXAMPLE)
+
+        assertTrue(viewModel.uiState.value.canSave)
+    }
+
+    @Test
+    fun retryAfterAFailedRefineRepeatsTheRefine() {
+        val provider = FakeAiProvider(Result.success(testExplanation()))
+        val viewModel = viewModel(provider)
+        provider.result = Result.failure(AiError.NoInternet(java.io.IOException()))
+        viewModel.refine(ExplanationChange.SIMPLER)
+        assertTrue(viewModel.uiState.value.explanation is ExplanationState.Failed)
+
+        provider.result = Result.success(testExplanation())
+        viewModel.retry()
+
+        assertEquals(2, provider.refinements.size)
+        assertEquals(1, provider.requests.size)
+        assertTrue(viewModel.uiState.value.explanation is ExplanationState.Success)
+    }
+
+    @Test
+    fun refineDoesNothingWithoutAnExplanationOnScreen() {
+        val provider = FakeAiProvider(Result.failure(AiError.QuotaExhausted()))
+        val viewModel = viewModel(provider)
+
+        viewModel.refine(ExplanationChange.SIMPLER)
+
+        assertTrue(provider.refinements.isEmpty())
     }
 }

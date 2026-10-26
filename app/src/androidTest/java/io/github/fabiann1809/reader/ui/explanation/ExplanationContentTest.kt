@@ -11,8 +11,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ai.AiError
 import io.github.fabiann1809.reader.ai.Explanation
+import io.github.fabiann1809.reader.ai.ExplanationChange
 import io.github.fabiann1809.reader.ai.KeyTerm
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -37,6 +39,7 @@ class ExplanationContentTest {
         saveState: SaveState = SaveState.NOT_SAVED,
         onRetry: () -> Unit = {},
         onSaveAsNote: () -> Unit = {},
+        onRefine: ((ExplanationChange) -> Unit)? = null,
     ) {
         composeRule.setContent {
             ReaderTheme {
@@ -45,6 +48,7 @@ class ExplanationContentTest {
                     onRetry = onRetry,
                     onSaveAsNote = onSaveAsNote,
                     onNavigateUp = {},
+                    onRefine = onRefine,
                 )
             }
         }
@@ -115,5 +119,23 @@ class ExplanationContentTest {
         composeRule.onNodeWithText(string(R.string.ai_error_no_internet)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.explanation_retry)).performClick()
         assertTrue(retried)
+    }
+
+    @Test
+    fun refineButtonsAskForASimplerOrAnotherExample() {
+        val asked = mutableListOf<ExplanationChange>()
+        setContent(ExplanationState.Success(explanation), onRefine = { asked += it })
+
+        composeRule.onNodeWithText(string(R.string.explanation_simpler)).performClick()
+        composeRule.onNodeWithText(string(R.string.explanation_another_example)).performClick()
+
+        assertEquals(listOf(ExplanationChange.SIMPLER, ExplanationChange.ANOTHER_EXAMPLE), asked)
+    }
+
+    @Test
+    fun refineButtonsAreHiddenWhenNotOffered() {
+        setContent(ExplanationState.Success(explanation))
+
+        composeRule.onNodeWithText(string(R.string.explanation_simpler)).assertDoesNotExist()
     }
 }

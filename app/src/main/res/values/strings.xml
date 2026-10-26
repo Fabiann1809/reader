@@ -417,6 +417,8 @@
     <string name="explanation_block_analogy">Analogía cotidiana</string>
     <string name="explanation_block_key_terms">Términos clave</string>
     <string name="explanation_block_caveat">Ten en cuenta</string>
+    <string name="explanation_simpler">Más simple</string>
+    <string name="explanation_another_example">Otro ejemplo</string>
     <string name="explanation_save_note">Guardar nota</string>
     <string name="explanation_saved_note">Guardada en las notas del libro</string>
 

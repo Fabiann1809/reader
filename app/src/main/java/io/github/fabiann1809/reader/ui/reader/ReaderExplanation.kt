@@ -34,6 +34,7 @@ fun ReaderExplanation(
         uiState = uiState,
         onRetry = viewModel::retry,
         onSaveAsNote = viewModel::saveAsNote,
+        onRefine = viewModel::refine,
         onDismiss = onDismiss,
         onCreateFlashcard = { onCreateFlashcard(text) },
         onNowYou = { onNowYou(text) },

@@ -14,6 +14,9 @@ interface AiProvider {
      */
     suspend fun explain(text: String): Result<Explanation>
 
+    /** Explains [text] again, changed as [change] says, knowing the [previous] explanation (T12.1). */
+    suspend fun refine(text: String, previous: Explanation, change: ExplanationChange): Result<Explanation>
+
     /**
      * Writes down what is said in [audio], encoded as [mimeType] (T13.2). An empty text means no
      * words were heard; failures are [AiError]s, like [explain]'s.

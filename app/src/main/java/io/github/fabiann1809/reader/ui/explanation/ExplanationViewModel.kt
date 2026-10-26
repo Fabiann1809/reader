@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fabiann1809.reader.ai.ExplainText
 import io.github.fabiann1809.reader.ai.Explanation
+import io.github.fabiann1809.reader.ai.ExplanationChange
 import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteRepository
 import io.github.fabiann1809.reader.data.note.NoteType
@@ -42,11 +43,21 @@ class ExplanationViewModel(
     private val _uiState = MutableStateFlow(ExplanationUiState(sourceText))
     val uiState: StateFlow<ExplanationUiState> = _uiState.asStateFlow()
 
+    // What "Reintentar" repeats: the first explanation, or the change that was asked for.
+    private var request: suspend () -> Result<Explanation> = { explainText(sourceText) }
+
     init {
         explain()
     }
 
     fun retry() = explain()
+
+    /** "Más simple" or "Otro ejemplo": explains the text again, knowing the explanation on screen. */
+    fun refine(change: ExplanationChange) {
+        val current = (_uiState.value.explanation as? ExplanationState.Success)?.explanation ?: return
+        request = { explainText.refine(sourceText, current, change) }
+        explain()
+    }
 
     /** Saves the explanation as a note of the book, keeping the original fragment next to it. */
     fun saveAsNote() {
@@ -68,9 +79,9 @@ class ExplanationViewModel(
     }
 
     private fun explain() {
-        _uiState.update { it.copy(explanation = ExplanationState.Loading) }
+        _uiState.update { it.copy(explanation = ExplanationState.Loading, saveState = SaveState.NOT_SAVED) }
         viewModelScope.launch {
-            val explanation = explainText(sourceText).fold(
+            val explanation = request().fold(
                 onSuccess = { ExplanationState.Success(it) },
                 onFailure = { ExplanationState.Failed(it) },
             )
