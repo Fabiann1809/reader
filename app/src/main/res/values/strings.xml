@@ -370,6 +370,8 @@
     <string name="ai_error_timeout">La IA tardó demasiado en responder. Vuelve a intentarlo.</string>
     <string name="ai_error_unavailable">El servicio de IA no está disponible en este momento. Inténtalo más tarde.</string>
     <string name="ai_error_blocked">La IA no pudo procesar este texto por sus filtros de seguridad.</string>
+    <string name="ai_error_model_not_found">No se encontró ese modelo o esa dirección. Revísalos en Ajustes.</string>
+    <string name="ai_error_not_configured">Falta la dirección o el modelo del proveedor. Complétalos en Ajustes (la dirección debe empezar con https).</string>
     <string name="ai_error_unknown">Ocurrió un error inesperado con la IA. Vuelve a intentarlo.</string>
 
     <!-- Add book -->

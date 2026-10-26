@@ -27,6 +27,7 @@ import io.github.fabiann1809.reader.data.AppDatabase
 import io.github.fabiann1809.reader.ai.AiProviderKind
 import io.github.fabiann1809.reader.ai.ConfiguredAiProvider
 import io.github.fabiann1809.reader.ai.UnavailableAiProvider
+import io.github.fabiann1809.reader.ai.openai.OpenAiProvider
 import io.github.fabiann1809.reader.data.aiconfig.AiConfigStore
 import io.github.fabiann1809.reader.data.aiconfig.DataStoreAiConfigStore
 import io.github.fabiann1809.reader.data.apikey.ActiveApiKeyStore
@@ -241,6 +242,22 @@ class AppContainer(context: Context) {
                     model = config.model,
                     // The lighter model is only a stand-in for the default one when it is overloaded.
                     fallbackModel = GeminiProvider.DEFAULT_FALLBACK_MODEL.takeIf { config.model == GeminiProvider.DEFAULT_MODEL },
+                )
+                AiProviderKind.OPENAI -> OpenAiProvider(
+                    apiKeyStore = apiKeyStore,
+                    httpClient = httpClient,
+                    baseUrl = OpenAiProvider.OPENAI_BASE_URL,
+                    model = config.model,
+                    strictSchema = true,
+                    sendTemperature = false,
+                )
+                AiProviderKind.COMPATIBLE -> OpenAiProvider(
+                    apiKeyStore = apiKeyStore,
+                    httpClient = httpClient,
+                    baseUrl = config.compatibleUrl.trim(),
+                    model = config.model,
+                    strictSchema = false,
+                    sendTemperature = true,
                 )
                 else -> UnavailableAiProvider(config.provider.name)
             }

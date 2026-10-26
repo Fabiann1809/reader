@@ -14,6 +14,13 @@ internal object AiResponses {
         explicitNulls = false
     }
 
+    /** The JSON object in [text]: some models wrap it in a Markdown code block or add words around it. */
+    fun unwrapJson(text: String): String {
+        val start = text.indexOf('{')
+        val end = text.lastIndexOf('}')
+        return if (start in 0 until end) text.substring(start, end + 1) else text
+    }
+
     fun explanation(text: String): Explanation = json.decodeFromString<Explanation>(text).let {
         // Models sometimes return "" instead of null for an empty caveat.
         it.copy(

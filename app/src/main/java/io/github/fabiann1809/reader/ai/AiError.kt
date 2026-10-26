@@ -27,5 +27,11 @@ sealed class AiError(message: String, cause: Throwable? = null) : Exception(mess
     /** The provider refused to process the text (e.g. safety filters). */
     class ContentBlocked(reason: String) : AiError("Content blocked: $reason")
 
+    /** The model (or the address of a compatible service) does not exist or the key can't use it. */
+    class ModelNotFound : AiError("Model or address not found")
+
+    /** The service address or the model is missing or not usable (the address must be https). */
+    class NotConfigured : AiError("The provider's address or model is not set")
+
     class Unknown(message: String, cause: Throwable? = null) : AiError(message, cause)
 }

@@ -25,6 +25,7 @@ internal object GeminiErrorParser {
         return when {
             httpCode == 401 || httpCode == 403 -> AiError.InvalidApiKey()
             "API_KEY_INVALID" in details.reasons -> AiError.InvalidApiKey()
+            httpCode == 404 -> AiError.ModelNotFound()
             httpCode == 429 && details.quotaIds.any { "PerDay" in it } -> AiError.QuotaExhausted()
             httpCode == 429 -> AiError.RateLimited()
             httpCode >= 500 -> AiError.ServiceUnavailable(httpCode)

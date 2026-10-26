@@ -15,5 +15,7 @@ fun aiErrorMessageRes(error: Throwable): Int = when (error) {
     is AiError.Timeout -> R.string.ai_error_timeout
     is AiError.ServiceUnavailable -> R.string.ai_error_unavailable
     is AiError.ContentBlocked -> R.string.ai_error_blocked
+    is AiError.ModelNotFound -> R.string.ai_error_model_not_found
+    is AiError.NotConfigured -> R.string.ai_error_not_configured
     else -> R.string.ai_error_unknown
 }

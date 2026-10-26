@@ -157,6 +157,13 @@ class GeminiProviderTest {
     }
 
     @Test
+    fun anUnknownModelMapsToModelNotFound() = runTest {
+        enqueue(404, """{"error":{"code":404,"message":"models/nope is not found","status":"NOT_FOUND"}}""")
+
+        assertFailsWith<AiError.ModelNotFound>()
+    }
+
+    @Test
     fun permissionDeniedMapsToInvalidApiKey() = runTest {
         enqueue(403, """{"error":{"code":403,"status":"PERMISSION_DENIED"}}""")
 
