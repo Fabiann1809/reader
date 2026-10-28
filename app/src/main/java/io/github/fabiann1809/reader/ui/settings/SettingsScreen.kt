@@ -54,8 +54,7 @@ fun SettingsScreen(
         uiState = uiState,
         onKeyInputChange = viewModel::onKeyInputChange,
         onProvider = viewModel::selectProvider,
-        onModel = viewModel::setModel,
-        onCompatibleUrl = viewModel::setCompatibleUrl,
+        onSaveProvider = viewModel::saveProviderSettings,
         onSaveKey = viewModel::saveKey,
         onClearKey = viewModel::clearKey,
         onTestKey = viewModel::testKey,
@@ -92,8 +91,7 @@ fun SettingsContent(
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
     onProvider: (AiProviderKind) -> Unit = {},
-    onModel: (String) -> Unit = {},
-    onCompatibleUrl: (String) -> Unit = {},
+    onSaveProvider: (model: String, url: String) -> Unit = { _, _ -> },
     generalSettings: @Composable () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -104,6 +102,7 @@ fun SettingsContent(
         val text = when (message) {
             SettingsMessage.KEY_SAVED -> R.string.settings_key_saved
             SettingsMessage.KEY_CLEARED -> R.string.settings_key_cleared
+            SettingsMessage.PROVIDER_SAVED -> R.string.settings_provider_saved
         }
         snackbarHostState.showSnackbar(resources.getString(text))
         onMessageShown()
@@ -125,7 +124,7 @@ fun SettingsContent(
                 .padding(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(22.dp),
         ) {
-            ProviderSection(uiState.config, onProvider, onModel, onCompatibleUrl)
+            ProviderSection(uiState.config, onProvider, onSaveProvider)
             ApiKeySection(uiState, onKeyInputChange, onSaveKey, onClearKey, onTestKey)
             generalSettings()
             PrivacyCard(onClick = onOpenPrivacy)

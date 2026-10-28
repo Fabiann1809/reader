@@ -27,16 +27,19 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ai.AiConfig
 import io.github.fabiann1809.reader.ai.AiProviderKind
 import io.github.fabiann1809.reader.ui.components.ReaderFilterChip
+import io.github.fabiann1809.reader.ui.components.TonalButton
 import io.github.fabiann1809.reader.ui.components.readerTextFieldColors
 import io.github.fabiann1809.reader.ui.components.readerTextFieldShape
 
-/** "Proveedor de IA" (T20.5): which service answers, with which model, and where a compatible one lives. */
+/**
+ * "Proveedor de IA" (T20.5): which service answers, with which model, and where a compatible one lives.
+ * Picking a provider applies at once; the model and the address are a draft until "Guardar cambios".
+ */
 @Composable
 fun ProviderSection(
     config: AiConfig,
     onProvider: (AiProviderKind) -> Unit,
-    onModel: (String) -> Unit,
-    onCompatibleUrl: (String) -> Unit,
+    onSave: (model: String, url: String) -> Unit,
 ) {
     SettingsSection(R.string.settings_provider_section) {
         Text(
@@ -53,30 +56,44 @@ fun ProviderSection(
                 )
             }
         }
-        // Each provider starts its fields over from what is saved for it.
+        // Each provider starts its draft over from what is saved for it.
         key(config.provider) {
-            if (config.provider == AiProviderKind.COMPATIBLE) CompatibleUrlField(config.compatibleUrl, onCompatibleUrl)
-            ModelPicker(config, onModel)
+            var model by rememberSaveable { mutableStateOf(config.model) }
+            var url by rememberSaveable { mutableStateOf(config.compatibleUrl) }
+            val isCompatible = config.provider == AiProviderKind.COMPATIBLE
+            // The key travels in every request, so an address without https is not accepted.
+            val notSecure = isCompatible && url.isNotBlank() && !url.trim().startsWith("https://")
+            // An empty model means the provider's default one.
+            val changed = model.trim().ifEmpty { config.provider.defaultModel } != config.model ||
+                (isCompatible && url.trim() != config.compatibleUrl)
+            if (isCompatible) CompatibleUrlField(url, notSecure) { url = it }
+            ModelPicker(config.provider, model) { model = it }
+            SaveButton(changed = changed, enabled = changed && !notSecure) { onSave(model, url) }
         }
     }
 }
 
+@Composable
+private fun SaveButton(changed: Boolean, enabled: Boolean, onClick: () -> Unit) {
+    TonalButton(
+        text = stringResource(if (changed) R.string.settings_provider_save else R.string.settings_provider_saved_state),
+        onClick = onClick,
+        enabled = enabled,
+        icon = if (changed) null else R.drawable.ic_check,
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ModelPicker(config: AiConfig, onModel: (String) -> Unit) {
-    // Typed here and saved on every change, so the field never waits for the store.
-    var model by rememberSaveable { mutableStateOf(config.model) }
-    val change = { text: String ->
-        model = text
-        onModel(text)
-    }
-    val suggestions = config.provider.suggestedModels
+private fun ModelPicker(provider: AiProviderKind, model: String, onChange: (String) -> Unit) {
+    val suggestions = provider.suggestedModels
     var expanded by rememberSaveable { mutableStateOf(false) }
     // A list to pick from; the field stays editable for any other model name.
     ExposedDropdownMenuBox(expanded = expanded && suggestions.isNotEmpty(), onExpandedChange = { expanded = it }) {
         OutlinedTextField(
             value = model,
-            onValueChange = change,
+            onValueChange = onChange,
             shape = readerTextFieldShape,
             colors = readerTextFieldColors(),
             label = { Text(stringResource(R.string.settings_model_field)) },
@@ -95,7 +112,7 @@ private fun ModelPicker(config: AiConfig, onModel: (String) -> Unit) {
                 DropdownMenuItem(
                     text = { Text(suggested) },
                     onClick = {
-                        change(suggested)
+                        onChange(suggested)
                         expanded = false
                     },
                 )
@@ -105,16 +122,10 @@ private fun ModelPicker(config: AiConfig, onModel: (String) -> Unit) {
 }
 
 @Composable
-private fun CompatibleUrlField(saved: String, onChange: (String) -> Unit) {
-    var url by rememberSaveable { mutableStateOf(saved) }
-    // The key travels in every request, so an address without https is not accepted.
-    val notSecure = url.isNotBlank() && !url.trim().startsWith("https://")
+private fun CompatibleUrlField(url: String, notSecure: Boolean, onChange: (String) -> Unit) {
     OutlinedTextField(
         value = url,
-        onValueChange = {
-            url = it
-            onChange(it)
-        },
+        onValueChange = onChange,
         shape = readerTextFieldShape,
         colors = readerTextFieldColors(),
         label = { Text(stringResource(R.string.settings_url_field)) },

@@ -128,15 +128,16 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun theModelIsSavedForTheProviderInUseOnly() = runTest {
+    fun theModelIsSavedForTheProviderInUseOnlyAndSaysSo() = runTest {
         collectUiState()
         viewModel.selectProvider(AiProviderKind.ANTHROPIC)
 
-        viewModel.setModel("  claude-sonnet-5-5 ")
+        viewModel.saveProviderSettings("  claude-sonnet-5-5 ", "")
 
-        val config = viewModel.uiState.value.config
-        assertEquals("claude-sonnet-5-5", config.model)
-        assertEquals("gemini-flash-latest", config.modelOf(AiProviderKind.GEMINI))
+        val state = viewModel.uiState.value
+        assertEquals("claude-sonnet-5-5", state.config.model)
+        assertEquals("gemini-flash-latest", state.config.modelOf(AiProviderKind.GEMINI))
+        assertEquals(SettingsMessage.PROVIDER_SAVED, state.message)
     }
 
     @Test
@@ -144,9 +145,19 @@ class SettingsViewModelTest {
         collectUiState()
         viewModel.selectProvider(AiProviderKind.COMPATIBLE)
 
-        viewModel.setCompatibleUrl(" https://api.groq.com/openai/v1 ")
+        viewModel.saveProviderSettings("llama-3.3-70b", " https://api.groq.com/openai/v1 ")
 
         assertEquals("https://api.groq.com/openai/v1", viewModel.uiState.value.config.compatibleUrl)
+        assertEquals("llama-3.3-70b", viewModel.uiState.value.config.model)
+    }
+
+    @Test
+    fun otherProvidersDoNotKeepTheAddress() = runTest {
+        collectUiState()
+
+        viewModel.saveProviderSettings("gemini-pro-latest", "https://otra.com/v1")
+
+        assertEquals("", viewModel.uiState.value.config.compatibleUrl)
     }
 
     @Test

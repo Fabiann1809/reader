@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** One-off feedback shown to the user (e.g. in a snackbar). */
-enum class SettingsMessage { KEY_SAVED, KEY_CLEARED }
+enum class SettingsMessage { KEY_SAVED, KEY_CLEARED, PROVIDER_SAVED }
 
 /** Result of the "test key" button. */
 sealed interface KeyTestState {
@@ -67,16 +67,17 @@ class SettingsViewModel(
         viewModelScope.launch { aiConfigStore.update { it.copy(provider = provider) } }
     }
 
-    fun setModel(model: String) {
+    /** "Guardar cambios": the model of the provider in use and, for a compatible one, its address. */
+    fun saveProviderSettings(model: String, url: String) {
         viewModelScope.launch {
-            aiConfigStore.update { config -> config.copy(models = config.models + (config.provider to model.trim())) }
+            aiConfigStore.update { config ->
+                config.copy(
+                    models = config.models + (config.provider to model.trim()),
+                    compatibleUrl = if (config.provider == AiProviderKind.COMPATIBLE) url.trim() else config.compatibleUrl,
+                )
+            }
+            formState.update { it.copy(message = SettingsMessage.PROVIDER_SAVED, keyTest = KeyTestState.Idle) }
         }
-        formState.update { it.copy(keyTest = KeyTestState.Idle) }
-    }
-
-    fun setCompatibleUrl(url: String) {
-        viewModelScope.launch { aiConfigStore.update { it.copy(compatibleUrl = url.trim()) } }
-        formState.update { it.copy(keyTest = KeyTestState.Idle) }
     }
 
     fun onKeyInputChange(input: String) = formState.update { it.copy(keyInput = input) }
