@@ -24,6 +24,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.net.SocketTimeoutException
+import java.util.concurrent.TimeUnit
 import java.util.Base64
 
 /**
@@ -131,19 +132,30 @@ class GeminiProvider(
         return generate(request) { answer -> AiResponses.quiz(answer.requireText()) }
     }
 
-    /** Sends [request], falling back to [fallbackModel] when [model] is overloaded, and [parse]s the answer. */
+    /**
+     * Sends [request], falling back to [fallbackModel] when [model] is overloaded or does not answer
+     * in time (a busy model sometimes hangs instead of saying so), and [parse]s the answer.
+     */
     private suspend fun <T> generate(request: GenerateContentRequest, parse: (String) -> T): Result<T> {
         val apiKey = apiKeyStore.getApiKey() ?: return Result.failure(AiError.MissingApiKey())
         return withContext(Dispatchers.IO) {
-            val result = call(model, apiKey, request, parse)
-            val unavailable = result.exceptionOrNull() is AiError.ServiceUnavailable
-            if (unavailable && fallbackModel != null) call(fallbackModel, apiKey, request, parse) else result
+            // With a stand-in to try next, the main model gets less time to answer, so the wait stays bearable.
+            val result = call(model, apiKey, request, parse, readTimeoutMillis = fallbackModel?.let { PRIMARY_READ_TIMEOUT_MILLIS })
+            val failure = result.exceptionOrNull()
+            val tryFallback = failure is AiError.ServiceUnavailable || failure is AiError.Timeout
+            if (tryFallback && fallbackModel != null) call(fallbackModel, apiKey, request, parse) else result
         }
     }
 
-    private fun <T> call(model: String, apiKey: String, request: GenerateContentRequest, parse: (String) -> T): Result<T> =
+    private fun <T> call(
+        model: String,
+        apiKey: String,
+        request: GenerateContentRequest,
+        parse: (String) -> T,
+        readTimeoutMillis: Int? = null,
+    ): Result<T> =
         try {
-            Result.success(parse(send(model, apiKey, request)))
+            Result.success(parse(send(model, apiKey, request, readTimeoutMillis)))
         } catch (e: AiError) {
             Result.failure(e)
         } catch (e: SocketTimeoutException) {
@@ -157,14 +169,18 @@ class GeminiProvider(
         }
 
     /** The model's answer as text; empty only when the model ended normally without saying anything. */
-    private fun send(model: String, apiKey: String, body: GenerateContentRequest): String {
+    private fun send(model: String, apiKey: String, body: GenerateContentRequest, readTimeoutMillis: Int?): String {
         val httpRequest = Request.Builder()
             .url("$baseUrl/v1beta/models/$model:generateContent")
             .header("x-goog-api-key", apiKey)
             .post(json.encodeToString(body).toRequestBody(JSON_MEDIA_TYPE))
             .build()
 
-        httpClient.newCall(httpRequest).execute().use { response ->
+        // Never longer than the client's own limit, only shorter.
+        val client = readTimeoutMillis?.takeIf { it < httpClient.readTimeoutMillis }
+            ?.let { httpClient.newBuilder().readTimeout(it.toLong(), TimeUnit.MILLISECONDS).build() }
+            ?: httpClient
+        client.newCall(httpRequest).execute().use { response ->
             val responseBody = response.body.string()
             if (!response.isSuccessful) throw GeminiErrorParser.parse(response.code, responseBody)
             return extractText(json.decodeFromString<GenerateContentResponse>(responseBody))
@@ -197,6 +213,9 @@ class GeminiProvider(
         const val DEFAULT_FALLBACK_MODEL = "gemini-flash-lite-latest"
 
         private const val TEMPERATURE = 0.4
+
+        // How long the main model has to answer when a lighter one can take over.
+        private const val PRIMARY_READ_TIMEOUT_MILLIS = 40_000
         private const val TRANSCRIPTION_TEMPERATURE = 0.0
         private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
     }

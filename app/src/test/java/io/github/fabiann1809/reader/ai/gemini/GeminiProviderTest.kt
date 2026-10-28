@@ -234,16 +234,48 @@ class GeminiProviderTest {
         assertFailsWith<AiError.NoInternet>()
     }
 
+    private fun enqueueSlowAnswer() = server.enqueue(
+        MockResponse.Builder()
+            .body("""{"candidates":[{"content":{"parts":[{"text":"late"}]}}]}""")
+            .headersDelay(3, TimeUnit.SECONDS)
+            .build(),
+    )
+
     @Test
     fun slowResponseMapsToTimeout() = runTest {
-        server.enqueue(
-            MockResponse.Builder()
-                .body("""{"candidates":[{"content":{"parts":[{"text":"late"}]}}]}""")
-                .headersDelay(3, TimeUnit.SECONDS)
-                .build(),
-        )
+        // Neither the main nor the fallback model answers in time.
+        enqueueSlowAnswer()
+        enqueueSlowAnswer()
 
         assertFailsWith<AiError.Timeout>()
+    }
+
+    @Test
+    fun aMainModelThatDoesNotAnswerFallsBackToTheFallbackModel() = runTest {
+        enqueueSlowAnswer()
+        enqueueAnswer(EXPLANATION_JSON)
+
+        val result = provider.explain("text")
+
+        assertEquals("La luz es energía.", result.getOrNull()?.mainIdea)
+        assertEquals("/v1beta/models/test-model:generateContent", server.takeRequest().url.encodedPath)
+        assertEquals("/v1beta/models/fallback-model:generateContent", server.takeRequest().url.encodedPath)
+    }
+
+    @Test
+    fun withoutAFallbackModelATimeoutIsNotRetried() = runTest {
+        val alone = GeminiProvider(
+            apiKeyStore = keyStore,
+            systemInstruction = "Explain simply.",
+            httpClient = OkHttpClient.Builder().readTimeout(1, TimeUnit.SECONDS).build(),
+            baseUrl = server.url("/").toString().trimEnd('/'),
+            model = "test-model",
+            fallbackModel = null,
+        )
+        enqueueSlowAnswer()
+
+        assertTrue(alone.explain("text").exceptionOrNull() is AiError.Timeout)
+        assertEquals(1, server.requestCount)
     }
 
     @Test
