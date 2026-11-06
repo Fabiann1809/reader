@@ -28,7 +28,7 @@ Flujo central del MVP:
 |---|---|
 | Plataforma | Solo Android |
 | Lenguaje / framework | **Kotlin nativo** con Android Studio y **Jetpack Compose** (se descartaron Expo/React Native y Flutter) |
-| Almacenamiento | **Local en el dispositivo** (Room/SQLite y almacenamiento interno). Sin cuentas ni sincronización |
+| Almacenamiento | **Local en el dispositivo** (Room/SQLite y almacenamiento interno). Sin sincronización. Desde la Fase 22 hay inicio de sesión (Firebase Auth) solo para el acceso; los datos siguen locales |
 | Libros | El usuario **importa sus propios archivos** (EPUB/PDF). La app no descarga ni distribuye libros. (Importación queda fuera del MVP inicial) |
 | Conexión | No será offline: la IA requiere internet |
 | IA en el MVP | **El usuario pone su propia clave de API (BYOK).** Sin backend |
@@ -378,6 +378,14 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T21.1 Indicador de carga en los botones.** Mientras la IA o el lector trabajan, el botón muestra un círculo que gira y no acepta otro toque. Se usa en "Proponer con IA" (fichas), "Analizar" (Ahora tú), "Probar clave" y "Ponme a prueba" del menú del lector (que lee el capítulo antes). *Hecho cuando:* cada uno muestra la espera. Petición del usuario (2026-10-26).
 - [x] **T21.2 Biblioteca más limpia.** Se quita el "3 libros" bajo el título (la ficha "Todos (3)" ya lo dice) y los adornos del estante (sujetalibros, jarrón y pila de libros): los estantes quedan solo con libros. *Hecho cuando:* no aparecen. Petición del usuario (2026-10-26); cambia el prototipo de T19.
 - [x] **T21.3 Portadas con volumen y variedad.** Todas las portadas (generadas o reales) llevan acabado de libro: brillo, bisagra junto al lomo, luz en el borde superior, canto de las hojas y sombra abajo. Las generadas tienen 6 dibujos (franja, círculos, diagonales, sol, puntos, panel) y 3 disposiciones del texto, fijos por título; en miniaturas solo la franja. *Hecho cuando:* los libros ya no se ven todos iguales. Petición del usuario (2026-10-26).
+
+### Fase 22 — Inicio de sesión (requisito de entrega)
+> Decisión del usuario (2026-11-05): la entrega exige iniciar sesión en la app. Se usa **Firebase Auth** con correo/contraseña y Google, y el acceso es **obligatorio al abrir**. Solo controla el acceso: los datos siguen locales (la sincronización sigue siendo la Fase 18). Cambia la decisión "sin cuentas". La clave de API nunca sale del dispositivo. `google-services.json` queda fuera de git. Toda llamada a Firebase pasa por `AuthRepository`.
+- [ ] **T22.1 Firebase y dependencias.** Plugin de Google Services, Firebase BoM y Firebase Auth en `libs.versions.toml`; `google-services.json` ignorado por git. *Hecho cuando:* `assembleDebug` compila con el archivo de Firebase puesto y la app sigue abriendo igual.
+- [ ] **T22.2 `AuthRepository`.** Interfaz con registro, entrada, entrada con Google, recuperar contraseña, cierre de sesión y usuario actual, con errores traducidos; implementación con Firebase y fake para pruebas. *Hecho cuando:* las pruebas unitarias del ViewModel de acceso pasan con el fake.
+- [ ] **T22.3 Pantalla de acceso.** Correo y contraseña, crear cuenta, recuperar contraseña y botón de Google (Credential Manager); estados de carga y error; textos en `strings.xml`. *Hecho cuando:* se puede crear una cuenta y entrar con correo y con Google.
+- [ ] **T22.4 Puerta de navegación.** Sin sesión se muestra el acceso; con sesión, la biblioteca; la sesión se recuerda al reabrir. *Hecho cuando:* al abrir sin sesión no se ve la biblioteca.
+- [ ] **T22.5 Perfil y cerrar sesión.** Correo del usuario y botón de cerrar sesión en Ajustes; privacidad al día. *Hecho cuando:* cerrar sesión vuelve a la pantalla de acceso.
 
 ## 10. Riesgos técnicos (en orden)
 
