@@ -422,7 +422,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - **Autoría:** todos los commits van solo a nombre de `Fabiann1809 <leiderfabian538@gmail.com>`. Sin `Co-Authored-By` ni firmas de herramientas de IA.
 - **Commits:** uno por tarea o fix, con [Conventional Commits](https://www.conventionalcommits.org/) en inglés: `type(scope): imperative summary`.
   - Tipos: `feat`, `fix`, `refactor`, `test`, `docs`, `build`, `chore`, `style`.
-  - Scopes: `data`, `library`, `notes`, `ai`, `ocr`, `camera`, `ui`, `build`, `reader`, `voice`, `review`, `quiz`, `progress`, `backup`, `sync`.
+  - Scopes: `data`, `library`, `notes`, `ai`, `ocr`, `camera`, `ui`, `build`, `reader`, `voice`, `review`, `quiz`, `progress`, `backup`, `sync`, `auth`.
   - Resumen de 72 caracteres como máximo, en imperativo y sin punto final.
   - La casilla `[x]` de la tarea se marca en este documento en el mismo commit.
 - **Idioma:** código, identificadores, comentarios, commits y documentación técnica en **inglés**. El texto que ve el usuario va en **español**, siempre en `res/values/strings.xml` (nunca escrito directamente en Compose).

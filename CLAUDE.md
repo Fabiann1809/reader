@@ -16,7 +16,7 @@ Product spec and task list: `docs/PROJECT_SPEC.md` (written in Spanish). Always 
 4. One commit per task or fix. Tick the task checkbox (`[x]`) in `docs/PROJECT_SPEC.md` in the same commit, then push to `main`.
 5. Format: [Conventional Commits](https://www.conventionalcommits.org/) in English: `type(scope): imperative summary` (no task id).
    - Types: `feat`, `fix`, `refactor`, `test`, `docs`, `build`, `chore`, `style`.
-   - Scopes: `data`, `library`, `notes`, `ai`, `ocr`, `camera`, `ui`, `build`, `reader`, `voice`, `review`, `quiz`, `progress`, `backup`, `sync`.
+   - Scopes: `data`, `library`, `notes`, `ai`, `ocr`, `camera`, `ui`, `build`, `reader`, `voice`, `review`, `quiz`, `progress`, `backup`, `sync`, `auth`.
    - Summary ≤ 72 chars, imperative mood, no trailing period. Example: `feat(library): add book list screen`.
 6. The only author is `Fabiann1809 <leiderfabian538@gmail.com>`. **Never** add `Co-Authored-By` trailers or any AI/tool attribution to commits or PRs.
 
