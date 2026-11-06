@@ -18,6 +18,9 @@ captures/
 *.keystore
 keystore.properties
 
+# Firebase configuration (never commit)
+google-services.json
+
 # OS
 .DS_Store
 Thumbs.db

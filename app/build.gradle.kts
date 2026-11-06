@@ -9,6 +9,12 @@ plugins {
     alias(libs.plugins.room)
 }
 
+// google-services.json comes from the Firebase console and is never committed.
+// Without it the app still builds, but sign-in cannot work.
+if (file("google-services.json").exists()) {
+    apply(plugin = libs.plugins.google.services.get().pluginId)
+}
+
 // Exported schemas are versioned in git and are needed to write and test migrations.
 room {
     schemaDirectory("$projectDir/schemas")
@@ -105,6 +111,9 @@ dependencies {
     implementation(libs.readium.adapter.pdfium.document)
     implementation(libs.readium.adapter.pdfium.navigator)
     implementation(libs.readium.navigator.media.tts)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
 
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
