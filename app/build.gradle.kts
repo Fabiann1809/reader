@@ -73,6 +73,11 @@ android {
     buildFeatures {
         compose = true
     }
+
+    testOptions {
+        // Firebase's exception classes call android.text.TextUtils when they are built.
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -114,6 +119,7 @@ dependencies {
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)

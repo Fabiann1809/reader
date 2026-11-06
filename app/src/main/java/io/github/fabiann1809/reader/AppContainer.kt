@@ -30,6 +30,9 @@ import io.github.fabiann1809.reader.ai.anthropic.AnthropicProvider
 import io.github.fabiann1809.reader.ai.openai.OpenAiProvider
 import io.github.fabiann1809.reader.data.aiconfig.AiConfigStore
 import io.github.fabiann1809.reader.data.aiconfig.DataStoreAiConfigStore
+import io.github.fabiann1809.reader.data.auth.AuthRepository
+import io.github.fabiann1809.reader.data.auth.FirebaseAuthRepository
+import com.google.firebase.auth.FirebaseAuth
 import io.github.fabiann1809.reader.data.apikey.ActiveApiKeyStore
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
 import io.github.fabiann1809.reader.data.apikey.ProviderKeyStore
@@ -183,6 +186,9 @@ class AppContainer(context: Context) {
 
     // The key of the provider in use: it changes when the user picks another one.
     val apiKeyStore: ApiKeyStore by lazy { ActiveApiKeyStore(providerKeys, aiConfigStore) }
+
+    // Lazy: Firebase only starts when sign-in is first needed.
+    val authRepository: AuthRepository by lazy { FirebaseAuthRepository(FirebaseAuth.getInstance()) }
 
     val appPreferences: AppPreferences by lazy { DataStoreAppPreferences(appContext) }
 
