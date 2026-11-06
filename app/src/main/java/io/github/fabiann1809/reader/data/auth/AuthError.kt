@@ -26,5 +26,8 @@ sealed class AuthError(message: String, cause: Throwable? = null) : Exception(me
     /** The person closed the Google account picker. Not really a failure. */
     class Cancelled : AuthError("Sign-in was cancelled")
 
+    /** The phone has no Google account to pick. */
+    class NoGoogleAccount : AuthError("No Google account on this device")
+
     class Unknown(cause: Throwable? = null) : AuthError("Unexpected sign-in error", cause)
 }

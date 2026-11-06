@@ -20,6 +20,8 @@ work = "2.12.0"
 documentfile = "1.1.0"
 fragment = "1.9.1"
 firebaseBom = "35.1.0"
+credentials = "1.6.0"
+googleId = "1.2.1"
 googleServices = "4.5.0"
 junit = "4.13.2"
 androidxJunit = "1.3.0"
@@ -80,6 +82,10 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 # Sign-in (Firebase Auth); the BoM keeps all Firebase versions aligned
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
+
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+androidx-credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
+google-id = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleId" }
 
 # Coroutines
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }

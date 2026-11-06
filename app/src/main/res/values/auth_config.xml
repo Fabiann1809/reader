@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Public ID of the Firebase project's web OAuth client; it is not a secret. -->
+    <string name="google_web_client_id" translatable="false">694422137960-a5bago63vk7b680k8u3djdmq4dokeg8g.apps.googleusercontent.com</string>
+</resources>

@@ -767,4 +767,48 @@
     <string name="collection_empty_message">Agrega libros a esta colección desde su detalle.</string>
     <string name="collection_smart_empty_message">Cuando algún libro encaje aquí, aparecerá en este estante.</string>
     <string name="collection_show_all">Ver todos los libros</string>
+
+    <!-- Inicio de sesión (T22.3) -->
+    <string name="auth_title_sign_in">Bienvenido de nuevo</string>
+    <string name="auth_title_sign_up">Crea tu cuenta</string>
+    <string name="auth_subtitle">Tu biblioteca y tus notas se siguen guardando solo en este dispositivo.</string>
+    <string name="auth_email">Correo electrónico</string>
+    <string name="auth_password">Contraseña</string>
+    <string name="auth_sign_in">Entrar</string>
+    <string name="auth_sign_up">Crear cuenta</string>
+    <string name="auth_google">Continuar con Google</string>
+    <string name="auth_confirm_password">Repite la contraseña</string>
+    <string name="auth_show_password">Mostrar contraseña</string>
+    <string name="auth_hide_password">Ocultar contraseña</string>
+    <string name="auth_requirements_title">Tu contraseña debe tener:</string>
+    <string name="auth_rule_min_length">Al menos 8 caracteres</string>
+    <string name="auth_rule_uppercase">Una mayúscula</string>
+    <string name="auth_rule_lowercase">Una minúscula</string>
+    <string name="auth_rule_digit">Un número</string>
+    <string name="auth_rule_symbol">Un símbolo (por ejemplo @ # $ ! %)</string>
+    <string name="auth_or">o</string>
+    <string name="auth_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="auth_switch_to_sign_up">¿No tienes cuenta? Créala</string>
+    <string name="auth_switch_to_sign_in">¿Ya tienes cuenta? Entra</string>
+    <string name="auth_reset_sent">Te enviamos un correo para restablecer tu contraseña.</string>
+    <string name="auth_error_email_required">Ingresa tu correo electrónico.</string>
+    <string name="auth_error_email_invalid">Ingresa un correo electrónico válido.</string>
+    <string name="auth_error_email_in_use">Ya existe una cuenta con este correo.</string>
+    <string name="auth_error_password_required">Ingresa tu contraseña.</string>
+    <string name="auth_error_password_weak">La contraseña no cumple con los requisitos.</string>
+    <string name="auth_error_confirm_required">Confirma tu contraseña.</string>
+    <string name="auth_error_confirm_mismatch">Las contraseñas no coinciden.</string>
+    <string name="auth_error_wrong_credentials">Correo o contraseña incorrectos.</string>
+    <string name="auth_error_disabled">Esta cuenta ha sido deshabilitada.</string>
+    <string name="auth_error_too_many">Demasiados intentos. Inténtalo de nuevo más tarde.</string>
+    <string name="auth_error_no_internet">Sin conexión. Verifica tu internet e inténtalo de nuevo.</string>
+    <string name="auth_error_no_google_account">No hay cuentas de Google en este dispositivo.</string>
+    <string name="auth_error_unknown">Ocurrió un error. Inténtalo de nuevo.</string>
+
+    <!-- Cuenta (T22.5) -->
+    <string name="settings_account">Cuenta</string>
+    <string name="settings_account_signed_in">Sesión iniciada como %1$s</string>
+    <string name="settings_account_sign_out">Cerrar sesión</string>
+    <string name="privacy_account_title">Tu cuenta</string>
+    <string name="privacy_account_body">Para iniciar sesión se usa Firebase, un servicio de Google. Guarda tu correo y un identificador, solo para saber que eres tú. Tus libros, notas y fichas no se suben: siguen en tu teléfono.</string>
 </resources>

@@ -23,6 +23,7 @@ import androidx.navigation.toRoute
 import io.github.fabiann1809.reader.ui.AppStartViewModel
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.addbook.AddBookScreen
+import io.github.fabiann1809.reader.ui.auth.AuthScreen
 import io.github.fabiann1809.reader.ui.bookdetail.BookDetailScreen
 import io.github.fabiann1809.reader.ui.capture.CaptureScreen
 import io.github.fabiann1809.reader.ui.explanation.ExplanationScreen
@@ -50,7 +51,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
 /**
- * App root: waits for the first-screen decision (onboarding or library), then shows the navigation.
+ * App root: shows the sign-in until someone is signed in; then waits for the first-screen decision
+ * (onboarding or library) and shows the navigation.
  * [showLibraryRequests] emits when books arrive from another app, to show the import progress.
  */
 @Composable
@@ -59,8 +61,14 @@ fun ReaderApp(
     viewModel: AppStartViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val startDestination by viewModel.startDestination.collectAsStateWithLifecycle()
+    val signedIn by viewModel.isSignedIn.collectAsStateWithLifecycle()
     // Reading the flag takes a few milliseconds; the window background shows meanwhile.
-    startDestination?.let { ReaderNavHost(startDestination = it, showLibraryRequests = showLibraryRequests) }
+    // Signing out leaves the navigation, so the next person starts from a clean back stack.
+    if (!signedIn) {
+        AuthScreen()
+    } else {
+        startDestination?.let { ReaderNavHost(startDestination = it, showLibraryRequests = showLibraryRequests) }
+    }
 }
 
 @Composable

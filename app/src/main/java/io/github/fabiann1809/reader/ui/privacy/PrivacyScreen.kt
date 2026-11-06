@@ -66,6 +66,9 @@ fun PrivacyScreen(onNavigateUp: () -> Unit, modifier: Modifier = Modifier) {
             Section(R.string.privacy_local_title) {
                 Paragraph(stringResource(R.string.privacy_local_body))
             }
+            Section(R.string.privacy_account_title) {
+                Paragraph(stringResource(R.string.privacy_account_body))
+            }
             Section(R.string.privacy_key_title) {
                 Paragraph(stringResource(R.string.privacy_key_body))
             }

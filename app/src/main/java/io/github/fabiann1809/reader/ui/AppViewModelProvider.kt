@@ -10,6 +10,7 @@ import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ReaderApplication
 import io.github.fabiann1809.reader.data.note.NoteTag
 import io.github.fabiann1809.reader.ui.addbook.AddBookViewModel
+import io.github.fabiann1809.reader.ui.auth.AuthViewModel
 import io.github.fabiann1809.reader.ui.bookdetail.BookDetailViewModel
 import io.github.fabiann1809.reader.ui.capture.PhotoCropViewModel
 import io.github.fabiann1809.reader.ui.explanation.ExplanationLabels
@@ -42,6 +43,7 @@ import io.github.fabiann1809.reader.ui.reader.ReaderViewModel
 import io.github.fabiann1809.reader.ui.review.PendingReviewsViewModel
 import io.github.fabiann1809.reader.ui.review.ReviewViewModel
 import io.github.fabiann1809.reader.ui.reviewsession.ReviewSessionViewModel
+import io.github.fabiann1809.reader.ui.settings.AccountViewModel
 import io.github.fabiann1809.reader.ui.settings.GeneralSettingsViewModel
 import io.github.fabiann1809.reader.ui.settings.SettingsViewModel
 import io.github.fabiann1809.reader.ui.voice.VoiceNotePlayerViewModel
@@ -53,6 +55,9 @@ import io.github.fabiann1809.reader.ui.voice.VoiceRecordingViewModel
  */
 object AppViewModelProvider {
     val Factory = viewModelFactory {
+        initializer {
+            AuthViewModel(readerApplication().container.authRepository)
+        }
         initializer {
             LibraryViewModel(
                 bookRepository = readerApplication().container.bookRepository,
@@ -212,7 +217,7 @@ object AppViewModelProvider {
             )
         }
         initializer {
-            AppStartViewModel(readerApplication().container.appPreferences)
+            AppStartViewModel(readerApplication().container.appPreferences, readerApplication().container.authRepository)
         }
         initializer {
             OnboardingViewModel(readerApplication().container.appPreferences)
@@ -227,6 +232,9 @@ object AppViewModelProvider {
                 readingPreferences = readerApplication().container.readingPreferences,
                 reminderScheduler = readerApplication().container.reviewReminderScheduler,
             )
+        }
+        initializer {
+            AccountViewModel(readerApplication().container.authRepository)
         }
         initializer {
             SettingsViewModel(
