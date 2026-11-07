@@ -37,6 +37,12 @@ val LightShelfFront = Color(0xFF2A1F19)
 val LightNavBar = Color(0xFFFFFAF3)
 val LightNavActive = Color(0xFFEFE3D2)
 
+// Sign-in screens (Reader Acceso): field fill and border, the soft waves and the leaves of the welcome.
+val LightAuthField = Color(0xFFF3E5D2)
+val LightAuthFieldBorder = Color(0xFFE8D3B8)
+val LightAuthWave = Color(0xFFF5E3CB)
+val LightAuthLeaf = Color(0xFFC5CCD6)
+
 // Dark mode
 val DarkBg = Color(0xFF15110E)
 val DarkSurface = Color(0xFF221C18)
@@ -68,6 +74,10 @@ val DarkShelfTop = Color(0xFF4A382D)
 val DarkShelfFront = Color(0xFF0E0A08)
 val DarkNavBar = Color(0xFF261F1B)
 val DarkNavActive = Color(0xFF3D3027)
+val DarkAuthField = DarkChip
+val DarkAuthFieldBorder = DarkLine
+val DarkAuthWave = Color(0xFF1C1612)
+val DarkAuthLeaf = Color(0xFF4A525C)
 
 // Colors of a generated cover: the cover itself, the ink of its texts and the band across the top.
 class CoverStyle(val cover: Color, val ink: Color, val band: Color)

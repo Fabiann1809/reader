@@ -13,7 +13,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,6 +23,10 @@ import io.github.fabiann1809.reader.ui.AppStartViewModel
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.addbook.AddBookScreen
 import io.github.fabiann1809.reader.ui.auth.AuthScreen
+import io.github.fabiann1809.reader.ui.auth.WelcomeScreen
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import io.github.fabiann1809.reader.ui.bookdetail.BookDetailScreen
 import io.github.fabiann1809.reader.ui.capture.CaptureScreen
 import io.github.fabiann1809.reader.ui.explanation.ExplanationScreen
@@ -51,8 +54,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
 /**
- * App root: shows the sign-in until someone is signed in; then waits for the first-screen decision
- * (onboarding or library) and shows the navigation.
+ * App root. Without a session: the onboarding the first time, then the welcome and the sign-in
+ * (T22.4, T22.8). With one: the navigation, from the library.
  * [showLibraryRequests] emits when books arrive from another app, to show the import progress.
  */
 @Composable
@@ -60,14 +63,38 @@ fun ReaderApp(
     showLibraryRequests: Flow<Unit> = emptyFlow(),
     viewModel: AppStartViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
-    val startDestination by viewModel.startDestination.collectAsStateWithLifecycle()
     val signedIn by viewModel.isSignedIn.collectAsStateWithLifecycle()
-    // Reading the flag takes a few milliseconds; the window background shows meanwhile.
-    // Signing out leaves the navigation, so the next person starts from a clean back stack.
-    if (!signedIn) {
-        AuthScreen()
+    val onboardingSeen by viewModel.onboardingSeen.collectAsStateWithLifecycle()
+    var hadSession by rememberSaveable { mutableStateOf(false) }
+    if (signedIn) hadSession = true
+    if (signedIn) {
+        // Signing out leaves the navigation, so the next person starts from a clean back stack.
+        ReaderNavHost(showLibraryRequests = showLibraryRequests)
     } else {
-        startDestination?.let { ReaderNavHost(startDestination = it, showLibraryRequests = showLibraryRequests) }
+        // Reading the flag takes a few milliseconds; the window background shows meanwhile.
+        when (onboardingSeen) {
+            null -> Unit
+            false -> OnboardingScreen(onFinished = {})
+            true -> SignedOutFlow(startOnWelcome = !hadSession)
+        }
+    }
+}
+
+/**
+ * The welcome first: "Comenzar" opens the sign-up and "Inicia sesión" the sign-in. Someone who just
+ * signed out skips the welcome and lands on the sign-in.
+ */
+@Composable
+private fun SignedOutFlow(startOnWelcome: Boolean) {
+    var showWelcome by rememberSaveable { mutableStateOf(startOnWelcome) }
+    var startOnSignUp by rememberSaveable { mutableStateOf(startOnWelcome) }
+    if (showWelcome) {
+        WelcomeScreen(
+            onStart = { startOnSignUp = true; showWelcome = false },
+            onHaveAccount = { startOnSignUp = false; showWelcome = false },
+        )
+    } else {
+        AuthScreen(startOnSignUp = startOnSignUp, onBack = { showWelcome = true })
     }
 }
 
@@ -81,10 +108,8 @@ fun ReaderNavHost(
 ) {
     LaunchedEffect(navController, showLibraryRequests) {
         showLibraryRequests.collect {
-            // No destination yet means the graph is not ready. The onboarding ends on the library anyway,
-            // and jumping there would skip it.
-            val destination = navController.currentDestination ?: return@collect
-            if (!destination.hasRoute<OnboardingRoute>()) navController.showLibrary()
+            // No destination yet means the graph is not ready.
+            if (navController.currentDestination != null) navController.showLibrary()
         }
     }
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -149,13 +174,6 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
         popEnterTransition = { fadeIn(tween(FADE_MILLIS)) },
         popExitTransition = { fadeOut(tween(FADE_MILLIS)) },
     ) {
-        composable<OnboardingRoute> {
-            OnboardingScreen(
-                onFinished = {
-                    navController.navigate(LibraryRoute) { popUpTo<OnboardingRoute> { inclusive = true } }
-                },
-            )
-        }
         composable<LibraryRoute> {
             LibraryScreen(
                 onBookClick = { bookId -> navController.navigate(BookDetailRoute(bookId)) },

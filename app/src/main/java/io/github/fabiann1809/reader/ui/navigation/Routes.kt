@@ -5,9 +5,6 @@ import kotlinx.serialization.Serializable
 
 // Type-safe navigation destinations. Screens that need arguments use data classes.
 
-// Shown only on the very first launch.
-@Serializable
-data object OnboardingRoute
 
 // Top-level destinations, reached from the bottom bar.
 @Serializable

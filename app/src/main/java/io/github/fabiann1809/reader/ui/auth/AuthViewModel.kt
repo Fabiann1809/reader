@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class AuthMode { SIGN_IN, SIGN_UP }
+enum class AuthMode { SIGN_IN, SIGN_UP, FORGOT }
 
 /** A problem with one field, shown under it. */
 enum class FieldError {
@@ -34,7 +34,10 @@ data class AuthUiState(
     val loading: Boolean = false,
     /** What the service answered. Part of it belongs under a field, see the *Error properties. */
     val error: AuthError? = null,
+    /** The reset email went out: the screen shows the "check your mail" step instead of the form. */
     val resetSent: Boolean = false,
+    /** The link was sent again from that step. */
+    val resent: Boolean = false,
     /** Set when the button is pressed: until then an empty field is not yet a mistake. */
     val submitted: Boolean = false,
 ) {
@@ -55,6 +58,7 @@ data class AuthUiState(
     }
 
     val passwordError: FieldError? = when {
+        mode == AuthMode.FORGOT -> null
         error is AuthError.WeakPassword -> FieldError.PASSWORD_WEAK
         !submitted -> null
         password.isEmpty() -> FieldError.PASSWORD_REQUIRED
@@ -79,7 +83,7 @@ data class AuthUiState(
 }
 
 /**
- * The sign-in screen (T22.3). A successful call changes [AuthRepository.currentUser], which is what
+ * The sign-in screen (T22.3): sign in, create an account or ask for a reset link. A successful call changes [AuthRepository.currentUser], which is what
  * moves the app on, so there is nothing to navigate from here.
  */
 class AuthViewModel(private val auth: AuthRepository) : ViewModel() {
@@ -93,9 +97,20 @@ class AuthViewModel(private val auth: AuthRepository) : ViewModel() {
 
     fun onConfirmPasswordChange(confirm: String) = _uiState.update { it.copy(confirmPassword = confirm, error = null) }
 
-    fun switchMode() = _uiState.update {
-        val other = if (it.mode == AuthMode.SIGN_IN) AuthMode.SIGN_UP else AuthMode.SIGN_IN
-        it.copy(mode = other, confirmPassword = "", error = null, resetSent = false, submitted = false)
+    /** Between "Crear cuenta" and "Entrar". */
+    fun switchMode() = goTo(if (_uiState.value.mode == AuthMode.SIGN_UP) AuthMode.SIGN_IN else AuthMode.SIGN_UP)
+
+    fun showForgotPassword() = goTo(AuthMode.FORGOT)
+
+    fun showSignIn() = goTo(AuthMode.SIGN_IN)
+
+    /** Opens the screen fresh in [mode], as when coming from the welcome. */
+    fun open(mode: AuthMode) {
+        _uiState.value = AuthUiState(mode = mode)
+    }
+
+    private fun goTo(mode: AuthMode) = _uiState.update {
+        it.copy(mode = mode, confirmPassword = "", error = null, resetSent = false, resent = false, submitted = false)
     }
 
     fun submit() {
@@ -103,19 +118,23 @@ class AuthViewModel(private val auth: AuthRepository) : ViewModel() {
         val state = _uiState.value
         if (state.hasFieldErrors) return
         launchCall {
-            if (state.mode == AuthMode.SIGN_UP) auth.signUp(state.email, state.password) else auth.signIn(state.email, state.password)
+            when (state.mode) {
+                AuthMode.SIGN_UP -> auth.signUp(state.email, state.password)
+                AuthMode.SIGN_IN -> auth.signIn(state.email, state.password)
+                AuthMode.FORGOT -> {
+                    auth.sendPasswordReset(state.email)
+                    _uiState.update { it.copy(resetSent = true) }
+                }
+            }
         }
     }
 
-    fun resetPassword() {
+    /** Sends the reset link again from the "check your mail" step. */
+    fun resendReset() {
         val email = _uiState.value.email
-        if (!EmailValidator.isValid(email)) {
-            _uiState.update { it.copy(error = AuthError.InvalidEmail(), resetSent = false) }
-            return
-        }
         launchCall {
             auth.sendPasswordReset(email)
-            _uiState.update { it.copy(resetSent = true) }
+            _uiState.update { it.copy(resent = true) }
         }
     }
 
@@ -124,7 +143,7 @@ class AuthViewModel(private val auth: AuthRepository) : ViewModel() {
 
     private fun launchCall(call: suspend () -> Unit) {
         if (_uiState.value.loading) return
-        _uiState.update { it.copy(loading = true, error = null, resetSent = false) }
+        _uiState.update { it.copy(loading = true, error = null, resent = false) }
         viewModelScope.launch {
             val error = try {
                 call()
@@ -137,7 +156,10 @@ class AuthViewModel(private val auth: AuthRepository) : ViewModel() {
                 AuthError.Unknown(e)
             }
             // Closing the Google picker is not a failure worth a message.
-            _uiState.update { state -> state.copy(loading = false, error = error.takeUnless { it is AuthError.Cancelled }) }
+            // The passwords are not kept once the call is over: this ViewModel outlives the screen.
+            _uiState.update { state ->
+                state.copy(loading = false, error = error.takeUnless { it is AuthError.Cancelled }, password = if (error == null) "" else state.password, confirmPassword = if (error == null) "" else state.confirmPassword, submitted = state.submitted && error != null)
+            }
         }
     }
 }

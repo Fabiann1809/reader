@@ -4,12 +4,11 @@ import io.github.fabiann1809.reader.data.auth.AuthUser
 import io.github.fabiann1809.reader.testing.FakeAppPreferences
 import io.github.fabiann1809.reader.testing.FakeAuthRepository
 import io.github.fabiann1809.reader.testing.MainDispatcherRule
-import io.github.fabiann1809.reader.ui.navigation.LibraryRoute
-import io.github.fabiann1809.reader.ui.navigation.OnboardingRoute
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class AppStartViewModelTest {
@@ -18,13 +17,23 @@ class AppStartViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
-    fun firstLaunchStartsWithTheOnboarding() {
-        assertEquals(OnboardingRoute, AppStartViewModel(FakeAppPreferences(seenOnboarding = false), FakeAuthRepository()).startDestination.value)
+    fun firstLaunchHasNotSeenTheOnboarding() {
+        assertEquals(false, AppStartViewModel(FakeAppPreferences(seenOnboarding = false), FakeAuthRepository()).onboardingSeen.value)
     }
 
     @Test
-    fun laterLaunchesStartInTheLibrary() {
-        assertEquals(LibraryRoute, AppStartViewModel(FakeAppPreferences(seenOnboarding = true), FakeAuthRepository()).startDestination.value)
+    fun laterLaunchesHaveSeenIt() {
+        assertEquals(true, AppStartViewModel(FakeAppPreferences(seenOnboarding = true), FakeAuthRepository()).onboardingSeen.value)
+    }
+
+    @Test
+    fun finishingTheOnboardingIsReflectedRightAway() = runTest {
+        val preferences = FakeAppPreferences(seenOnboarding = false)
+        val viewModel = AppStartViewModel(preferences, FakeAuthRepository())
+
+        preferences.markOnboardingSeen()
+
+        assertEquals(true, viewModel.onboardingSeen.value)
     }
 
     @Test

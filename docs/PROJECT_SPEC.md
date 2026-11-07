@@ -387,7 +387,8 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 - [x] **T22.4 Puerta de navegación.** Sin sesión se muestra el acceso; con sesión, la biblioteca; la sesión se recuerda al reabrir. *Hecho cuando:* al abrir sin sesión no se ve la biblioteca.
 - [x] **T22.5 Perfil y cerrar sesión.** Correo del usuario y botón de cerrar sesión en Ajustes; privacidad al día. *Hecho cuando:* cerrar sesión vuelve a la pantalla de acceso.
 - [x] **T22.6 Validaciones y contraseñas.** Política de contraseña tipo 4 (mínimo 8, mayúscula, minúscula, número y símbolo) al crear cuenta, validación del correo, errores bajo cada campo, lista de requisitos y ojo para mostrar la contraseña. *Hecho cuando:* `123456` no se acepta y las pruebas de la política y del ViewModel pasan.
-- [x] **T22.7 Acceso con la identidad de la app.** Cabecera con la estantería del onboarding, nombre y título, divisor "o" y botones del diseño. *Hecho cuando:* la pantalla de acceso se ve coherente con el resto de la app y el formulario cabe sin recortes.
+- [x] **T22.7 Cabecera con la estantería.** Primer intento de darle identidad al acceso. **Reemplazada** por T22.8 (decisión del usuario, 2026-11-06): el diseño oficial es `Reader Acceso`.
+- [x] **T22.8 Acceso según el diseño `Reader Acceso`.** Orden Onboarding → Bienvenida → Acceso; bienvenida con logo, ilustración y beneficios; acceso con campos en píldora con íconos, aviso rojo para errores del servicio, recuperación en dos pasos (formulario y "Revisa tu correo") y pie con ola. Decisiones del usuario: sin "Continuar sin cuenta", sin campo Nombre, se mantienen los errores bajo cada campo y la contraseña tipo 4, textos ajustados a lo real. *Hecho cuando:* las pantallas se ven como el diseño y se puede crear cuenta, entrar, recuperar la contraseña y entrar con Google.
 
 ## 10. Riesgos técnicos (en orden)
 

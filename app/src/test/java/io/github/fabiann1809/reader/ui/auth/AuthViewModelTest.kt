@@ -166,7 +166,8 @@ class AuthViewModelTest {
         createAccount()
         auth.signOut()
 
-        // Still in "Crear cuenta": the same email again.
+        // Still in "Crear cuenta": the same email again (the passwords are cleared after a success).
+        fill()
         viewModel.submit()
 
         assertEquals(FieldError.EMAIL_IN_USE, state.emailError)
@@ -221,9 +222,10 @@ class AuthViewModelTest {
 
     @Test
     fun theResetEmailIsSentToTheTypedAddress() {
+        viewModel.showForgotPassword()
         viewModel.onEmailChange("ana@example.com")
 
-        viewModel.resetPassword()
+        viewModel.submit()
 
         assertEquals(listOf("ana@example.com"), auth.resetEmails)
         assertTrue(state.resetSent)
@@ -231,10 +233,48 @@ class AuthViewModelTest {
 
     @Test
     fun resettingNeedsAValidEmailShownUnderTheField() {
-        viewModel.resetPassword()
+        viewModel.showForgotPassword()
 
-        assertEquals(FieldError.EMAIL_INVALID, state.emailError)
+        viewModel.submit()
+
+        assertEquals(FieldError.EMAIL_REQUIRED, state.emailError)
         assertTrue(auth.resetEmails.isEmpty())
+    }
+
+    @Test
+    fun resettingNeverAsksForAPassword() {
+        viewModel.showForgotPassword()
+        viewModel.onEmailChange("ana@example.com")
+
+        viewModel.submit()
+
+        assertNull(state.passwordError)
+        assertFalse(state.hasFieldErrors)
+    }
+
+    @Test
+    fun theLinkCanBeSentAgain() {
+        viewModel.showForgotPassword()
+        viewModel.onEmailChange("ana@example.com")
+        viewModel.submit()
+
+        viewModel.resendReset()
+
+        assertEquals(listOf("ana@example.com", "ana@example.com"), auth.resetEmails)
+        assertTrue(state.resetSent)
+        assertTrue(state.resent)
+    }
+
+    @Test
+    fun goingBackToSignInLeavesTheResetStep() {
+        viewModel.showForgotPassword()
+        viewModel.onEmailChange("ana@example.com")
+        viewModel.submit()
+
+        viewModel.showSignIn()
+
+        assertEquals(AuthMode.SIGN_IN, state.mode)
+        assertFalse(state.resetSent)
     }
 
     private companion object {
