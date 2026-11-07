@@ -50,6 +50,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
+import io.github.fabiann1809.reader.ui.components.RoundBackButton
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 private val GoogleBlue = Color(0xFF4285F4)
@@ -125,7 +126,7 @@ fun AuthContent(
                     .imePadding(),
             ) {
                 Column(Modifier.padding(horizontal = 24.dp).padding(top = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    BackButton(onBack, Modifier.align(Alignment.Start))
+                    RoundBackButton(onBack, Modifier.align(Alignment.Start))
                     ReaderLogo(iconSize = 60.dp, modifier = Modifier.padding(top = 4.dp))
                     if (state.mode == AuthMode.FORGOT && state.resetSent) {
                         SentStep(state, onBackToSignIn, onResend)
@@ -236,28 +237,6 @@ private fun Titles(mode: AuthMode) {
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             textAlign = TextAlign.Center,
         )
-    }
-}
-
-/** The 48 dp round button at the top left. */
-@Composable
-private fun BackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(
-        onClick = onClick,
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-        shadowElevation = 2.dp,
-        modifier = modifier.size(48.dp),
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(
-                painter = painterResource(R.drawable.ic_caret_left),
-                contentDescription = stringResource(R.string.navigate_up),
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp),
-            )
-        }
     }
 }
 

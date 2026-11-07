@@ -44,6 +44,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.ui.components.fadeUp
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 
 private val LightbulbColor = Color(0xFFE0A43A)
@@ -68,22 +69,22 @@ fun WelcomeScreen(onStart: () -> Unit, onHaveAccount: () -> Unit, modifier: Modi
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = 40.dp),
                 ) {
-                    ReaderLogo(iconSize = 76.dp)
+                    ReaderLogo(iconSize = 76.dp, modifier = Modifier.fadeUp(50))
                     Text(
                         text = stringResource(R.string.welcome_tagline),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 10.dp),
+                        modifier = Modifier.padding(top = 10.dp).fadeUp(120),
                     )
                     WelcomeIllustration(Modifier.padding(top = 6.dp))
-                    Features(Modifier.padding(top = 14.dp))
+                    Features(Modifier.padding(top = 14.dp).fadeUp(450))
                 }
                 Button(
                     onClick = onStart,
                     shape = CircleShape,
-                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp).heightIn(min = 58.dp),
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp).heightIn(min = 58.dp).fadeUp(550),
                 ) {
                     Text(stringResource(R.string.welcome_start), style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.width(10.dp))

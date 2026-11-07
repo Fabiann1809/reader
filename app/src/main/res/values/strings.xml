@@ -733,7 +733,7 @@
     <string name="onboarding_understand_text">Apunta la cámara a un párrafo o selecciónalo en el lector. Reader extrae el texto por ti.</string>
     <string name="onboarding_remember_title">Entiéndelo y no lo olvides</string>
     <string name="onboarding_remember_text">La IA lo explica con el método Feynman usando tu propia clave de IA. Guárdalo como nota o ficha y repásalo después.</string>
-    <string name="onboarding_demo_paper">La atención no es un recurso infinito. Cada vez que cambiamos de tarea dejamos atrás un residuo: parte de la mente sigue ocupada en lo anterior mientras intentamos empezar lo siguiente.</string>
+    <string name="onboarding_demo_text_ready">Texto listo</string>
     <string name="onboarding_demo_idea_label">Idea central</string>
     <string name="onboarding_demo_idea">Cambiar de tarea deja un rastro mental que resta atención.</string>
     <string name="onboarding_demo_card_label">Ficha</string>

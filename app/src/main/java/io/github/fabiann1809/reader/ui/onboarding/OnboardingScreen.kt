@@ -16,7 +16,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import io.github.fabiann1809.reader.ui.components.RoundBackButton
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -75,53 +84,28 @@ fun OnboardingContent(onFinish: () -> Unit, modifier: Modifier = Modifier) {
     val current = pagerState.currentPage
     val isLastPage = current == pages.lastIndex
     fun goTo(page: Int) = scope.launch { pagerState.animateScrollToPage(page) }
+    val wave = ReaderTheme.colors.authWave
 
-    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
-        Column(Modifier.fillMaxSize().safeDrawingPadding()) {
-            TopRow(showBack = current > 0, showSkip = !isLastPage, onBack = { goTo(current - 1) }, onSkip = onFinish)
-            HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { index -> Page(pages[index]) }
-            BottomRow(
-                count = pages.size,
-                current = current,
-                isLastPage = isLastPage,
-                onNext = { if (isLastPage) onFinish() else goTo(current + 1) },
+    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Box(Modifier.fillMaxSize()) {
+            Box(Modifier.offset((-150).dp, (-170).dp).size(360.dp).clip(CircleShape).background(wave))
+            Box(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .offset(y = 120.dp)
+                    .fillMaxWidth()
+                    .height(210.dp)
+                    .clip(RoundedCornerShape(percent = 50))
+                    .background(wave),
             )
-        }
-    }
-}
-
-@Composable
-private fun TopRow(showBack: Boolean, showSkip: Boolean, onBack: () -> Unit, onSkip: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .padding(horizontal = 12.dp),
-    ) {
-        if (showBack) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(48.dp)
-                    .clickable(role = Role.Button, onClick = onBack),
-            ) {
-                Icon(painterResource(R.drawable.ic_arrow_left), contentDescription = stringResource(R.string.navigate_up))
-            }
-        }
-        Spacer(Modifier.weight(1f))
-        if (showSkip) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .heightIn(min = 48.dp)
-                    .clickable(role = Role.Button, onClick = onSkip)
-                    .padding(horizontal = 14.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.onboarding_skip),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
+                TopRow(showBack = current > 0, onBack = { goTo(current - 1) }, onSkip = onFinish)
+                HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { index -> Page(pages[index]) }
+                BottomRow(
+                    count = pages.size,
+                    current = current,
+                    isLastPage = isLastPage,
+                    onNext = { if (isLastPage) onFinish() else goTo(current + 1) },
                 )
             }
         }
@@ -129,46 +113,80 @@ private fun TopRow(showBack: Boolean, showSkip: Boolean, onBack: () -> Unit, onS
 }
 
 @Composable
+private fun TopRow(showBack: Boolean, onBack: () -> Unit, onSkip: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(84.dp)
+            .padding(start = 24.dp, end = 16.dp),
+    ) {
+        if (showBack) RoundBackButton(onBack)
+        Spacer(Modifier.weight(1f))
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .heightIn(min = 48.dp)
+                .clickable(role = Role.Button, onClick = onSkip)
+                .padding(horizontal = 12.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.onboarding_skip),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}
+
+@Composable
 private fun Page(page: OnboardingPage) {
-    Column(Modifier.fillMaxSize()) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 28.dp),
+    ) {
         when (page) {
             OnboardingPage.SHELVES -> ShelfIllustration()
-            OnboardingPage.UNDERSTAND -> ScanIllustration(Modifier.padding(horizontal = 24.dp))
-            OnboardingPage.REMEMBER -> StudyIllustration(Modifier.padding(horizontal = 24.dp))
+            OnboardingPage.UNDERSTAND -> ScanIllustration()
+            OnboardingPage.REMEMBER -> StudyIllustration()
         }
         Text(
             text = stringResource(page.title),
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 8.dp),
         )
         Text(
             text = stringResource(page.text),
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 10.dp),
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 10.dp),
         )
     }
 }
 
 @Composable
 private fun BottomRow(count: Int, current: Int, isLastPage: Boolean, onNext: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(18.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = 28.dp, end = 28.dp, bottom = 32.dp, top = 8.dp),
     ) {
-        PageIndicator(count, current)
         Button(
             onClick = onNext,
             shape = CircleShape,
-            modifier = Modifier.heightIn(min = 56.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 58.dp),
         ) {
-            Text(stringResource(if (isLastPage) R.string.onboarding_start else R.string.onboarding_next))
-            Spacer(Modifier.size(8.dp))
-            Icon(painterResource(R.drawable.ic_arrow_right), contentDescription = null, modifier = Modifier.size(18.dp))
+            Text(stringResource(if (isLastPage) R.string.onboarding_start else R.string.onboarding_next), style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.size(10.dp))
+            Icon(painterResource(R.drawable.ic_caret_right), contentDescription = null, modifier = Modifier.size(18.dp))
         }
+        PageIndicator(count, current)
     }
 }
 
@@ -177,21 +195,21 @@ private fun PageIndicator(count: Int, current: Int) {
     val description = stringResource(R.string.onboarding_page, current + 1, count)
     val reduceMotion = rememberReduceMotion()
     Row(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.semantics { contentDescription = description },
     ) {
         repeat(count) { index ->
             val active = index == current
             val width by animateDpAsState(
-                targetValue = if (active) 26.dp else 8.dp,
+                targetValue = if (active) 26.dp else 9.dp,
                 animationSpec = if (reduceMotion) snap() else spring(dampingRatio = 0.6f),
                 label = "dotWidth",
             )
             Box(
                 Modifier
-                    .size(width = width, height = 8.dp)
+                    .size(width = width, height = 9.dp)
                     .background(
-                        if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                        if (active) MaterialTheme.colorScheme.primary else ReaderTheme.colors.authFieldBorder,
                         CircleShape,
                     ),
             )
