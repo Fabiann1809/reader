@@ -10,6 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.data.sync.SyncStatus
 import io.github.fabiann1809.reader.data.sync.cloud.SyncError
+import io.github.fabiann1809.reader.ui.account.ConnectionProblem
 import io.github.fabiann1809.reader.ui.account.SyncUiState
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import org.junit.Assert.assertEquals
@@ -96,7 +97,7 @@ class SyncOfferScreenTest {
 
     @Test
     fun aFailedConnectionIsExplainedAndCanBeTriedAgain() {
-        show(SyncUiState(connectionFailed = true))
+        show(SyncUiState(connectionProblem = ConnectionProblem.UNKNOWN))
 
         composeRule.onNodeWithText(string(R.string.settings_sync_connect_failed)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.offer_enable)).performClick()

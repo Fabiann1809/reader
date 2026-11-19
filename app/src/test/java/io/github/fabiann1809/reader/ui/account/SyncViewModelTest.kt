@@ -5,6 +5,10 @@ import io.github.fabiann1809.reader.data.sync.SyncSettings
 import io.github.fabiann1809.reader.data.sync.SyncStatus
 import io.github.fabiann1809.reader.data.sync.auth.Consent
 import io.github.fabiann1809.reader.data.sync.auth.DriveGrant
+import io.github.fabiann1809.reader.data.sync.auth.FailureCause
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import io.github.fabiann1809.reader.data.sync.cloud.SyncError
 import io.github.fabiann1809.reader.data.sync.merge.RecordKey
 import io.github.fabiann1809.reader.data.sync.merge.SyncRecord
@@ -107,13 +111,49 @@ class SyncViewModelTest {
 
     @Test
     fun googleFailingIsShownAsAConnectionFailure() = runTest(mainDispatcherRule.testDispatcher) {
-        authorizer.onAuthorize = DriveGrant.Failed
+        authorizer.onAuthorize = DriveGrant.Failed()
         val viewModel = viewModel()
         viewModel.uiState.launchIn(backgroundScope)
 
         viewModel.setEnabled(true)
 
         assertTrue(viewModel.uiState.value.connectionFailed)
+    }
+
+    private fun problemAfter(grant: DriveGrant? = null, driveError: SyncError? = null): ConnectionProblem? {
+        grant?.let { authorizer.onAuthorize = it }
+        driveError?.let { cloud.failWith = it }
+        return runBlocking {
+            val viewModel = viewModel()
+            val job = launch(Dispatchers.Unconfined) { viewModel.uiState.collect {} }
+            viewModel.setEnabled(true)
+            viewModel.uiState.value.connectionProblem.also { job.cancel() }
+        }
+    }
+
+    @Test
+    fun noPlayServicesIsToldApart() {
+        assertEquals(ConnectionProblem.NO_PLAY_SERVICES, problemAfter(DriveGrant.Failed(FailureCause.NO_PLAY_SERVICES)))
+    }
+
+    @Test
+    fun noNetworkIsToldApartWhetherGoogleOrDriveReportsIt() {
+        assertEquals(ConnectionProblem.NO_NETWORK, problemAfter(DriveGrant.Failed(FailureCause.NO_NETWORK)))
+    }
+
+    @Test
+    fun driveRefusingAnAcceptedPermissionMeansDriveIsUnavailableForTheAccount() {
+        assertEquals(ConnectionProblem.DRIVE_UNAVAILABLE, problemAfter(driveError = SyncError.NotAuthorized()))
+    }
+
+    @Test
+    fun aFullDriveIsToldApart() {
+        assertEquals(ConnectionProblem.DRIVE_FULL, problemAfter(driveError = SyncError.QuotaExceeded()))
+    }
+
+    @Test
+    fun anUnknownGoogleFailureKeepsTheGenericMessage() {
+        assertEquals(ConnectionProblem.UNKNOWN, problemAfter(DriveGrant.Failed()))
     }
 
     @Test

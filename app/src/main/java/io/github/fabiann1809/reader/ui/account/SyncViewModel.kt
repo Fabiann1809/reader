@@ -10,6 +10,7 @@ import io.github.fabiann1809.reader.data.sync.SyncStatus
 import io.github.fabiann1809.reader.data.sync.auth.Consent
 import io.github.fabiann1809.reader.data.sync.auth.DriveAuthorizer
 import io.github.fabiann1809.reader.data.sync.auth.DriveGrant
+import io.github.fabiann1809.reader.data.sync.auth.FailureCause
 import io.github.fabiann1809.reader.data.sync.cloud.CloudStorage
 import io.github.fabiann1809.reader.data.sync.cloud.SyncError
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,18 +21,23 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/** Why connecting to Drive failed, so the screen can say what to do about it. */
+enum class ConnectionProblem { NO_PLAY_SERVICES, NO_NETWORK, DRIVE_FULL, DRIVE_UNAVAILABLE, UNKNOWN }
+
 data class SyncUiState(
     val status: SyncStatus = SyncStatus.Disabled,
     val wifiOnly: Boolean = true,
     // Asking Google for the permission and checking that Drive accepts it.
     val connecting: Boolean = false,
-    val connectionFailed: Boolean = false,
+    val connectionProblem: ConnectionProblem? = null,
     // Set while Google's consent screen has to be opened; the screen clears it with [SyncViewModel.consentShown].
     val consent: Consent? = null,
     // Whether this account already has a library in Drive, known once the permission is given: null before.
     // The invitation after signing in (T18.9d) waits for the first sync only when there is something to bring.
     val cloudHasData: Boolean? = null,
-)
+) {
+    val connectionFailed get() = connectionProblem != null
+}
 
 /**
  * The "Sincronización" block of Ajustes (T18.7). Turning it on first asks for the Drive permission
@@ -46,7 +52,7 @@ class SyncViewModel(
 
     private data class Connection(
         val connecting: Boolean = false,
-        val failed: Boolean = false,
+        val problem: ConnectionProblem? = null,
         val consent: Consent? = null,
         val cloudHasData: Boolean? = null,
     )
@@ -54,7 +60,7 @@ class SyncViewModel(
     private val connection = MutableStateFlow(Connection())
 
     val uiState: StateFlow<SyncUiState> = combine(sync.status, settings.settings, connection) { status, saved, connection ->
-        SyncUiState(status, saved.wifiOnly, connection.connecting, connection.failed, connection.consent, connection.cloudHasData)
+        SyncUiState(status, saved.wifiOnly, connection.connecting, connection.problem, connection.consent, connection.cloudHasData)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), SyncUiState())
 
     fun setEnabled(enabled: Boolean) {
@@ -90,16 +96,32 @@ class SyncViewModel(
     private suspend fun handle(grant: DriveGrant) {
         when (grant) {
             // A token alone proves nothing: listing the folder shows that Drive accepts it.
-            is DriveGrant.Granted -> if (cloud.listFiles().isSuccess) {
-                connection.value = Connection(cloudHasData = cloudHasLibrary())
-                sync.setEnabled(true)
-            } else {
-                connection.value = Connection(failed = true)
+            is DriveGrant.Granted -> {
+                val drive = cloud.listFiles()
+                if (drive.isSuccess) {
+                    connection.value = Connection(cloudHasData = cloudHasLibrary())
+                    sync.setEnabled(true)
+                } else {
+                    connection.value = Connection(problem = problemOf(drive.exceptionOrNull()))
+                }
             }
             is DriveGrant.NeedsConsent -> connection.update { it.copy(consent = grant.consent) }
             DriveGrant.Declined -> connection.value = Connection()
-            DriveGrant.Failed -> connection.value = Connection(failed = true)
+            is DriveGrant.Failed -> connection.value = Connection(problem = problemOf(grant.cause))
         }
+    }
+
+    private fun problemOf(cause: FailureCause) = when (cause) {
+        FailureCause.NO_PLAY_SERVICES -> ConnectionProblem.NO_PLAY_SERVICES
+        FailureCause.NO_NETWORK -> ConnectionProblem.NO_NETWORK
+        FailureCause.UNKNOWN -> ConnectionProblem.UNKNOWN
+    }
+
+    // Google gave the permission but Drive refused: typically an account whose organization turned Drive off.
+    private fun problemOf(error: Throwable?) = when (error) {
+        is SyncError.NoInternet -> ConnectionProblem.NO_NETWORK
+        is SyncError.QuotaExceeded -> ConnectionProblem.DRIVE_FULL
+        else -> ConnectionProblem.DRIVE_UNAVAILABLE
     }
 
     /** Whether Drive already holds records of this account. When it can't tell, it says yes: the sync will show why. */

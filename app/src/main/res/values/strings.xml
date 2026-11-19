@@ -840,6 +840,9 @@
     <string name="sync_just_now">hace un momento</string>
     <string name="sync_status_pending">Hay cambios sin subir. Se enviarán en cuanto haya conexión.</string>
     <string name="sync_error_not_authorized">Reader perdió el permiso para usar tu Drive. Vuelve a conectarlo con «Reintentar».</string>
+    <string name="sync_connect_no_play_services">Este teléfono no tiene los servicios de Google disponibles o están desactivados. Actívalos o actualízalos en Play Store para sincronizar.</string>
+    <string name="sync_connect_no_network">Sin conexión. Conéctate a internet e inténtalo de nuevo.</string>
+    <string name="sync_connect_drive_unavailable">Google Drive no está disponible para esta cuenta. Si es una cuenta de trabajo o de colegio, puede que tu organización lo haya desactivado; prueba con otra cuenta de Google en el teléfono.</string>
     <string name="sync_error_quota">Tu Google Drive está lleno. Libera espacio y reintenta.</string>
     <string name="sync_error_no_internet">Sin conexión. Se reintentará solo.</string>
     <string name="sync_error_newer_format">En la nube hay datos de una versión más nueva de Reader. Actualiza la app para seguir sincronizando.</string>

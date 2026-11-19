@@ -60,7 +60,7 @@ fun SyncSectionContent(
             if (!state.connecting) onEnabled(it)
         }
         if (state.connecting) SyncText(R.string.settings_sync_connecting)
-        if (state.connectionFailed) SyncText(R.string.settings_sync_connect_failed, error = true)
+        state.connectionProblem?.let { SyncText(it.messageRes(), error = true) }
         if (on) {
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             StatusLine(state.status)
@@ -111,6 +111,14 @@ private fun lastSyncText(at: Long): String {
 }
 
 @StringRes
+internal fun ConnectionProblem.messageRes(): Int = when (this) {
+    ConnectionProblem.NO_PLAY_SERVICES -> R.string.sync_connect_no_play_services
+    ConnectionProblem.NO_NETWORK -> R.string.sync_connect_no_network
+    ConnectionProblem.DRIVE_FULL -> R.string.sync_error_quota
+    ConnectionProblem.DRIVE_UNAVAILABLE -> R.string.sync_connect_drive_unavailable
+    ConnectionProblem.UNKNOWN -> R.string.settings_sync_connect_failed
+}
+
 internal fun SyncError.messageRes(): Int = when (this) {
     is SyncError.NotAuthorized -> R.string.sync_error_not_authorized
     is SyncError.QuotaExceeded -> R.string.sync_error_quota

@@ -10,6 +10,14 @@ fun interface Consent {
     fun toIntentSenderRequest(): IntentSenderRequest
 }
 
+/** Why asking Google for the permission failed, when it can tell. */
+enum class FailureCause {
+    /** The phone lacks Google Play services, or they are disabled or too old. */
+    NO_PLAY_SERVICES,
+    NO_NETWORK,
+    UNKNOWN,
+}
+
 /** The answer to asking for the permission to use the app's hidden Drive folder. */
 sealed interface DriveGrant {
 
@@ -22,8 +30,8 @@ sealed interface DriveGrant {
     /** The user said no or closed the screen. */
     data object Declined : DriveGrant
 
-    /** Google couldn't answer (no network, Play Services missing or outdated...). */
-    data object Failed : DriveGrant
+    /** Google couldn't answer; [cause] says why when it is known, so the person is told what to do. */
+    data class Failed(val cause: FailureCause = FailureCause.UNKNOWN) : DriveGrant
 }
 
 /**

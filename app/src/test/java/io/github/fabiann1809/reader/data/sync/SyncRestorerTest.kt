@@ -105,7 +105,7 @@ class SyncRestorerTest {
 
     @Test
     fun googleFailingFailsTheRestore() = runTest {
-        authorizer.onAuthorize = DriveGrant.Failed
+        authorizer.onAuthorize = DriveGrant.Failed()
 
         assertTrue(restorer().restore("ana").isFailure)
     }

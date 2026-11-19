@@ -29,6 +29,7 @@ import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.account.SyncConsentEffect
 import io.github.fabiann1809.reader.ui.account.SyncUiState
 import io.github.fabiann1809.reader.ui.account.SyncViewModel
+import io.github.fabiann1809.reader.ui.account.messageRes
 import io.github.fabiann1809.reader.ui.auth.ReaderLogo
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
 import io.github.fabiann1809.reader.ui.restore.RestoreScreen
@@ -95,10 +96,10 @@ fun SyncOfferContent(state: SyncUiState, onEnable: () -> Unit, onSkip: () -> Uni
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        if (state.connectionFailed) {
+        state.connectionProblem?.let { problem ->
             Spacer(Modifier.height(16.dp))
             Text(
-                text = stringResource(R.string.settings_sync_connect_failed),
+                text = stringResource(problem.messageRes()),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,

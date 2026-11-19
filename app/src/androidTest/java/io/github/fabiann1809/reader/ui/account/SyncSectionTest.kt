@@ -122,8 +122,21 @@ class SyncSectionTest {
 
     @Test
     fun aConnectionFailureIsShown() {
-        show(SyncUiState(status = SyncStatus.Disabled, connectionFailed = true))
+        show(SyncUiState(status = SyncStatus.Disabled, connectionProblem = ConnectionProblem.UNKNOWN))
 
         composeRule.onNodeWithText(string(R.string.settings_sync_connect_failed)).assertIsDisplayed()
+    }
+
+    @Test
+    fun eachConnectionProblemSaysWhatToDo() {
+        val expected = mapOf(
+            ConnectionProblem.NO_PLAY_SERVICES to R.string.sync_connect_no_play_services,
+            ConnectionProblem.NO_NETWORK to R.string.sync_connect_no_network,
+            ConnectionProblem.DRIVE_FULL to R.string.sync_error_quota,
+            ConnectionProblem.DRIVE_UNAVAILABLE to R.string.sync_connect_drive_unavailable,
+        )
+        expected.forEach { (problem, message) ->
+            assertEquals(message, problem.messageRes())
+        }
     }
 }

@@ -6,6 +6,8 @@ import androidx.activity.result.IntentSenderRequest
 import com.google.android.gms.auth.api.identity.AuthorizationRequest
 import com.google.android.gms.auth.api.identity.AuthorizationResult
 import com.google.android.gms.auth.api.identity.Identity
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.CommonStatusCodes
 import com.google.android.gms.common.api.Scope
@@ -24,23 +26,35 @@ class GoogleDriveAuthorizer(private val context: Context) : DriveAuthorizer {
         .setRequestedScopes(listOf(Scope(DRIVE_APP_DATA_SCOPE)))
         .build()
 
-    override suspend fun authorize(): DriveGrant = try {
-        grantOf(client.authorize(request).await())
-    } catch (e: ApiException) {
-        if (e.statusCode == CommonStatusCodes.CANCELED) DriveGrant.Declined else DriveGrant.Failed
+    override suspend fun authorize(): DriveGrant {
+        // Without Play services there is nothing to ask: say so instead of a vague failure.
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) != ConnectionResult.SUCCESS) {
+            return DriveGrant.Failed(FailureCause.NO_PLAY_SERVICES)
+        }
+        return try {
+            grantOf(client.authorize(request).await())
+        } catch (e: ApiException) {
+            grantFor(e)
+        }
     }
 
     override fun grantFrom(data: Intent?): DriveGrant = try {
         grantOf(client.getAuthorizationResultFromIntent(data))
     } catch (e: ApiException) {
-        if (e.statusCode == CommonStatusCodes.CANCELED) DriveGrant.Declined else DriveGrant.Failed
+        grantFor(e)
+    }
+
+    private fun grantFor(e: ApiException): DriveGrant = when (e.statusCode) {
+        CommonStatusCodes.CANCELED -> DriveGrant.Declined
+        CommonStatusCodes.NETWORK_ERROR -> DriveGrant.Failed(FailureCause.NO_NETWORK)
+        else -> DriveGrant.Failed()
     }
 
     /** The background sync has no screen to ask on: without the permission it can only ask to be reconnected. */
     override suspend fun accessToken(): String = when (val grant = authorize()) {
         is DriveGrant.Granted -> grant.accessToken
         is DriveGrant.NeedsConsent, DriveGrant.Declined -> throw SyncError.NotAuthorized()
-        DriveGrant.Failed -> throw SyncError.Unknown("Google could not give the Drive permission")
+        is DriveGrant.Failed -> throw SyncError.Unknown("Google could not give the Drive permission")
     }
 
     private fun grantOf(result: AuthorizationResult): DriveGrant {
@@ -50,7 +64,7 @@ class GoogleDriveAuthorizer(private val context: Context) : DriveAuthorizer {
             result.hasResolution() && pendingIntent != null ->
                 DriveGrant.NeedsConsent { IntentSenderRequest.Builder(pendingIntent).build() }
             token != null -> DriveGrant.Granted(token)
-            else -> DriveGrant.Failed
+            else -> DriveGrant.Failed()
         }
     }
 

@@ -39,7 +39,7 @@ class SyncRestorer(
             is DriveGrant.Granted -> Unit
             // The user would have to accept again, which belongs to Ajustes, not to a loading screen.
             is DriveGrant.NeedsConsent, DriveGrant.Declined -> return Result.failure(SyncError.NotAuthorized())
-            DriveGrant.Failed -> return Result.failure(SyncError.Unknown("Google could not give the Drive permission"))
+            is DriveGrant.Failed -> return Result.failure(SyncError.Unknown("Google could not give the Drive permission"))
         }
         cloud.listFiles().onFailure { return Result.failure(it) }
         sync.setEnabled(true)
