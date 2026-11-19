@@ -109,12 +109,26 @@ class ReaderNavHostTest {
         composeRule.onNodeWithText(string(R.string.all_notes_title)).assertIsDisplayed()
         pressBack()
 
+        // Cuenta (T22.9): the account and the sync live there, not in Ajustes.
+        composeRule.onNodeWithText(string(R.string.account_title)).performClick()
+        composeRule.onNodeWithText(string(R.string.settings_sync_toggle)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.settings_account_sign_out)).assertIsDisplayed()
+        pressBack()
+
         composeRule.onNodeWithText(string(R.string.settings_privacy)).performClick()
         composeRule.onNodeWithText(string(R.string.privacy_sent_title)).assertIsDisplayed()
         pressBack()
 
         composeRule.onNodeWithText(string(R.string.about_title)).performClick()
         composeRule.onNodeWithText(string(R.string.about_licenses)).assertIsDisplayed()
+    }
+
+    @Test
+    fun settingsNoLongerHoldsTheAccountOrTheSync() {
+        openMore(R.string.settings_title)
+
+        composeRule.onNodeWithText(string(R.string.settings_sync_toggle)).assertDoesNotExist()
+        composeRule.onNodeWithText(string(R.string.settings_account_sign_out)).assertDoesNotExist()
     }
 
     private companion object {

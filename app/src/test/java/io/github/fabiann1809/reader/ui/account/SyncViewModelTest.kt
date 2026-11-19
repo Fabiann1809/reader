@@ -1,4 +1,4 @@
-package io.github.fabiann1809.reader.ui.settings
+package io.github.fabiann1809.reader.ui.account
 
 import io.github.fabiann1809.reader.data.sync.SyncSettings
 import io.github.fabiann1809.reader.data.sync.SyncStatus

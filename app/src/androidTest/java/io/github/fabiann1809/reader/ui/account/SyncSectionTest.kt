@@ -1,4 +1,4 @@
-package io.github.fabiann1809.reader.ui.settings
+package io.github.fabiann1809.reader.ui.account
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed

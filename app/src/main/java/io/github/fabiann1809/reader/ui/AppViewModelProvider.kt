@@ -42,9 +42,9 @@ import io.github.fabiann1809.reader.ui.reader.ReaderViewModel
 import io.github.fabiann1809.reader.ui.review.PendingReviewsViewModel
 import io.github.fabiann1809.reader.ui.review.ReviewViewModel
 import io.github.fabiann1809.reader.ui.reviewsession.ReviewSessionViewModel
-import io.github.fabiann1809.reader.ui.settings.AccountViewModel
+import io.github.fabiann1809.reader.ui.account.AccountViewModel
 import io.github.fabiann1809.reader.ui.restore.RestoreViewModel
-import io.github.fabiann1809.reader.ui.settings.SyncViewModel
+import io.github.fabiann1809.reader.ui.account.SyncViewModel
 import io.github.fabiann1809.reader.ui.settings.GeneralSettingsViewModel
 import io.github.fabiann1809.reader.ui.settings.SettingsViewModel
 import io.github.fabiann1809.reader.ui.voice.VoiceNotePlayerViewModel

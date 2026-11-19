@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import io.github.fabiann1809.reader.ui.AppStartViewModel
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
+import io.github.fabiann1809.reader.ui.account.AccountScreen
 import io.github.fabiann1809.reader.ui.addbook.AddBookScreen
 import io.github.fabiann1809.reader.ui.auth.AuthScreen
 import io.github.fabiann1809.reader.ui.auth.WelcomeScreen
@@ -204,6 +205,7 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                     navController.navigate(
                         when (entry) {
                             MoreEntry.ALL_NOTES -> AllNotesRoute
+                            MoreEntry.ACCOUNT -> AccountRoute
                             MoreEntry.SETTINGS -> SettingsRoute
                             MoreEntry.PRIVACY -> PrivacyRoute
                             MoreEntry.ABOUT -> AboutRoute
@@ -218,6 +220,9 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onNoteClick = { note -> navController.navigate(NoteEditorRoute(note.bookId, note.id)) },
                 onOpenNoteInBook = { note -> navController.navigate(ReaderRoute(note.bookId, note.location)) },
             )
+        }
+        composable<AccountRoute> {
+            AccountScreen(onNavigateUp = { navController.navigateUp() })
         }
         composable<AboutRoute> {
             AboutScreen(onNavigateUp = { navController.navigateUp() })

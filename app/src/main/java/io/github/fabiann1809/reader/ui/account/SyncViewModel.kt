@@ -1,4 +1,4 @@
-package io.github.fabiann1809.reader.ui.settings
+package io.github.fabiann1809.reader.ui.account
 
 import android.content.Intent
 import androidx.lifecycle.ViewModel

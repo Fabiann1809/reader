@@ -1,4 +1,4 @@
-package io.github.fabiann1809.reader.ui.settings
+package io.github.fabiann1809.reader.ui.account
 
 import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -13,6 +13,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.ui.settings.SettingsSection
+import io.github.fabiann1809.reader.ui.settings.Toggle
 import io.github.fabiann1809.reader.data.sync.SyncStatus
 import io.github.fabiann1809.reader.data.sync.cloud.SyncError
 import io.github.fabiann1809.reader.ui.components.OutlineButton

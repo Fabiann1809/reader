@@ -686,6 +686,8 @@
         <item quantity="other">%d libros</item>
     </plurals>
     <string name="more_settings_hint">Clave de IA, apariencia, lectura</string>
+    <string name="account_title">Cuenta</string>
+    <string name="more_account_hint">Tu sesión y la sincronización</string>
     <string name="more_privacy_hint">Qué se envía y qué no</string>
     <string name="more_about_hint">Versión y licencias</string>
     <string name="more_footer">Reader v%1$s · tus datos son solo tuyos</string>

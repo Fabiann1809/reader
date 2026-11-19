@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ui.auth.ReaderLogo
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
-import io.github.fabiann1809.reader.ui.settings.messageRes
+import io.github.fabiann1809.reader.ui.account.messageRes
 
 /** The loading screen between signing in and the library when the library is coming back from Drive (T18.9b). */
 @Composable

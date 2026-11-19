@@ -24,10 +24,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.fabiann1809.reader.R
 import io.github.fabiann1809.reader.ui.AppViewModelProvider
+import io.github.fabiann1809.reader.ui.account.AccountUiState
+import io.github.fabiann1809.reader.ui.account.AccountViewModel
+import io.github.fabiann1809.reader.ui.account.SignOutControl
 
 /** Secondary destinations of the "Más" tab, in the design's order. [hint] is null when it depends on data. */
 enum class MoreEntry(@StringRes val title: Int, @DrawableRes val icon: Int, @StringRes val hint: Int?) {
     ALL_NOTES(R.string.all_notes_title, R.drawable.ic_note_pencil, null),
+    ACCOUNT(R.string.account_title, R.drawable.ic_user_circle, R.string.more_account_hint),
     SETTINGS(R.string.settings_title, R.drawable.ic_gear_six, R.string.more_settings_hint),
     PRIVACY(R.string.settings_privacy, R.drawable.ic_shield_check, R.string.more_privacy_hint),
     ABOUT(R.string.about_title, R.drawable.ic_info, R.string.more_about_hint),
@@ -38,13 +42,21 @@ fun MoreScreen(
     onOpen: (MoreEntry) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MoreViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    account: AccountViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    MoreContent(uiState, onOpen, modifier)
+    val accountState by account.uiState.collectAsStateWithLifecycle()
+    MoreContent(uiState, onOpen, modifier, accountState, account::signOut)
 }
 
 @Composable
-fun MoreContent(uiState: MoreUiState, onOpen: (MoreEntry) -> Unit, modifier: Modifier = Modifier) {
+fun MoreContent(
+    uiState: MoreUiState,
+    onOpen: (MoreEntry) -> Unit,
+    modifier: Modifier = Modifier,
+    accountState: AccountUiState = AccountUiState(),
+    onSignOut: () -> Unit = {},
+) {
     val context = LocalContext.current
     val version = remember { context.packageManager.getPackageInfo(context.packageName, 0).versionName.orEmpty() }
     Column(
@@ -62,6 +74,8 @@ fun MoreContent(uiState: MoreUiState, onOpen: (MoreEntry) -> Unit, modifier: Mod
         )
         KeyStatusCard(hasApiKey = uiState.hasApiKey)
         MoreEntries(uiState, onOpen)
+        // At the bottom, as the way out (T22.9).
+        SignOutControl(accountState, onSignOut)
         Text(
             text = stringResource(R.string.more_footer, version),
             style = MaterialTheme.typography.labelMedium,

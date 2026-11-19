@@ -91,6 +91,9 @@ data object PrivacyRoute
 data object AllNotesRoute
 
 @Serializable
+data object AccountRoute
+
+@Serializable
 data object AboutRoute
 
 // Full screen to name a collection, pick its color and choose its books.
