@@ -158,6 +158,33 @@ io.github.fabiann1809.reader
 └── util/   small shared helpers
 ```
 
+## Architecture
+
+```mermaid
+flowchart TD
+    UI["ui/<br/>Compose screens"] --> VM["ViewModels<br/>StateFlow of UiState"]
+    VM --> UC["Use cases<br/>explain, quiz, flashcard"]
+    VM --> REPO["data/<br/>repositories"]
+    UC --> AIP["ai/<br/>AiProvider"]
+    REPO --> ROOM[("Room<br/>SQLite")]
+    VM --> OCR["ocr/<br/>TextRecognizer, ML Kit on device"]
+    REPO --> SYNC["Sync<br/>coordinator, merge engine"]
+
+    AIP --> GEM["Gemini"]
+    AIP --> OAI["OpenAI"]
+    AIP --> CLA["Claude"]
+    AIP --> CMP["OpenAI-compatible"]
+
+    SYNC --> ROOM
+    SYNC -->|"appDataFolder only"| DRIVE[("Google Drive")]
+    WM["WorkManager"] -.->|"background sync"| SYNC
+
+    AUTH["Firebase Auth"] -.->|"account"| VM
+    CONT["AppContainer<br/>manual DI"] -.->|"creates and wires"| VM
+```
+
+Composables never touch repositories: they observe a ViewModel, which calls repositories and use cases. Repositories are the only entry point to Room and sync, text recognition sits behind the `TextRecognizer` interface, and every model call goes through `AiProvider`. One `AppContainer`, owned by the application class, creates and wires everything.
+
 ## Technical decisions
 
 | Decision | Why |
