@@ -12,7 +12,7 @@ and makes sure you don't forget what you read.
 ![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)
 ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)
-![Gemini](https://img.shields.io/badge/AI-Gemini%20(BYOK)-8E75B2?logo=googlegemini&logoColor=white)
+![AI](https://img.shields.io/badge/AI-Gemini%20%7C%20OpenAI%20%7C%20Claude%20(BYOK)-8E75B2)
 ![License: MIT](https://img.shields.io/badge/License-MIT-73091C)
 
 </div>
@@ -45,23 +45,24 @@ Photograph a page of a paper book, or select text in an ebook. The text is recog
 
 ### Library and reading
 - **Shelves, grid or list** views, with collections, search, sorting and filters.
-- **Ebooks** (EPUB and PDF) read inside the app: themes, fonts, table of contents, bookmarks and highlights.
+- **Ebooks** (EPUB, PDF, TXT and CBZ) read inside the app: themes, fonts, table of contents, bookmarks and highlights.
+- **Read aloud** for EPUB and TXT, using the voice engine of the phone.
 - **Paper books** too: register them and track your page, progress and remaining time.
 - **Watched folder**: books placed in it are imported automatically.
 
 ### Understand with AI
 - Select text in an EPUB, mark an area of a PDF, or take a photo of a paper page.
 - On-device **OCR** (ML Kit) extracts the text, warns when it is not confident, and lets you correct it.
-- The AI **explains the passage simply**, using everyday analogies.
+- The AI **explains the passage simply**, using everyday analogies, and can explain it again in simpler words or with another example.
 - **"Ahora tú"**: write your own interpretation and receive feedback on it.
 
 ### Notes
-- **Written notes**, **AI explanations** and **voice notes** (with optional transcription), each linked to its book and page.
+- **Written notes**, **AI explanations** and **voice notes**, each linked to its book and page. Voice notes can be transcribed with Gemini or OpenAI; with other providers the recording is still saved.
 - Search every note by text and filter by type.
 
 ### Remember
 - **Flashcards** created from notes, explanations, selected text or missed quiz questions. The AI can suggest the question and answer.
-- **Spaced repetition** (simplified SM-2): each card returns shortly before you would forget it.
+- **Spaced repetition** (simplified SM-2): each card returns shortly before you would forget it, with an optional **daily reminder** at the time you choose.
 - **Quizzes** on a chapter, a paragraph, your cards or your notes, and missed questions become new cards.
 
 ### Progress
@@ -84,14 +85,18 @@ Photograph a page of a paper book, or select text in an ebook. The text is recog
 
 > Requires **Android 8.0 (API 26)** or newer.
 
-## Get your free AI key
+## Set up your AI key
 
-Reader uses **Google Gemini** with your own API key (*bring your own key*). The key is free and takes a minute to create:
+Reader works with your own API key (*bring your own key*). Choose the provider in **Más → Ajustes → Proveedor de IA**; each provider keeps its own key and model.
 
-1. Open [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
-2. Sign in with your Google account.
-3. Select **Create API key** and copy it.
-4. In Reader, go to **Más → Configuración → Clave de IA**, paste it and select **Guardar clave**. Use **Probar clave** to check it.
+| Provider | Notes |
+|---|---|
+| **Google Gemini** | Free key in [aistudio.google.com/apikey](https://aistudio.google.com/apikey): sign in with your Google account and select **Create API key**. |
+| **OpenAI** | Key in [platform.openai.com/api-keys](https://platform.openai.com/api-keys). The API is billed separately from ChatGPT. |
+| **Claude (Anthropic)** | Key in [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys). The API is billed separately from Claude.ai. |
+| **Otro** | Any service compatible with the OpenAI chat API (OpenRouter, Groq, DeepSeek...): enter its `https` base address and model name. |
+
+Then paste the key in **Clave de API**, select **Guardar clave** and use **Probar clave** to check it.
 
 > The key is stored **encrypted** on your phone (Android Keystore) and is only sent to your AI provider when you ask for an explanation, a quiz or a transcription. It is never synced.
 
@@ -138,7 +143,7 @@ Without `keystore.properties`, the release APK is built unsigned. Release builds
 | Storage | Room, DataStore |
 | Reader | Readium Kotlin Toolkit (EPUB, PDF via PDFium) |
 | Camera & OCR | CameraX, ML Kit Text Recognition (on-device) |
-| AI | Google Gemini over OkHttp + kotlinx.serialization, behind an `AiProvider` interface |
+| AI | Gemini, OpenAI, Claude and OpenAI-compatible services over OkHttp + kotlinx.serialization, behind an `AiProvider` interface |
 | Background work | WorkManager |
 | Account | Firebase Authentication (email and Google sign-in) |
 | Sync | Google Drive REST API (application-data folder) over OkHttp, with a pure merge engine |
@@ -146,7 +151,7 @@ Without `keystore.properties`, the release APK is built unsigned. Release builds
 ```
 io.github.fabiann1809.reader
 ├── data/   Room entities, DAOs and repositories
-├── ai/     AiProvider, Gemini implementation and prompts
+├── ai/     AiProvider, one implementation per service, and prompts
 ├── ocr/    ML Kit text recognition wrapper
 ├── ui/     Compose screens and ViewModels, one package per feature
 └── util/   small shared helpers
