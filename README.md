@@ -9,6 +9,8 @@
 An Android reading companion that explains the hard parts with AI<br/>
 and makes sure you don't forget what you read.
 
+**English** · [Español](README.es.md)
+
 [![CI](https://github.com/Fabiann1809/reader/actions/workflows/ci.yml/badge.svg)](https://github.com/Fabiann1809/reader/actions/workflows/ci.yml)
 ![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)
@@ -20,9 +22,20 @@ and makes sure you don't forget what you read.
 
 ---
 
-## The idea
+## Why Reader
 
-Most readers retain only part of what they read and forget much of it within days. Reader closes that loop:
+Reading something hard usually goes the same way: you reach a paragraph you do not fully understand, keep going anyway, and a few days later you cannot remember it. The tools around that moment do not help much:
+
+- **A paper book cannot be searched.** Photographing a page leaves an image full of text that you cannot copy, correct or file.
+- **Asking an AI means copying the text by hand** into a chat, with no link to the book, the page or what you already wrote about it.
+- **Notes and highlights end up scattered** across apps, and they are rarely read again.
+- **Without review, much of what you read fades** within days.
+
+Reader puts the whole path in one place and keeps it under your control: your own books, your own AI key and your own data.
+
+### The idea
+
+Reader closes the loop between reading and remembering:
 
 ```
    Read  ──▶  Understand  ──▶  Save  ──▶  Review  ──▶  Test yourself
