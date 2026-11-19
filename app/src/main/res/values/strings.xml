@@ -804,6 +804,12 @@
     <string name="settings_account">Cuenta</string>
     <string name="settings_account_signed_in">Sesión iniciada como %1$s</string>
     <string name="settings_account_sign_out">Cerrar sesión</string>
+    <string name="settings_sync">Sincronización</string>
+    <string name="settings_sync_hint">Conecta tu Google Drive para tener tus libros, notas y fichas en otro dispositivo. Reader solo usa una carpeta oculta suya: no puede ver el resto de tu Drive.</string>
+    <string name="settings_sync_connect">Conectar con Google Drive</string>
+    <string name="settings_sync_connecting">Conectando…</string>
+    <string name="settings_sync_connected">Conectado a Google Drive.</string>
+    <string name="settings_sync_failed">No se pudo conectar con Google Drive. Revisa tu conexión e inténtalo de nuevo.</string>
     <string name="privacy_account_title">Tu cuenta</string>
     <string name="privacy_account_body">Para iniciar sesión se usa Firebase, un servicio de Google. Guarda tu correo y un identificador, solo para saber que eres tú. Tus libros, notas y fichas no se suben: siguen en tu teléfono.</string>
 </resources>

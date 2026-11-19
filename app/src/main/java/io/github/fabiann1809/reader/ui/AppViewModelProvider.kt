@@ -43,6 +43,7 @@ import io.github.fabiann1809.reader.ui.review.PendingReviewsViewModel
 import io.github.fabiann1809.reader.ui.review.ReviewViewModel
 import io.github.fabiann1809.reader.ui.reviewsession.ReviewSessionViewModel
 import io.github.fabiann1809.reader.ui.settings.AccountViewModel
+import io.github.fabiann1809.reader.ui.settings.DriveConnectionViewModel
 import io.github.fabiann1809.reader.ui.settings.GeneralSettingsViewModel
 import io.github.fabiann1809.reader.ui.settings.SettingsViewModel
 import io.github.fabiann1809.reader.ui.voice.VoiceNotePlayerViewModel
@@ -231,6 +232,9 @@ object AppViewModelProvider {
         }
         initializer {
             AccountViewModel(readerApplication().container.authRepository)
+        }
+        initializer {
+            DriveConnectionViewModel(readerApplication().container.driveAuthorizer, readerApplication().container.cloudStorage)
         }
         initializer {
             SettingsViewModel(

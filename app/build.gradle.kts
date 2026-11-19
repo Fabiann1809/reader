@@ -122,6 +122,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services)
+    // Authorization API: the permission to use the app's hidden Drive folder (T18.4).
+    implementation(libs.play.services.auth)
     implementation(libs.google.id)
 
     implementation(libs.okhttp)

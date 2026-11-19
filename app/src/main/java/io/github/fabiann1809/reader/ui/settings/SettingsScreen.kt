@@ -48,10 +48,12 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory),
     general: GeneralSettingsViewModel = viewModel(factory = AppViewModelProvider.Factory),
     account: AccountViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    drive: DriveConnectionViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val generalState by general.uiState.collectAsStateWithLifecycle()
     val accountEmail by account.email.collectAsStateWithLifecycle()
+    val driveState by drive.uiState.collectAsStateWithLifecycle()
     SettingsContent(
         uiState = uiState,
         onKeyInputChange = viewModel::onKeyInputChange,
@@ -66,6 +68,7 @@ fun SettingsScreen(
         // T17.1: appearance, reading defaults and the AI features, around the API key.
         generalSettings = {
             AccountSection(accountEmail, onSignOut = account::signOut)
+            DriveConnectionSection(driveState, drive)
             AppearanceSection(generalState, onTheme = general::setTheme, onView = general::setLibraryView, onBooksPerRow = general::setBooksPerRow)
             ReadingDefaultsSection(onOpen = general::showReadingSettings)
             ReminderSection(generalState, onEnable = general::setReviewReminder, onTime = general::setReminderTime)

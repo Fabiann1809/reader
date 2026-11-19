@@ -32,6 +32,11 @@ import io.github.fabiann1809.reader.data.aiconfig.AiConfigStore
 import io.github.fabiann1809.reader.data.aiconfig.DataStoreAiConfigStore
 import io.github.fabiann1809.reader.data.auth.AuthRepository
 import io.github.fabiann1809.reader.data.auth.FirebaseAuthRepository
+import io.github.fabiann1809.reader.data.sync.auth.DriveAuthorizer
+import io.github.fabiann1809.reader.data.sync.auth.GoogleDriveAuthorizer
+import io.github.fabiann1809.reader.data.sync.cloud.CloudStorage
+import io.github.fabiann1809.reader.data.sync.cloud.DriveApi
+import io.github.fabiann1809.reader.data.sync.cloud.DriveCloudStorage
 import com.google.firebase.auth.FirebaseAuth
 import io.github.fabiann1809.reader.data.apikey.ActiveApiKeyStore
 import io.github.fabiann1809.reader.data.apikey.ApiKeyStore
@@ -224,6 +229,14 @@ class AppContainer(context: Context) {
             // Model responses can take a while to generate.
             .readTimeout(60, TimeUnit.SECONDS)
             .build()
+    }
+
+    val driveAuthorizer: DriveAuthorizer by lazy { GoogleDriveAuthorizer(appContext) }
+
+    val cloudStorage: CloudStorage by lazy {
+        // Books are big: a transfer may take minutes, so it is limited by progress (30 s of silence), not by total time.
+        val client = httpClient.newBuilder().readTimeout(30, TimeUnit.SECONDS).writeTimeout(30, TimeUnit.SECONDS).build()
+        DriveCloudStorage(DriveApi(client, driveAuthorizer))
     }
 
     val aiProvider: AiProvider by lazy {
