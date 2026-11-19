@@ -45,6 +45,9 @@ import io.github.fabiann1809.reader.ui.notes.AllNotesScreen
 import io.github.fabiann1809.reader.ui.onboarding.OnboardingScreen
 import io.github.fabiann1809.reader.ui.privacy.PrivacyScreen
 import io.github.fabiann1809.reader.ui.progress.ProgressScreen
+import io.github.fabiann1809.reader.ui.offer.OfferState
+import io.github.fabiann1809.reader.ui.offer.SyncOfferScreen
+import io.github.fabiann1809.reader.ui.offer.SyncOfferViewModel
 import io.github.fabiann1809.reader.ui.reader.ReaderScreen
 import io.github.fabiann1809.reader.ui.restore.RestoreScreen
 import io.github.fabiann1809.reader.ui.restore.RestoreState
@@ -59,7 +62,7 @@ import kotlinx.coroutines.flow.emptyFlow
 /**
  * App root. Without a session: the onboarding the first time, then the welcome and the sign-in
  * (T22.4, T22.8). With one: the navigation, from the library, after bringing the library back from
- * Drive when this account just signed in again (T18.9b).
+ * Drive when this account just signed in again (T18.9b), or after offering to sync with Drive (T18.9d).
  * [showLibraryRequests] emits when books arrive from another app, to show the import progress.
  */
 @Composable
@@ -67,18 +70,24 @@ fun ReaderApp(
     showLibraryRequests: Flow<Unit> = emptyFlow(),
     viewModel: AppStartViewModel = viewModel(factory = AppViewModelProvider.Factory),
     restoreViewModel: RestoreViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    offerViewModel: SyncOfferViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val signedIn by viewModel.isSignedIn.collectAsStateWithLifecycle()
     val onboardingSeen by viewModel.onboardingSeen.collectAsStateWithLifecycle()
     var hadSession by rememberSaveable { mutableStateOf(false) }
     if (signedIn) hadSession = true
     val restoreState by restoreViewModel.state.collectAsStateWithLifecycle()
+    val offerState by offerViewModel.state.collectAsStateWithLifecycle()
     if (signedIn) {
         // Signing out leaves the navigation, so the next person starts from a clean back stack.
         when (restoreState) {
             // A few milliseconds: the window background shows meanwhile, so the library never flashes empty first.
             RestoreState.Checking -> Unit
-            RestoreState.Done -> ReaderNavHost(showLibraryRequests = showLibraryRequests)
+            RestoreState.Done -> when (offerState) {
+                OfferState.Checking -> Unit
+                OfferState.Offer -> SyncOfferScreen(onAnswered = offerViewModel::answered)
+                OfferState.Done -> ReaderNavHost(showLibraryRequests = showLibraryRequests)
+            }
             else -> RestoreScreen(restoreState, onContinue = restoreViewModel::continueWithout, onRetry = restoreViewModel::retry)
         }
     } else {

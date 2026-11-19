@@ -22,6 +22,19 @@ import io.github.fabiann1809.reader.ui.components.OutlineButton
 /** "Sincronización": connect Google Drive, see how the sync is going, and ask for it now (T18.7). */
 @Composable
 fun SyncSection(state: SyncUiState, viewModel: SyncViewModel) {
+    SyncConsentEffect(state, viewModel)
+    SyncSectionContent(
+        state = state,
+        onEnabled = viewModel::setEnabled,
+        onWifiOnly = viewModel::setWifiOnly,
+        onSyncNow = viewModel::syncNow,
+        onRetry = viewModel::retry,
+    )
+}
+
+/** Opens Google's consent screen when the sync asks for it, and passes its answer back. Shared by every screen that turns the sync on. */
+@Composable
+fun SyncConsentEffect(state: SyncUiState, viewModel: SyncViewModel) {
     val consentLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
         viewModel.onConsentResult(it.data)
     }
@@ -30,13 +43,6 @@ fun SyncSection(state: SyncUiState, viewModel: SyncViewModel) {
         consentLauncher.launch(consent.toIntentSenderRequest())
         viewModel.consentShown()
     }
-    SyncSectionContent(
-        state = state,
-        onEnabled = viewModel::setEnabled,
-        onWifiOnly = viewModel::setWifiOnly,
-        onSyncNow = viewModel::syncNow,
-        onRetry = viewModel::retry,
-    )
 }
 
 @Composable

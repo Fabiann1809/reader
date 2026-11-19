@@ -23,6 +23,8 @@ data class SyncSettings(
     // The Reader accounts (their uids) whose library was saved to Drive when they signed out and emptied
     // this phone (T18.9b): when one of them signs in again, its library comes back by itself.
     val restoreFor: Set<String> = emptySet(),
+    // The Reader accounts (their uids) already asked whether to sync after signing in (T18.9d): asked once each.
+    val offeredTo: Set<String> = emptySet(),
 )
 
 interface SyncSettingsStore {
@@ -47,6 +49,7 @@ class DataStoreSyncSettingsStore(context: Context, fileName: String = FILE_NAME)
             prefs[WIFI_ONLY] = updated.wifiOnly
             prefs.putOrRemove(LAST_SYNC_AT, updated.lastSyncAt)
             if (updated.restoreFor.isEmpty()) prefs.remove(RESTORE_FOR) else prefs[RESTORE_FOR] = updated.restoreFor
+            if (updated.offeredTo.isEmpty()) prefs.remove(OFFERED_TO) else prefs[OFFERED_TO] = updated.offeredTo
         }
     }
 
@@ -55,6 +58,7 @@ class DataStoreSyncSettingsStore(context: Context, fileName: String = FILE_NAME)
         wifiOnly = this[WIFI_ONLY] ?: true,
         lastSyncAt = this[LAST_SYNC_AT],
         restoreFor = this[RESTORE_FOR].orEmpty(),
+        offeredTo = this[OFFERED_TO].orEmpty(),
     )
 
     private fun <T> androidx.datastore.preferences.core.MutablePreferences.putOrRemove(key: Preferences.Key<T>, value: T?) {
@@ -67,5 +71,6 @@ class DataStoreSyncSettingsStore(context: Context, fileName: String = FILE_NAME)
         val WIFI_ONLY = booleanPreferencesKey("wifi_only")
         val LAST_SYNC_AT = longPreferencesKey("last_sync_at")
         val RESTORE_FOR = stringSetPreferencesKey("restore_for_users")
+        val OFFERED_TO = stringSetPreferencesKey("offered_to_users")
     }
 }

@@ -74,6 +74,17 @@ class SyncSupportTest {
     }
 
     @Test
+    fun theAccountsAlreadyOfferedTheSyncAreRemembered() = runTest {
+        val store = DataStoreSyncSettingsStore(context, testFile)
+        assertTrue(store.settings.first().offeredTo.isEmpty())
+
+        store.update { it.copy(offeredTo = it.offeredTo + "uid-ana") }
+        store.update { it.copy(offeredTo = it.offeredTo + "uid-beto") }
+
+        assertEquals(setOf("uid-ana", "uid-beto"), store.settings.first().offeredTo)
+    }
+
+    @Test
     // Real time (runBlocking): the waits below must really happen, runTest would skip them.
     fun theChangeSourceStaysQuietUntilTheDataChanges() = runBlocking {
         val source = RoomLocalChangeSource(database)
