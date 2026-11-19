@@ -9,6 +9,7 @@
 An Android reading companion that explains the hard parts with AI<br/>
 and makes sure you don't forget what you read.
 
+[![CI](https://github.com/Fabiann1809/reader/actions/workflows/ci.yml/badge.svg)](https://github.com/Fabiann1809/reader/actions/workflows/ci.yml)
 ![Android](https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white)
 ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white)
