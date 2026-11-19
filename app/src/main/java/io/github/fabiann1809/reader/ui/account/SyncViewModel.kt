@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.fabiann1809.reader.data.sync.SyncControl
+import io.github.fabiann1809.reader.data.sync.SyncManifest
 import io.github.fabiann1809.reader.data.sync.SyncSettingsStore
 import io.github.fabiann1809.reader.data.sync.SyncStatus
 import io.github.fabiann1809.reader.data.sync.auth.Consent
@@ -27,6 +28,9 @@ data class SyncUiState(
     val connectionFailed: Boolean = false,
     // Set while Google's consent screen has to be opened; the screen clears it with [SyncViewModel.consentShown].
     val consent: Consent? = null,
+    // Whether this account already has a library in Drive, known once the permission is given: null before.
+    // The invitation after signing in (T18.9d) waits for the first sync only when there is something to bring.
+    val cloudHasData: Boolean? = null,
 )
 
 /**
@@ -40,12 +44,17 @@ class SyncViewModel(
     settings: SyncSettingsStore,
 ) : ViewModel() {
 
-    private data class Connection(val connecting: Boolean = false, val failed: Boolean = false, val consent: Consent? = null)
+    private data class Connection(
+        val connecting: Boolean = false,
+        val failed: Boolean = false,
+        val consent: Consent? = null,
+        val cloudHasData: Boolean? = null,
+    )
 
     private val connection = MutableStateFlow(Connection())
 
     val uiState: StateFlow<SyncUiState> = combine(sync.status, settings.settings, connection) { status, saved, connection ->
-        SyncUiState(status, saved.wifiOnly, connection.connecting, connection.failed, connection.consent)
+        SyncUiState(status, saved.wifiOnly, connection.connecting, connection.failed, connection.consent, connection.cloudHasData)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), SyncUiState())
 
     fun setEnabled(enabled: Boolean) {
@@ -82,7 +91,7 @@ class SyncViewModel(
         when (grant) {
             // A token alone proves nothing: listing the folder shows that Drive accepts it.
             is DriveGrant.Granted -> if (cloud.listFiles().isSuccess) {
-                connection.value = Connection()
+                connection.value = Connection(cloudHasData = cloudHasLibrary())
                 sync.setEnabled(true)
             } else {
                 connection.value = Connection(failed = true)
@@ -90,6 +99,16 @@ class SyncViewModel(
             is DriveGrant.NeedsConsent -> connection.update { it.copy(consent = grant.consent) }
             DriveGrant.Declined -> connection.value = Connection()
             DriveGrant.Failed -> connection.value = Connection(failed = true)
+        }
+    }
+
+    /** Whether Drive already holds records of this account. When it can't tell, it says yes: the sync will show why. */
+    private suspend fun cloudHasLibrary(): Boolean {
+        val manifest = cloud.readManifest().getOrElse { return true } ?: return false
+        return try {
+            SyncManifest.decode(manifest.content).records.isNotEmpty()
+        } catch (e: SyncError) {
+            true
         }
     }
 

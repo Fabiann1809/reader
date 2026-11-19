@@ -1,10 +1,14 @@
 package io.github.fabiann1809.reader.ui.account
 
+import io.github.fabiann1809.reader.data.sync.SyncManifest
 import io.github.fabiann1809.reader.data.sync.SyncSettings
 import io.github.fabiann1809.reader.data.sync.SyncStatus
 import io.github.fabiann1809.reader.data.sync.auth.Consent
 import io.github.fabiann1809.reader.data.sync.auth.DriveGrant
 import io.github.fabiann1809.reader.data.sync.cloud.SyncError
+import io.github.fabiann1809.reader.data.sync.merge.RecordKey
+import io.github.fabiann1809.reader.data.sync.merge.SyncRecord
+import io.github.fabiann1809.reader.data.sync.merge.SyncSnapshot
 import io.github.fabiann1809.reader.testing.FakeCloudStorage
 import io.github.fabiann1809.reader.testing.FakeDriveAuthorizer
 import io.github.fabiann1809.reader.testing.FakeSyncControl
@@ -165,5 +169,60 @@ class SyncViewModelTest {
 
         assertEquals(1, authorizer.authorizeCalls)
         assertEquals(listOf("enabled:true"), sync.calls)
+    }
+
+    private fun libraryWith(vararg records: SyncRecord) = SyncManifest.encode(SyncSnapshot(records = records.toList()))
+
+    private val someRecord = SyncRecord(RecordKey("book", "b1"), updatedAt = 1, data = "{}")
+
+    @Test
+    fun anAccountWithNothingInDriveIsKnownToHaveNoLibrary() = runTest(mainDispatcherRule.testDispatcher) {
+        val viewModel = viewModel()
+        viewModel.uiState.launchIn(backgroundScope)
+
+        viewModel.setEnabled(true)
+
+        assertEquals(false, viewModel.uiState.value.cloudHasData)
+    }
+
+    @Test
+    fun aManifestWithoutRecordsIsNoLibraryEither() = runTest(mainDispatcherRule.testDispatcher) {
+        cloud.otherDeviceWrites(libraryWith())
+        val viewModel = viewModel()
+        viewModel.uiState.launchIn(backgroundScope)
+
+        viewModel.setEnabled(true)
+
+        assertEquals(false, viewModel.uiState.value.cloudHasData)
+    }
+
+    @Test
+    fun anAccountWhoseDriveHoldsRecordsIsKnownToHaveALibrary() = runTest(mainDispatcherRule.testDispatcher) {
+        cloud.otherDeviceWrites(libraryWith(someRecord))
+        val viewModel = viewModel()
+        viewModel.uiState.launchIn(backgroundScope)
+
+        viewModel.setEnabled(true)
+
+        assertEquals(true, viewModel.uiState.value.cloudHasData)
+    }
+
+    @Test
+    fun whenItCannotReadTheManifestItAssumesThereIsALibraryAndLetsTheSyncExplain() = runTest(mainDispatcherRule.testDispatcher) {
+        cloud.otherDeviceWrites("not json")
+        val viewModel = viewModel()
+        viewModel.uiState.launchIn(backgroundScope)
+
+        viewModel.setEnabled(true)
+
+        assertEquals(true, viewModel.uiState.value.cloudHasData)
+    }
+
+    @Test
+    fun beforeTheSyncIsTurnedOnItIsNotKnown() = runTest(mainDispatcherRule.testDispatcher) {
+        val viewModel = viewModel()
+        viewModel.uiState.launchIn(backgroundScope)
+
+        assertEquals(null, viewModel.uiState.value.cloudHasData)
     }
 }

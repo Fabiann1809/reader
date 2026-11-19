@@ -43,10 +43,13 @@ import io.github.fabiann1809.reader.ui.restore.RestoreState
 fun SyncOfferScreen(onAnswered: () -> Unit, sync: SyncViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
     val state by sync.uiState.collectAsStateWithLifecycle()
     SyncConsentEffect(state, sync)
-    // The first sync ended: the library is there.
-    LaunchedEffect(state.status) {
+    // The first sync ended: the library is there. Or there was nothing in Drive to wait for: a new account
+    // goes straight to its empty library, and what it adds from then on is synced in the background.
+    LaunchedEffect(state.status, state.cloudHasData) {
         val status = state.status
-        if (status is SyncStatus.Synced && status.at != null) onAnswered()
+        val ended = status is SyncStatus.Synced && status.at != null
+        val nothingToBring = status != SyncStatus.Disabled && state.cloudHasData == false
+        if (ended || nothingToBring) onAnswered()
     }
     SyncOfferContent(state, onEnable = { sync.setEnabled(true) }, onSkip = onAnswered, onRetry = sync::retry)
 }
@@ -56,6 +59,8 @@ fun SyncOfferContent(state: SyncUiState, onEnable: () -> Unit, onSkip: () -> Uni
     // Turned on: wait for the first sync with the same loading screen as a returning account's restore.
     val status = state.status
     if (status != SyncStatus.Disabled) {
+        // Nothing in Drive: the screen is about to close, so it shows nothing rather than a loading that isn't true.
+        if (state.cloudHasData == false) return
         val loading = if (status is SyncStatus.Failed) RestoreState.Failed(status.error) else RestoreState.Restoring
         RestoreScreen(loading, onContinue = onSkip, onRetry = onRetry)
         return

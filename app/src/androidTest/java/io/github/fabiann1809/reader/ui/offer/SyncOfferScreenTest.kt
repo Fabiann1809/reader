@@ -62,6 +62,21 @@ class SyncOfferScreenTest {
     }
 
     @Test
+    fun anAccountWithNothingInDriveSeesNoLoadingScreenBecauseThereIsNothingToWaitFor() {
+        show(SyncUiState(status = SyncStatus.Synced(null), cloudHasData = false))
+
+        composeRule.onNodeWithText(string(R.string.restore_title)).assertDoesNotExist()
+        composeRule.onNodeWithText(string(R.string.offer_title)).assertDoesNotExist()
+    }
+
+    @Test
+    fun anAccountWithALibraryInDriveSeesTheLoadingScreen() {
+        show(SyncUiState(status = SyncStatus.Synced(null), cloudHasData = true))
+
+        composeRule.onNodeWithText(string(R.string.restore_title)).assertIsDisplayed()
+    }
+
+    @Test
     fun ifTheFirstSyncFailsItSaysWhyAndCanRetry() {
         show(SyncUiState(status = SyncStatus.Failed(SyncError.QuotaExceeded())))
 
