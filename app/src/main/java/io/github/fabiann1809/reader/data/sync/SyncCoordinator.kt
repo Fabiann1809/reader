@@ -10,6 +10,19 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+/** What the sync screen asks of the sync (T18.7). */
+interface SyncControl {
+    val status: Flow<SyncStatus>
+
+    /** Turns the sync on (and syncs at once) or off. */
+    suspend fun setEnabled(enabled: Boolean)
+
+    suspend fun setWifiOnly(wifiOnly: Boolean)
+
+    /** "Sincronizar ahora" and "Reintentar". */
+    suspend fun syncNow()
+}
+
 /**
  * Decides when the sync runs and tells how it is going (T18.6). It syncs when the app opens, a few
  * seconds after the data changes, and when the user asks; WorkManager runs it, waiting for the network.
@@ -21,13 +34,13 @@ class SyncCoordinator(
     private val changeSource: LocalChangeSource,
     private val scope: CoroutineScope,
     private val clock: () -> Long = System::currentTimeMillis,
-) {
+) : SyncControl {
     private val running = MutableStateFlow(false)
     private val lastError = MutableStateFlow<SyncError?>(null)
     private val hasPending = MutableStateFlow(false)
     private var started = false
 
-    val status: Flow<SyncStatus> = combine(settings.settings, running, lastError, hasPending) { saved, isRunning, error, pending ->
+    override val status: Flow<SyncStatus> = combine(settings.settings, running, lastError, hasPending) { saved, isRunning, error, pending ->
         when {
             !saved.enabled -> SyncStatus.Disabled
             isRunning -> SyncStatus.Syncing
@@ -49,7 +62,7 @@ class SyncCoordinator(
         }
     }
 
-    suspend fun setEnabled(enabled: Boolean) {
+    override suspend fun setEnabled(enabled: Boolean) {
         settings.update { it.copy(enabled = enabled) }
         if (enabled) {
             lastError.value = null
@@ -60,14 +73,14 @@ class SyncCoordinator(
         }
     }
 
-    suspend fun setWifiOnly(wifiOnly: Boolean) {
+    override suspend fun setWifiOnly(wifiOnly: Boolean) {
         settings.update { it.copy(wifiOnly = wifiOnly) }
         // The waiting sync was asked with the old rule.
         if (settings.settings.first().enabled) syncNow()
     }
 
-    /** "Sincronizar ahora" and "Reintentar". A sync that is running already covers it. */
-    suspend fun syncNow() {
+    // A sync that is running already covers it.
+    override suspend fun syncNow() {
         val saved = settings.settings.first()
         if (!saved.enabled || running.value) return
         lastError.value = null

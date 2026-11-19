@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertCountEquals
@@ -85,8 +86,8 @@ class ReaderNavHostTest {
     @Test
     fun opensSettingsFromMoreAndComesBack() {
         openMore(R.string.settings_title)
-        // The first section.
-        composeRule.onNodeWithText(string(R.string.settings_api_key_section)).assertIsDisplayed()
+        // The first section (its title also labels the key field while no key is saved, hence the first node).
+        composeRule.onAllNodesWithText(string(R.string.settings_api_key_section)).onFirst().assertIsDisplayed()
         // The bottom bar is hidden on inner screens.
         composeRule.onNodeWithText(string(R.string.tab_review)).assertDoesNotExist()
 
