@@ -19,6 +19,8 @@ class FirebaseAuthRepository(private val auth: FirebaseAuth) : AuthRepository {
 
     override suspend fun signUp(email: String, password: String) = call {
         auth.createUserWithEmailAndPassword(email.trim(), password).await()
+        // The account exists now; if the link can't go out (no connection), the verification screen offers to resend it.
+        runCatching { auth.currentUser?.sendEmailVerification()?.await() }
     }
 
     override suspend fun signIn(email: String, password: String) = call {
@@ -33,6 +35,17 @@ class FirebaseAuthRepository(private val auth: FirebaseAuth) : AuthRepository {
         auth.sendPasswordResetEmail(email.trim()).await()
     }
 
+    override suspend fun sendEmailVerification() = call {
+        auth.currentUser?.sendEmailVerification()?.await()
+    }
+
+    override suspend fun refreshUser() = call {
+        val current = auth.currentUser ?: return@call
+        current.reload().await()
+        // Reloading doesn't trigger the auth state listener, so the new answer is published here.
+        user.value = auth.currentUser?.toAuthUser()
+    }
+
     override fun signOut() = auth.signOut()
 
     private suspend fun call(block: suspend () -> Unit) {
@@ -43,5 +56,5 @@ class FirebaseAuthRepository(private val auth: FirebaseAuth) : AuthRepository {
         }
     }
 
-    private fun FirebaseUser.toAuthUser() = AuthUser(uid = uid, email = email)
+    private fun FirebaseUser.toAuthUser() = AuthUser(uid = uid, email = email, emailVerified = isEmailVerified)
 }

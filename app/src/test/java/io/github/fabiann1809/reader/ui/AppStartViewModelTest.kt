@@ -49,6 +49,38 @@ class AppStartViewModelTest {
     }
 
     @Test
+    fun anUnverifiedEmailAccountMustConfirmItsAddressFirst() {
+        val auth = FakeAuthRepository(signedIn = AuthUser("uid", "ana@example.com", emailVerified = false))
+
+        assertTrue(AppStartViewModel(FakeAppPreferences(), auth).needsEmailVerification.value)
+    }
+
+    @Test
+    fun googleAndVerifiedAccountsGoStraightIn() {
+        val auth = FakeAuthRepository(signedIn = AuthUser("uid", "ana@example.com"))
+
+        assertFalse(AppStartViewModel(FakeAppPreferences(), auth).needsEmailVerification.value)
+    }
+
+    @Test
+    fun nobodySignedInNeedsNoConfirmation() {
+        assertFalse(AppStartViewModel(FakeAppPreferences(), FakeAuthRepository()).needsEmailVerification.value)
+    }
+
+    @Test
+    fun confirmingTheAddressOpensTheApp() = runTest {
+        val auth = FakeAuthRepository()
+        auth.signUp("ana@example.com", "Secreta123")
+        val viewModel = AppStartViewModel(FakeAppPreferences(), auth)
+        assertTrue(viewModel.needsEmailVerification.value)
+
+        auth.openVerificationLink("ana@example.com")
+        auth.refreshUser()
+
+        assertFalse(viewModel.needsEmailVerification.value)
+    }
+
+    @Test
     fun signingOutShowsTheSignInAgain() {
         val auth = FakeAuthRepository(signedIn = AuthUser("uid", "ana@example.com"))
         val viewModel = AppStartViewModel(FakeAppPreferences(), auth)

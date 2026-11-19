@@ -24,6 +24,7 @@ import io.github.fabiann1809.reader.ui.AppViewModelProvider
 import io.github.fabiann1809.reader.ui.account.AccountScreen
 import io.github.fabiann1809.reader.ui.addbook.AddBookScreen
 import io.github.fabiann1809.reader.ui.auth.AuthScreen
+import io.github.fabiann1809.reader.ui.auth.VerifyEmailScreen
 import io.github.fabiann1809.reader.ui.auth.WelcomeScreen
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -61,7 +62,8 @@ import kotlinx.coroutines.flow.emptyFlow
 
 /**
  * App root. Without a session: the onboarding the first time, then the welcome and the sign-in
- * (T22.4, T22.8). With one: the navigation, from the library, after bringing the library back from
+ * (T22.4, T22.8). With one: first the confirmation of the email address when it is an unverified email
+ * account (T22.10), then the navigation, from the library, after bringing the library back from
  * Drive when this account just signed in again (T18.9b), or after offering to sync with Drive (T18.9d).
  * [showLibraryRequests] emits when books arrive from another app, to show the import progress.
  */
@@ -73,12 +75,15 @@ fun ReaderApp(
     offerViewModel: SyncOfferViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val signedIn by viewModel.isSignedIn.collectAsStateWithLifecycle()
+    val needsVerification by viewModel.needsEmailVerification.collectAsStateWithLifecycle()
     val onboardingSeen by viewModel.onboardingSeen.collectAsStateWithLifecycle()
     var hadSession by rememberSaveable { mutableStateOf(false) }
     if (signedIn) hadSession = true
     val restoreState by restoreViewModel.state.collectAsStateWithLifecycle()
     val offerState by offerViewModel.state.collectAsStateWithLifecycle()
-    if (signedIn) {
+    if (signedIn && needsVerification) {
+        VerifyEmailScreen()
+    } else if (signedIn) {
         // Signing out leaves the navigation, so the next person starts from a clean back stack.
         when (restoreState) {
             // A few milliseconds: the window background shows meanwhile, so the library never flashes empty first.

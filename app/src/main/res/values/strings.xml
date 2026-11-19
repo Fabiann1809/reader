@@ -761,6 +761,14 @@
     <string name="auth_subtitle_forgot">Te enviaremos un enlace para crear una contraseña nueva.</string>
     <string name="auth_sent_title">Revisa tu correo</string>
     <string name="auth_sent_text">Enviamos un enlace a %1$s.</string>
+    <string name="verify_title">Confirma tu correo</string>
+    <string name="verify_body">Enviamos un enlace de confirmación a %1$s. Ábrelo y vuelve aquí.</string>
+    <string name="verify_spam_hint">Si no lo ves, revisa la carpeta de spam.</string>
+    <string name="verify_check">Ya lo confirmé</string>
+    <string name="verify_still_pending">Todavía no está confirmado. Abre el enlace del correo e inténtalo de nuevo.</string>
+    <string name="verify_resend">Reenviar correo</string>
+    <string name="verify_resent">Correo reenviado</string>
+    <string name="verify_other_email">Usar otro correo</string>
     <string name="auth_sign_in">Iniciar sesión</string>
     <string name="auth_sign_up">Crear cuenta</string>
     <string name="auth_send_link">Enviar enlace</string>

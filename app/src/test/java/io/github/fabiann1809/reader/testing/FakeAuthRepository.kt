@@ -18,19 +18,22 @@ class FakeAuthRepository(signedIn: AuthUser? = null) : AuthRepository {
 
     private val accounts = mutableMapOf<String, String>()
     val resetEmails = mutableListOf<String>()
+    val verificationEmails = mutableListOf<String>()
+    private val verified = mutableSetOf<String>()
     var failWith: AuthError? = null
 
     override suspend fun signUp(email: String, password: String) {
         failWith?.let { throw it }
         if (email in accounts) throw AuthError.EmailAlreadyInUse()
         accounts[email] = password
-        user.value = AuthUser(uid = "uid-$email", email = email)
+        user.value = AuthUser(uid = "uid-$email", email = email, emailVerified = false)
+        verificationEmails += email
     }
 
     override suspend fun signIn(email: String, password: String) {
         failWith?.let { throw it }
         if (accounts[email] != password) throw AuthError.WrongCredentials()
-        user.value = AuthUser(uid = "uid-$email", email = email)
+        user.value = AuthUser(uid = "uid-$email", email = email, emailVerified = email in verified)
     }
 
     override suspend fun signInWithGoogle(idToken: String) {
@@ -41,6 +44,22 @@ class FakeAuthRepository(signedIn: AuthUser? = null) : AuthRepository {
     override suspend fun sendPasswordReset(email: String) {
         failWith?.let { throw it }
         resetEmails += email
+    }
+
+    override suspend fun sendEmailVerification() {
+        failWith?.let { throw it }
+        verificationEmails += user.value?.email.orEmpty()
+    }
+
+    /** Simulates the person opening the link; [refreshUser] is what makes the app notice. */
+    fun openVerificationLink(email: String) {
+        verified += email
+    }
+
+    override suspend fun refreshUser() {
+        failWith?.let { throw it }
+        val current = user.value ?: return
+        user.value = current.copy(emailVerified = current.email in verified)
     }
 
     override fun signOut() {

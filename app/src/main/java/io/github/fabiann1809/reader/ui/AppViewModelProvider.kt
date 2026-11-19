@@ -43,6 +43,7 @@ import io.github.fabiann1809.reader.ui.review.PendingReviewsViewModel
 import io.github.fabiann1809.reader.ui.review.ReviewViewModel
 import io.github.fabiann1809.reader.ui.reviewsession.ReviewSessionViewModel
 import io.github.fabiann1809.reader.ui.account.AccountViewModel
+import io.github.fabiann1809.reader.ui.auth.VerifyEmailViewModel
 import io.github.fabiann1809.reader.ui.offer.SyncOfferViewModel
 import io.github.fabiann1809.reader.ui.restore.RestoreViewModel
 import io.github.fabiann1809.reader.ui.account.SyncViewModel
@@ -237,6 +238,9 @@ object AppViewModelProvider {
         }
         initializer {
             SyncOfferViewModel(readerApplication().container.authRepository, readerApplication().container.syncSettings)
+        }
+        initializer {
+            VerifyEmailViewModel(readerApplication().container.authRepository)
         }
         initializer {
             RestoreViewModel(readerApplication().container.authRepository, readerApplication().container.syncRestorer)

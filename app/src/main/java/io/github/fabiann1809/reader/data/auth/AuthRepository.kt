@@ -18,5 +18,11 @@ interface AuthRepository {
 
     suspend fun sendPasswordReset(email: String)
 
+    /** Sends the link that proves the signed-in email address is the person's. */
+    suspend fun sendEmailVerification()
+
+    /** Asks the service again whether the link was opened, and updates [currentUser] with the answer. */
+    suspend fun refreshUser()
+
     fun signOut()
 }

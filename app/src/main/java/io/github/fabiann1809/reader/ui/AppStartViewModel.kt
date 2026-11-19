@@ -19,6 +19,10 @@ class AppStartViewModel(preferences: AppPreferences, auth: AuthRepository) : Vie
     val isSignedIn: StateFlow<Boolean> = auth.currentUser.map { it != null }
         .stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = auth.currentUser.value != null)
 
+    /** An email account whose link wasn't opened yet: only the "confirm your email" step opens until it is (T22.10). */
+    val needsEmailVerification: StateFlow<Boolean> = auth.currentUser.map { it != null && !it.emailVerified }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = auth.currentUser.value.let { it != null && !it.emailVerified })
+
     /** Null while the stored flag is being read; becomes true as soon as the onboarding is finished or skipped. */
     val onboardingSeen: StateFlow<Boolean?> = preferences.hasSeenOnboarding.map<Boolean, Boolean?> { it }
         .stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = null)
