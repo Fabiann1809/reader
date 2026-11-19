@@ -14,6 +14,9 @@ class BookFiles(private val filesDir: File) {
     /** A new, unique file in the books folder; random names avoid clashes between books with the same title. */
     fun newFile(extension: String): File = newFileIn(BOOKS_DIR, extension)
 
+    /** A new, unique file for a cover that arrives already encoded (from the cloud). */
+    fun newCoverFile(): File = newFileIn(COVERS_DIR, "jpg")
+
     /** Saves a cover as JPEG and returns its relative path, or null if it could not be written. */
     fun saveCover(cover: Bitmap): String? {
         val file = newFileIn(COVERS_DIR, "jpg")

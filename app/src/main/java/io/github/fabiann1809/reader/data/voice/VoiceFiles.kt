@@ -1,6 +1,7 @@
 package io.github.fabiann1809.reader.data.voice
 
 import java.io.File
+import java.util.UUID
 
 /**
  * Voice note recordings in the app's private storage. Like [io.github.fabiann1809.reader.data.book.BookFiles],
@@ -10,6 +11,10 @@ class VoiceFiles(private val filesDir: File) {
 
     fun newRecording(): File =
         File(File(filesDir, VOICE_DIR).apply { mkdirs() }, "voice-${System.currentTimeMillis()}.m4a")
+
+    /** A new, unique file for a recording that arrives from the cloud (the timestamp of [newRecording] could repeat). */
+    fun newSyncedRecording(): File =
+        File(File(filesDir, VOICE_DIR).apply { mkdirs() }, "voice-${UUID.randomUUID()}.m4a")
 
     fun storedPath(file: File): String = file.relativeTo(filesDir).invariantSeparatorsPath
 

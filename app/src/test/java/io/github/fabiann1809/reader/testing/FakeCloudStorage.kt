@@ -20,6 +20,12 @@ class FakeCloudStorage : CloudStorage {
 
     var failWith: SyncError? = null
 
+    /** Every write in order ("manifest", "upload:name", "delete:name"), to check what went first. */
+    val writes = mutableListOf<String>()
+
+    /** Runs once, just before the next manifest write: what another device does while this one works. */
+    var beforeNextManifestWrite: (() -> Unit)? = null
+
     private var versions = 0
 
     /** What another device does: writes the manifest without the caller knowing. */
@@ -31,9 +37,14 @@ class FakeCloudStorage : CloudStorage {
 
     override suspend fun writeManifest(content: String, expectedVersion: String?): Result<String> {
         fail<String>()?.let { return it }
+        beforeNextManifestWrite?.let { hook ->
+            beforeNextManifestWrite = null
+            hook()
+        }
         if (manifest?.version != expectedVersion) return Result.failure(SyncError.Conflict())
         val written = CloudManifest(content, nextVersion())
         manifest = written
+        writes += "manifest"
         return Result.success(written.version)
     }
 
@@ -42,6 +53,7 @@ class FakeCloudStorage : CloudStorage {
     override suspend fun uploadFile(name: String, file: File): Result<Unit> {
         fail<Unit>()?.let { return it }
         files[name] = file.readBytes()
+        writes += "upload:$name"
         return Result.success(Unit)
     }
 
@@ -55,6 +67,7 @@ class FakeCloudStorage : CloudStorage {
     override suspend fun deleteFile(name: String): Result<Unit> {
         fail<Unit>()?.let { return it }
         files.remove(name)
+        writes += "delete:$name"
         return Result.success(Unit)
     }
 

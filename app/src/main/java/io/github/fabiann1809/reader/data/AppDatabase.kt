@@ -20,6 +20,7 @@ import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteDao
 import io.github.fabiann1809.reader.data.session.ReadingSession
 import io.github.fabiann1809.reader.data.session.ReadingSessionDao
+import io.github.fabiann1809.reader.data.sync.SyncDao
 import io.github.fabiann1809.reader.data.sync.SyncTombstone
 import io.github.fabiann1809.reader.data.sync.SyncTombstoneDao
 import io.github.fabiann1809.reader.data.sync.SyncTriggersCallback
@@ -70,6 +71,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun readingSessionDao(): ReadingSessionDao
 
     abstract fun syncTombstoneDao(): SyncTombstoneDao
+
+    abstract fun syncDao(): SyncDao
 
     companion object {
         private const val DATABASE_NAME = "reader.db"

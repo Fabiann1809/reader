@@ -18,16 +18,16 @@ object SyncTriggers {
 
     /** Table name to the type name its tombstones use. */
     private val TABLES = mapOf(
-        "books" to "book",
-        "notes" to "note",
-        "collections" to "collection",
-        "bookmarks" to "bookmark",
-        "highlights" to "highlight",
-        "flashcards" to "flashcard",
-        "reading_sessions" to "reading_session",
+        "books" to SyncTypes.BOOK,
+        "notes" to SyncTypes.NOTE,
+        "collections" to SyncTypes.COLLECTION,
+        "bookmarks" to SyncTypes.BOOKMARK,
+        "highlights" to SyncTypes.HIGHLIGHT,
+        "flashcards" to SyncTypes.FLASHCARD,
+        "reading_sessions" to SyncTypes.SESSION,
     )
 
-    const val LINK_TYPE = "book_collection"
+    const val LINK_TYPE = SyncTypes.LINK
 
     // Epoch milliseconds in SQL (julianday 2440587.5 is the Unix epoch).
     private const val NOW = "CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)"
