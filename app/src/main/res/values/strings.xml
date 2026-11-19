@@ -464,7 +464,7 @@
     <string name="settings_privacy">Privacidad</string>
     <string name="settings_privacy_summary">Tus libros y notas se quedan en tu teléfono, salvo que actives la sincronización: entonces también se guardan en una carpeta oculta de tu Google Drive. Solo el fragmento que pides explicar se envía al proveedor de IA que elegiste, con tu propia clave.</string>
     <string name="privacy_title">Privacidad</string>
-    <string name="privacy_intro">Reader no tiene servidores propios: tus datos se quedan en tu teléfono, y solo salen si activas la sincronización con tu Google Drive. Aparte de eso, lo único que sale son los fragmentos que pides explicar.</string>
+    <string name="privacy_intro">Reader no tiene servidores propios. Tus libros, notas y progreso se quedan en tu teléfono y solo salen a tu Google Drive si activas la sincronización. Para iniciar sesión, tu correo se guarda en el servicio de acceso de Google (Firebase). Aparte de eso, lo único que sale son los fragmentos que pides explicar.</string>
     <string name="privacy_sent_title">Qué se envía a la IA</string>
     <string name="privacy_sent_body">Solo el texto que revisas y envías con el botón «Explicar»: un fragmento de hasta %1$d caracteres (más o menos una página). Nunca se envía el libro completo, tus otras notas ni las fotos.</string>
     <string name="privacy_provider_title">A quién se envía</string>
@@ -475,7 +475,7 @@
     <string name="privacy_local_title">Qué se queda en tu teléfono</string>
     <string name="privacy_local_body">Tus libros, tu progreso y tus notas se guardan en este teléfono. El texto de las fotos se reconoce en el propio teléfono, y cada foto se guarda de forma temporal y se borra al tomar la siguiente.</string>
     <string name="privacy_sync_title">Sincronización con Google Drive</string>
-    <string name="privacy_sync_body">Es opcional y está apagada hasta que la actives en Ajustes. Si la activas, tus libros, portadas, notas, fichas, resaltados, marcadores y sesiones de lectura se copian a una carpeta oculta que Reader tiene en tu propio Google Drive, para que los veas en tus otros dispositivos. Reader solo puede leer esa carpeta, no el resto de tu Drive, y esa copia ocupa espacio de tu Drive. Tu clave de IA y tus ajustes no se sincronizan. Cada cuenta de Reader tiene su propio espacio en ese Drive: otra cuenta en el mismo teléfono no ve tu biblioteca. Puedes apagarla cuando quieras.</string>
+    <string name="privacy_sync_body">Es opcional: Reader te la ofrece al iniciar sesión y puedes activarla o apagarla en Más → Cuenta. Si la activas, tus libros, portadas, notas, fichas, resaltados, marcadores y sesiones de lectura se copian a una carpeta oculta que Reader tiene en tu propio Google Drive, para que los veas en tus otros dispositivos. Reader solo puede leer esa carpeta, no el resto de tu Drive, y esa copia ocupa espacio de tu Drive. Tu clave de IA y tus ajustes no se sincronizan. Cada cuenta de Reader tiene su propio espacio en ese Drive: otra cuenta en el mismo teléfono no ve tu biblioteca. Puedes apagarla cuando quieras.</string>
     <string name="privacy_key_title">Tu clave de API</string>
     <string name="privacy_key_body">Se guarda cifrada en este teléfono, solo se envía a tu proveedor de IA al pedir algo y nunca aparece en registros. Puedes borrarla cuando quieras desde Ajustes.</string>
 
@@ -756,7 +756,7 @@
     <string name="auth_title_sign_in">¡Bienvenido de nuevo!</string>
     <string name="auth_subtitle_sign_in">Accede a tu biblioteca para continuar</string>
     <string name="auth_title_sign_up">Crea tu cuenta</string>
-    <string name="auth_subtitle_sign_up">Tus libros y notas se guardan en este dispositivo</string>
+    <string name="auth_subtitle_sign_up">Guarda tu biblioteca y llévala a todos tus dispositivos</string>
     <string name="auth_title_forgot">Recupera tu acceso</string>
     <string name="auth_subtitle_forgot">Te enviaremos un enlace para crear una contraseña nueva.</string>
     <string name="auth_sent_title">Revisa tu correo</string>
@@ -837,7 +837,7 @@
     <string name="offer_skip">Ahora no</string>
     <string name="restore_title">Sincronizando tu biblioteca</string>
     <string name="restore_body">Estamos trayendo tus libros, notas y fichas desde tu Google Drive. Puede tardar un poco.</string>
-    <string name="restore_wifi_hint">Con datos móviles no empezará hasta que tengas Wi-Fi. Puedes apagar «Solo con Wi-Fi» en Ajustes.</string>
+    <string name="restore_wifi_hint">Con datos móviles no empezará hasta que tengas Wi-Fi. Puedes apagar «Solo con Wi-Fi» en Más → Cuenta.</string>
     <string name="restore_continue">Continuar sin esperar</string>
     <string name="restore_failed_title">No pudimos recuperar tu biblioteca</string>
     <string name="restore_retry">Reintentar</string>
