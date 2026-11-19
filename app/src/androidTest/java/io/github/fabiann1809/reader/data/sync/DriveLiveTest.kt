@@ -35,6 +35,7 @@ class DriveLiveTest {
     @Before
     fun onlyWhenRequestedAndWhenThereIsNoRealData() {
         assumeTrue(InstrumentationRegistry.getArguments().getString("liveDrive") == "true")
+        assumeTrue("Nobody is signed in: the cloud space is the account's", ApplicationProvider.getApplicationContext<ReaderApplication>().container.authRepository.currentUser.value != null)
         assumeTrue("The cloud holds real data", runBlocking { cloud.readManifest().getOrThrow() } == null)
     }
 

@@ -261,7 +261,7 @@ class SyncCoordinatorTest {
         assertEquals(1, eraser.erased)
         assertEquals(1, scheduler.cancelled)
         // Off and forgotten, but the Wi-Fi choice stays and the account is remembered, to bring its library back.
-        assertEquals(SyncSettings(enabled = false, wifiOnly = false, lastSyncAt = null, restoreFor = "ana"), settings.settings.value)
+        assertEquals(SyncSettings(enabled = false, wifiOnly = false, lastSyncAt = null, restoreFor = setOf("ana")), settings.settings.value)
         assertEquals(SyncStatus.Disabled, sync.currentStatus())
     }
 

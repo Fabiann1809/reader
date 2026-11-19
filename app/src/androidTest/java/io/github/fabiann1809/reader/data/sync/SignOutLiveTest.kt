@@ -32,6 +32,7 @@ class SignOutLiveTest {
     @Before
     fun onlyWhenRequestedAndWhenThereIsNoRealData() {
         assumeTrue(InstrumentationRegistry.getArguments().getString("liveDrive") == "true")
+        assumeTrue("Nobody is signed in: the cloud space is the account's", ApplicationProvider.getApplicationContext<ReaderApplication>().container.authRepository.currentUser.value != null)
         assumeTrue("The cloud holds real data", runBlocking { cloud.readManifest().getOrThrow() } == null)
         assumeTrue("The phone holds real books", runBlocking { books.observeBooks().first().isEmpty() })
     }
@@ -57,7 +58,7 @@ class SignOutLiveTest {
             assertEquals(listOf("Sign out live test"), books.observeBooks().first().map { it.title })
         } finally {
             coordinator.setEnabled(false)
-            container.syncSettings.update { it.copy(restoreFor = null) }
+            container.syncSettings.update { it.copy(restoreFor = emptySet()) }
             books.observeBooks().first().forEach { books.deleteBook(it) }
             cloud.deleteFile("manifest.json")
         }

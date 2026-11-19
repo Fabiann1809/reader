@@ -61,13 +61,16 @@ class SyncSupportTest {
     @Test
     fun theAccountWaitingForItsLibraryIsRememberedAndCanBeForgotten() = runTest {
         val store = DataStoreSyncSettingsStore(context, testFile)
-        assertNull(store.settings.first().restoreFor)
+        assertTrue(store.settings.first().restoreFor.isEmpty())
 
-        store.update { it.copy(restoreFor = "uid-ana") }
-        assertEquals("uid-ana", store.settings.first().restoreFor)
+        store.update { it.copy(restoreFor = setOf("uid-ana", "uid-beto")) }
+        assertEquals(setOf("uid-ana", "uid-beto"), store.settings.first().restoreFor)
 
-        store.update { it.copy(restoreFor = null) }
-        assertNull(store.settings.first().restoreFor)
+        store.update { it.copy(restoreFor = it.restoreFor - "uid-ana") }
+        assertEquals(setOf("uid-beto"), store.settings.first().restoreFor)
+
+        store.update { it.copy(restoreFor = emptySet()) }
+        assertTrue(store.settings.first().restoreFor.isEmpty())
     }
 
     @Test

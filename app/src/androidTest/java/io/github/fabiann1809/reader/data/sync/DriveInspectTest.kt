@@ -24,6 +24,7 @@ class DriveInspectTest {
     fun showsWhatDriveHolds() = runBlocking {
         val args = InstrumentationRegistry.getArguments()
         assumeTrue(args.getString("liveDrive") == "true")
+        assumeTrue("Nobody is signed in", ApplicationProvider.getApplicationContext<ReaderApplication>().container.authRepository.currentUser.value != null)
 
         val manifest = cloud.readManifest().getOrThrow()
         val files = cloud.listFiles().getOrThrow()

@@ -7,7 +7,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -20,9 +20,9 @@ data class SyncSettings(
     val wifiOnly: Boolean = true,
     // Epoch milliseconds of when the last successful sync began; null if there was none.
     val lastSyncAt: Long? = null,
-    // The Reader account (its uid) whose library was saved to Drive when it signed out and emptied
-    // this phone (T18.9b): when that account signs in again, the library comes back by itself.
-    val restoreFor: String? = null,
+    // The Reader accounts (their uids) whose library was saved to Drive when they signed out and emptied
+    // this phone (T18.9b): when one of them signs in again, its library comes back by itself.
+    val restoreFor: Set<String> = emptySet(),
 )
 
 interface SyncSettingsStore {
@@ -46,7 +46,7 @@ class DataStoreSyncSettingsStore(context: Context, fileName: String = FILE_NAME)
             prefs[ENABLED] = updated.enabled
             prefs[WIFI_ONLY] = updated.wifiOnly
             prefs.putOrRemove(LAST_SYNC_AT, updated.lastSyncAt)
-            prefs.putOrRemove(RESTORE_FOR, updated.restoreFor)
+            if (updated.restoreFor.isEmpty()) prefs.remove(RESTORE_FOR) else prefs[RESTORE_FOR] = updated.restoreFor
         }
     }
 
@@ -54,7 +54,7 @@ class DataStoreSyncSettingsStore(context: Context, fileName: String = FILE_NAME)
         enabled = this[ENABLED] ?: false,
         wifiOnly = this[WIFI_ONLY] ?: true,
         lastSyncAt = this[LAST_SYNC_AT],
-        restoreFor = this[RESTORE_FOR],
+        restoreFor = this[RESTORE_FOR].orEmpty(),
     )
 
     private fun <T> androidx.datastore.preferences.core.MutablePreferences.putOrRemove(key: Preferences.Key<T>, value: T?) {
@@ -66,6 +66,6 @@ class DataStoreSyncSettingsStore(context: Context, fileName: String = FILE_NAME)
         val ENABLED = booleanPreferencesKey("enabled")
         val WIFI_ONLY = booleanPreferencesKey("wifi_only")
         val LAST_SYNC_AT = longPreferencesKey("last_sync_at")
-        val RESTORE_FOR = stringPreferencesKey("restore_for")
+        val RESTORE_FOR = stringSetPreferencesKey("restore_for_users")
     }
 }

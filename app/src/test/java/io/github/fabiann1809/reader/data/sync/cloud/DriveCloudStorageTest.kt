@@ -28,6 +28,7 @@ class DriveCloudStorageTest {
     private val server = MockWebServer()
     private var token = "secret-token"
     private lateinit var storage: DriveCloudStorage
+    private lateinit var api: DriveApi
 
     @Before
     fun setUp() {
@@ -35,7 +36,8 @@ class DriveCloudStorageTest {
         server.start()
         drive.baseUrl = server.url("/").toString().trimEnd('/')
         val client = OkHttpClient.Builder().readTimeout(1, TimeUnit.SECONDS).build()
-        storage = DriveCloudStorage(DriveApi(client, { token }, drive.baseUrl))
+        api = DriveApi(client, { token }, drive.baseUrl)
+        storage = DriveCloudStorage(api)
     }
 
     @After
@@ -187,9 +189,69 @@ class DriveCloudStorageTest {
         assertEquals(0, drive.requestCount)
     }
 
+    @Test
+    fun twoAccountsKeepSeparateFilesInTheSameDrive() = runTest {
+        val ana = DriveCloudStorage(api, "uana-")
+        val beto = DriveCloudStorage(api, "ubeto-")
+        ana.writeManifest("ana", null).getOrThrow()
+        ana.uploadFile("book-1.epub", tmp.newFile("a.epub").apply { writeText("ana book") }).getOrThrow()
+
+        assertNull(beto.readManifest().getOrThrow())
+        assertTrue(beto.listFiles().getOrThrow().isEmpty())
+        beto.writeManifest("beto", null).getOrThrow()
+
+        assertEquals("ana", ana.readManifest().getOrThrow()!!.content)
+        assertEquals(setOf("book-1.epub"), ana.listFiles().getOrThrow())
+        assertEquals(setOf("uana-manifest.json", "uana-book-1.epub", "ubeto-manifest.json"), drive.files.values.map { it.name }.toSet())
+    }
+
+    @Test
+    fun adoptingRenamesTheOldFilesIntoTheAccountsSpaceAndLeavesOthersAlone() = runTest {
+        drive.addFile("manifest.json", "old library")
+        drive.addFile("book-1.epub", "old book")
+        drive.addFile("something-else.bin", "x")
+        val ana = DriveCloudStorage(api, "uana-")
+
+        val taken = ana.adoptLegacyFiles().getOrThrow()
+
+        assertEquals(2, taken)
+        assertEquals("old library", ana.readManifest().getOrThrow()!!.content)
+        assertEquals(setOf("book-1.epub"), ana.listFiles().getOrThrow())
+        assertTrue(drive.files.values.any { it.name == "something-else.bin" })
+        assertFalse(drive.files.values.any { it.name == "manifest.json" })
+    }
+
+    @Test
+    fun theSecondAccountFindsNothingLeftToAdopt() = runTest {
+        drive.addFile("manifest.json", "old library")
+        DriveCloudStorage(api, "uana-").adoptLegacyFiles().getOrThrow()
+
+        val beto = DriveCloudStorage(api, "ubeto-")
+
+        assertEquals(0, beto.adoptLegacyFiles().getOrThrow())
+        assertNull(beto.readManifest().getOrThrow())
+    }
+
+    @Test
+    fun adoptingNeverOverwritesAFileTheAccountAlreadyHas() = runTest {
+        val ana = DriveCloudStorage(api, "uana-")
+        ana.writeManifest("new library", null).getOrThrow()
+        drive.addFile("manifest.json", "old library")
+
+        assertEquals(0, ana.adoptLegacyFiles().getOrThrow())
+        assertEquals("new library", ana.readManifest().getOrThrow()!!.content)
+    }
+
+    @Test
+    fun withoutAPrefixThereIsNothingToAdopt() = runTest {
+        drive.addFile("manifest.json", "old library")
+
+        assertEquals(0, storage.adoptLegacyFiles().getOrThrow())
+    }
+
     /** Drive's behavior as far as the sync uses it: a flat folder of files with a version that grows. */
     private class SimulatedDrive : Dispatcher() {
-        data class Stored(val id: String, val name: String, var version: Long, var content: String)
+        data class Stored(val id: String, var name: String, var version: Long, var content: String)
 
         lateinit var baseUrl: String
         val files = mutableMapOf<String, Stored>()
@@ -224,6 +286,7 @@ class DriveCloudStorageTest {
                 request.method == "GET" && path == "/drive/v3/files" -> list(request)
                 request.method == "GET" && request.url.queryParameter("alt") == "media" ->
                     files[path.substringAfterLast('/')]?.let { ok(it.content) } ?: error(404, "notFound")
+                request.method == "PATCH" && path.startsWith("/drive/v3/files/") -> rename(request, path)
                 request.method == "DELETE" -> {
                     files.remove(path.substringAfterLast('/'))
                     MockResponse.Builder().code(204).build()
@@ -232,6 +295,12 @@ class DriveCloudStorageTest {
                 request.method == "PUT" && path.startsWith("/session/") -> finishUpload(request, path)
                 else -> error(404, "notFound")
             }
+        }
+
+        private fun rename(request: RecordedRequest, path: String): MockResponse {
+            val stored = files[path.substringAfterLast('/')] ?: return error(404, "notFound")
+            stored.name = Regex(""""name":"([^"]+)"""").find(request.body!!.utf8())!!.groupValues[1]
+            return ok("""{"id":"${stored.id}","name":"${stored.name}","version":"${stored.version}"}""")
         }
 
         private fun list(request: RecordedRequest): MockResponse {

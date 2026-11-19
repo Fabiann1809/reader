@@ -105,6 +105,13 @@ class DriveApi(
         }
     }
 
+    /** Gives the file [id] another name, keeping its content. */
+    suspend fun rename(id: String, newName: String) {
+        val url = base.newBuilder().addPathSegments("drive/v3/files/$id").addQueryParameter("fields", FILE_FIELDS).build()
+        val body = buildJsonObject { put("name", newName) }.toString().toRequestBody(JSON)
+        execute(Request.Builder().url(url).patch(body)).close()
+    }
+
     suspend fun delete(id: String) {
         val url = base.newBuilder().addPathSegments("drive/v3/files/$id").build()
         executeOrNull(Request.Builder().url(url).delete())?.close()

@@ -475,7 +475,7 @@
     <string name="privacy_local_title">Qué se queda en tu teléfono</string>
     <string name="privacy_local_body">Tus libros, tu progreso y tus notas se guardan en este teléfono. El texto de las fotos se reconoce en el propio teléfono, y cada foto se guarda de forma temporal y se borra al tomar la siguiente.</string>
     <string name="privacy_sync_title">Sincronización con Google Drive</string>
-    <string name="privacy_sync_body">Es opcional y está apagada hasta que la actives en Ajustes. Si la activas, tus libros, portadas, notas, fichas, resaltados, marcadores y sesiones de lectura se copian a una carpeta oculta que Reader tiene en tu propio Google Drive, para que los veas en tus otros dispositivos. Reader solo puede leer esa carpeta, no el resto de tu Drive, y esa copia ocupa espacio de tu Drive. Tu clave de IA y tus ajustes no se sincronizan. Puedes apagarla cuando quieras.</string>
+    <string name="privacy_sync_body">Es opcional y está apagada hasta que la actives en Ajustes. Si la activas, tus libros, portadas, notas, fichas, resaltados, marcadores y sesiones de lectura se copian a una carpeta oculta que Reader tiene en tu propio Google Drive, para que los veas en tus otros dispositivos. Reader solo puede leer esa carpeta, no el resto de tu Drive, y esa copia ocupa espacio de tu Drive. Tu clave de IA y tus ajustes no se sincronizan. Cada cuenta de Reader tiene su propio espacio en ese Drive: otra cuenta en el mismo teléfono no ve tu biblioteca. Puedes apagarla cuando quieras.</string>
     <string name="privacy_key_title">Tu clave de API</string>
     <string name="privacy_key_body">Se guarda cifrada en este teléfono, solo se envía a tu proveedor de IA al pedir algo y nunca aparece en registros. Puedes borrarla cuando quieras desde Ajustes.</string>
 
@@ -813,7 +813,7 @@
     <string name="settings_account_sign_out_failed">No se pudo guardar en tu Drive, así que no se cerró la sesión para no perder tus datos. Revisa tu conexión e inténtalo de nuevo.</string>
     <string name="settings_sync">Sincronización</string>
     <string name="settings_sync_toggle">Sincronizar con Google Drive</string>
-    <string name="settings_sync_toggle_hint">Tus libros, notas y fichas, en todos tus dispositivos. Reader solo usa una carpeta oculta suya: no puede ver el resto de tu Drive.</string>
+    <string name="settings_sync_toggle_hint">Tus libros, notas y fichas, en todos tus dispositivos con esta cuenta. Reader solo usa una carpeta oculta suya: no puede ver el resto de tu Drive.</string>
     <string name="settings_sync_connecting">Conectando con Google Drive…</string>
     <string name="settings_sync_connect_failed">No se pudo conectar con Google Drive. Revisa tu conexión e inténtalo de nuevo.</string>
     <string name="settings_sync_wifi">Solo con Wi-Fi</string>

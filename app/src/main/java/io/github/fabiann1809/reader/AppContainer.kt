@@ -47,6 +47,7 @@ import io.github.fabiann1809.reader.data.sync.SyncSettingsStore
 import io.github.fabiann1809.reader.data.sync.WorkManagerSyncScheduler
 import io.github.fabiann1809.reader.data.sync.auth.DriveAuthorizer
 import io.github.fabiann1809.reader.data.sync.auth.GoogleDriveAuthorizer
+import io.github.fabiann1809.reader.data.sync.cloud.AccountCloudStorage
 import io.github.fabiann1809.reader.data.sync.cloud.CloudStorage
 import io.github.fabiann1809.reader.data.sync.cloud.DriveApi
 import io.github.fabiann1809.reader.data.sync.cloud.DriveCloudStorage
@@ -105,6 +106,7 @@ import io.github.fabiann1809.reader.data.reader.ReadiumReaderSession
 import io.github.fabiann1809.reader.ocr.MlKitTextRecognizer
 import io.github.fabiann1809.reader.ocr.TextRecognizer
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import okhttp3.OkHttpClient
@@ -249,7 +251,9 @@ class AppContainer(context: Context) {
     val cloudStorage: CloudStorage by lazy {
         // Books are big: a transfer may take minutes, so it is limited by progress (30 s of silence), not by total time.
         val client = httpClient.newBuilder().readTimeout(30, TimeUnit.SECONDS).writeTimeout(30, TimeUnit.SECONDS).build()
-        DriveCloudStorage(DriveApi(client, driveAuthorizer))
+        val drive = DriveApi(client, driveAuthorizer)
+        // One storage per Reader account, so the same Drive holds a separate library for each (T18.9c).
+        AccountCloudStorage(authRepository) { prefix -> DriveCloudStorage(drive, prefix) }
     }
 
     val syncSettings: SyncSettingsStore by lazy { DataStoreSyncSettingsStore(appContext) }
@@ -260,7 +264,12 @@ class AppContainer(context: Context) {
             LocalSnapshotReader(database, bookFiles, voiceFiles),
             LocalChangeApplier(database, bookFiles, voiceFiles),
         )
-        DefaultSyncRepository(local, cloudStorage)
+        // The old, unprefixed files belong to the account that made them: one with data on this phone, or one
+        // waiting to get its library back. A new, empty account must not take them.
+        val mayAdoptLegacy: suspend (Boolean) -> Boolean = { hasData ->
+            hasData || authRepository.currentUser.value?.uid in syncSettings.settings.first().restoreFor
+        }
+        DefaultSyncRepository(local, cloudStorage, mayAdoptLegacy)
     }
 
     private val localChangeSource: LocalChangeSource by lazy { RoomLocalChangeSource(database) }

@@ -28,8 +28,8 @@ android {
         applicationId = "io.github.fabiann1809.reader"
         minSdk = 26
         targetSdk = 37
-        versionCode = 7
-        versionName = "0.5.1"
+        versionCode = 8
+        versionName = "0.5.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

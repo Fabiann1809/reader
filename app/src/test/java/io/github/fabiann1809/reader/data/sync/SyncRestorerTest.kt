@@ -17,7 +17,7 @@ import org.junit.Test
 
 class SyncRestorerTest {
 
-    private val settings = FakeSyncSettingsStore(SyncSettings(restoreFor = "ana"))
+    private val settings = FakeSyncSettingsStore(SyncSettings(restoreFor = setOf("ana")))
     private val authorizer = FakeDriveAuthorizer()
     private val cloud = FakeCloudStorage()
     private val sync = FakeSyncControl().apply { statusAfterEnable = SyncStatus.Synced(5_000) }
@@ -34,12 +34,23 @@ class SyncRestorerTest {
     fun anotherAccountRestoresNothing() = runTest {
         assertFalse(restorer().isPending("beto"))
         // Ana's library keeps waiting for her.
-        assertEquals("ana", settings.settings.value.restoreFor)
+        assertEquals(setOf("ana"), settings.settings.value.restoreFor)
+    }
+
+    @Test
+    fun severalAccountsCanWaitAtOnceAndOneRestoringDoesNotForgetTheOthers() = runTest {
+        settings.settings.value = SyncSettings(restoreFor = setOf("ana", "beto"))
+
+        assertTrue(restorer().isPending("beto"))
+        restorer().restore("ana").getOrThrow()
+
+        assertEquals(setOf("beto"), settings.settings.value.restoreFor)
+        assertTrue(restorer().isPending("beto"))
     }
 
     @Test
     fun nobodyIsWaitingWhenNoAccountSignedOutWithTheSyncOn() = runTest {
-        settings.settings.value = SyncSettings(restoreFor = null)
+        settings.settings.value = SyncSettings(restoreFor = emptySet())
 
         assertFalse(restorer().isPending("ana"))
     }
@@ -50,33 +61,33 @@ class SyncRestorerTest {
 
         assertFalse(restorer().isPending("ana"))
         // And it stops waiting, so it doesn't ask again.
-        assertNull(settings.settings.value.restoreFor)
+        assertTrue(settings.settings.value.restoreFor.isEmpty())
     }
 
     @Test
     fun restoringTurnsTheSyncOnWaitsForItsFirstRunAndStopsWaiting() = runTest {
-        val result = restorer().restore()
+        val result = restorer().restore("ana")
 
         assertTrue(result.isSuccess)
         assertEquals(listOf("enabled:true"), sync.calls)
-        assertNull(settings.settings.value.restoreFor)
+        assertTrue(settings.settings.value.restoreFor.isEmpty())
     }
 
     @Test
     fun aFailedFirstSyncFailsTheRestoreAndKeepsWaiting() = runTest {
         sync.statusAfterEnable = SyncStatus.Failed(SyncError.NoInternet(java.io.IOException()))
 
-        val result = restorer().restore()
+        val result = restorer().restore("ana")
 
         assertTrue(result.exceptionOrNull() is SyncError.NoInternet)
-        assertEquals("ana", settings.settings.value.restoreFor)
+        assertEquals(setOf("ana"), settings.settings.value.restoreFor)
     }
 
     @Test
     fun withoutThePermissionItAsksNothingAndFails() = runTest {
         authorizer.onAuthorize = DriveGrant.NeedsConsent(Consent { error("Not opened") })
 
-        val result = restorer().restore()
+        val result = restorer().restore("ana")
 
         assertTrue(result.exceptionOrNull() is SyncError.NotAuthorized)
         assertTrue(sync.calls.isEmpty())
@@ -86,7 +97,7 @@ class SyncRestorerTest {
     fun aDriveThatRejectsTheTokenFailsBeforeTurningTheSyncOn() = runTest {
         cloud.failWith = SyncError.NotAuthorized()
 
-        val result = restorer().restore()
+        val result = restorer().restore("ana")
 
         assertTrue(result.exceptionOrNull() is SyncError.NotAuthorized)
         assertTrue(sync.calls.isEmpty())
@@ -96,6 +107,6 @@ class SyncRestorerTest {
     fun googleFailingFailsTheRestore() = runTest {
         authorizer.onAuthorize = DriveGrant.Failed
 
-        assertTrue(restorer().restore().isFailure)
+        assertTrue(restorer().restore("ana").isFailure)
     }
 }

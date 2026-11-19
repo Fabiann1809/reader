@@ -27,6 +27,9 @@ interface SyncRepository {
 class DefaultSyncRepository(
     private val local: LocalSyncData,
     private val cloud: CloudStorage,
+    // Whether this account may take over the files made before each account had its own space (T18.9c),
+    // given whether this phone holds any data. Only the account that owns them should: see the container.
+    private val mayAdoptLegacy: suspend (hasLocalData: Boolean) -> Boolean = { true },
 ) : SyncRepository {
 
     private val lock = Mutex()
@@ -41,10 +44,15 @@ class DefaultSyncRepository(
     }
 
     private suspend fun attempt(): SyncReport {
-        val manifest = cloud.readManifest().getOrThrow()
+        var manifest = cloud.readManifest().getOrThrow()
+        var snapshot = local.snapshot()
+        // Nothing of this account in the cloud yet: it may take over the files made before each account had
+        // its own space (T18.9c), if there are any.
+        if (manifest == null && mayAdoptLegacy(snapshot.snapshot.records.isNotEmpty()) && cloud.adoptLegacyFiles().getOrThrow() > 0) {
+            manifest = cloud.readManifest().getOrThrow()
+        }
         val remote = manifest?.let { SyncManifest.decode(it.content) } ?: SyncSnapshot()
 
-        var snapshot = local.snapshot()
         val renames = SyncMerger.findRenames(snapshot.snapshot, remote)
         if (renames.isNotEmpty()) {
             local.rename(renames)

@@ -25,7 +25,7 @@ class RestoreViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val settings = FakeSyncSettingsStore(SyncSettings(restoreFor = "ana"))
+    private val settings = FakeSyncSettingsStore(SyncSettings(restoreFor = setOf("ana")))
     private val sync = FakeSyncControl().apply { statusAfterEnable = SyncStatus.Synced(5_000) }
     private val changes = FakeLocalChangeSource()
     private val authorizer = FakeDriveAuthorizer()
@@ -57,7 +57,7 @@ class RestoreViewModelTest {
 
         assertEquals(RestoreState.Done, viewModel.state.value)
         assertEquals(listOf("enabled:true"), sync.calls)
-        assertNull(settings.settings.value.restoreFor)
+        assertTrue(settings.settings.value.restoreFor.isEmpty())
     }
 
     @Test
@@ -99,7 +99,7 @@ class RestoreViewModelTest {
         viewModel.continueWithout()
 
         assertEquals(RestoreState.Done, viewModel.state.value)
-        assertNull(settings.settings.value.restoreFor)
+        assertTrue(settings.settings.value.restoreFor.isEmpty())
     }
 
     @Test
@@ -113,7 +113,7 @@ class RestoreViewModelTest {
         assertEquals(RestoreState.Checking, viewModel.state.value)
 
         // She signed out again with the sync on, so her library waits once more.
-        settings.settings.value = SyncSettings(restoreFor = "ana")
+        settings.settings.value = SyncSettings(restoreFor = setOf("ana"))
         sync.calls.clear()
         signIn("ana")
 

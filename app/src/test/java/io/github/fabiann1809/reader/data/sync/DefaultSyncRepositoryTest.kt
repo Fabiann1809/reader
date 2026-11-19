@@ -3,6 +3,7 @@ package io.github.fabiann1809.reader.data.sync
 import io.github.fabiann1809.reader.data.sync.cloud.SyncError
 import io.github.fabiann1809.reader.data.sync.merge.RecordKey
 import io.github.fabiann1809.reader.data.sync.merge.SyncRecord
+import io.github.fabiann1809.reader.data.sync.merge.SyncSnapshot
 import io.github.fabiann1809.reader.testing.FakeCloudStorage
 import io.github.fabiann1809.reader.testing.FakeLocalSyncData
 import kotlinx.coroutines.test.runTest
@@ -201,6 +202,53 @@ class DefaultSyncRepositoryTest {
         assertTrue(result.exceptionOrNull() is SyncError.NotAuthorized)
         assertEquals(setOf("n1"), keys(deviceA))
         assertNull(cloud.manifest)
+    }
+
+    private fun legacyLibrary(): String =
+        SyncManifest.encode(SyncSnapshot(records = listOf(book("old", 10, null))))
+
+    @Test
+    fun theFirstSyncTakesOverTheFilesAnOlderVersionLeft() = runTest {
+        cloud.legacyManifest = io.github.fabiann1809.reader.data.sync.cloud.CloudManifest(legacyLibrary(), "1")
+        deviceA.put(book("old", 10, null))
+
+        syncA.sync().getOrThrow()
+
+        assertEquals(1, cloud.adoptCalls)
+        assertEquals(setOf("old"), keys(deviceA))
+        assertNotNull(cloud.manifest)
+    }
+
+    @Test
+    fun anEmptyPhoneRestoringItsLibraryTakesOverTheOldFiles() = runTest {
+        cloud.legacyManifest = io.github.fabiann1809.reader.data.sync.cloud.CloudManifest(legacyLibrary(), "1")
+
+        syncB.sync().getOrThrow()
+
+        assertEquals(setOf("old"), keys(deviceB))
+    }
+
+    @Test
+    fun anAccountThatMayNotAdoptNeverTouchesTheOldFiles() = runTest {
+        cloud.legacyManifest = io.github.fabiann1809.reader.data.sync.cloud.CloudManifest(legacyLibrary(), "1")
+        val newcomer = DefaultSyncRepository(deviceB, cloud) { hasData -> hasData }
+
+        newcomer.sync().getOrThrow()
+
+        assertEquals(0, cloud.adoptCalls)
+        assertTrue(deviceB.records.isEmpty())
+        assertNull(cloud.manifest)
+    }
+
+    @Test
+    fun anAccountThatAlreadyHasItsLibraryAsksNothingAboutOldFiles() = runTest {
+        deviceA.put(note("n1", 1))
+        syncA.sync().getOrThrow()
+        val before = cloud.adoptCalls
+
+        syncA.sync().getOrThrow()
+
+        assertEquals(before, cloud.adoptCalls)
     }
 
     @Test

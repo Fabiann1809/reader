@@ -37,30 +37,36 @@ class RestoreViewModel(auth: AuthRepository, private val restorer: SyncRestorer)
     val state: StateFlow<RestoreState> = _state.asStateFlow()
 
     private var job: Job? = null
+    private var userId: String? = null
 
     init {
         viewModelScope.launch {
             auth.currentUser.collectLatest { user ->
                 job?.cancel()
+                userId = user?.uid
                 // Signing out resets it, so the next sign-in is checked again.
                 if (user == null) _state.value = RestoreState.Checking else check(user.uid)
             }
         }
     }
 
-    fun retry() = start { restore() }
+    fun retry() {
+        val uid = userId ?: return
+        start { restore(uid) }
+    }
 
     /** "Continuar sin esperar": the download goes on in the background, and the books appear as they arrive. */
     fun continueWithout() {
         job?.cancel()
+        val uid = userId
         viewModelScope.launch {
-            restorer.clear()
+            if (uid != null) restorer.clear(uid)
             _state.value = RestoreState.Done
         }
     }
 
     private fun check(userId: String) = start {
-        if (restorer.isPending(userId)) restore() else _state.value = RestoreState.Done
+        if (restorer.isPending(userId)) restore(userId) else _state.value = RestoreState.Done
     }
 
     private fun start(block: suspend () -> Unit) {
@@ -68,9 +74,9 @@ class RestoreViewModel(auth: AuthRepository, private val restorer: SyncRestorer)
         job = viewModelScope.launch { block() }
     }
 
-    private suspend fun restore() {
+    private suspend fun restore(userId: String) {
         _state.value = RestoreState.Restoring
-        restorer.restore().fold(
+        restorer.restore(userId).fold(
             onSuccess = { _state.value = RestoreState.Done },
             onFailure = { _state.value = RestoreState.Failed(it as? SyncError ?: SyncError.Unknown("The restore failed", it)) },
         )

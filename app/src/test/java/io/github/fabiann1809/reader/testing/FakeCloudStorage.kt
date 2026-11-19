@@ -26,6 +26,12 @@ class FakeCloudStorage : CloudStorage {
     /** Runs once, just before the next manifest write: what another device does while this one works. */
     var beforeNextManifestWrite: (() -> Unit)? = null
 
+    /** What an older version left in the cloud before accounts had a space of their own, and how often it was asked to adopt it. */
+    var legacyManifest: CloudManifest? = null
+    val legacyFiles = mutableMapOf<String, ByteArray>()
+    var adoptCalls = 0
+        private set
+
     private var versions = 0
 
     /** What another device does: writes the manifest without the caller knowing. */
@@ -69,6 +75,27 @@ class FakeCloudStorage : CloudStorage {
         files.remove(name)
         writes += "delete:$name"
         return Result.success(Unit)
+    }
+
+    override suspend fun adoptLegacyFiles(): Result<Int> {
+        fail<Int>()?.let { return it }
+        adoptCalls++
+        var taken = 0
+        legacyManifest?.let {
+            if (manifest == null) {
+                manifest = CloudManifest(it.content, nextVersion())
+                taken++
+            }
+            legacyManifest = null
+        }
+        legacyFiles.forEach { (name, bytes) ->
+            if (name !in files) {
+                files[name] = bytes
+                taken++
+            }
+        }
+        legacyFiles.clear()
+        return Result.success(taken)
     }
 
     private fun nextVersion() = (++versions).toString()

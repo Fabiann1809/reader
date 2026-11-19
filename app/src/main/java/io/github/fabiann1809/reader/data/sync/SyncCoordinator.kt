@@ -110,7 +110,7 @@ class SyncCoordinator(
     private suspend fun erase(userId: String?): Result<Unit> = runCatching {
         eraser.eraseAll()
         scheduler.cancel()
-        settings.update { it.copy(enabled = false, lastSyncAt = null, restoreFor = userId) }
+        settings.update { it.copy(enabled = false, lastSyncAt = null, restoreFor = it.restoreFor + listOfNotNull(userId)) }
         lastError.value = null
         hasPending.value = false
     }

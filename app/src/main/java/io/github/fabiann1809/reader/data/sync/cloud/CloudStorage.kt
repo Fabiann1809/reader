@@ -31,4 +31,10 @@ interface CloudStorage {
     suspend fun downloadFile(name: String, into: File): Result<Unit>
 
     suspend fun deleteFile(name: String): Result<Unit>
+
+    /**
+     * Makes the files this app left in the cloud before each account had a space of its own (T18.9c) part
+     * of this account's: they are renamed, never copied or deleted. Returns how many were taken over.
+     */
+    suspend fun adoptLegacyFiles(): Result<Int>
 }
