@@ -59,6 +59,18 @@ class SyncSupportTest {
     }
 
     @Test
+    fun theAccountWaitingForItsLibraryIsRememberedAndCanBeForgotten() = runTest {
+        val store = DataStoreSyncSettingsStore(context, testFile)
+        assertNull(store.settings.first().restoreFor)
+
+        store.update { it.copy(restoreFor = "uid-ana") }
+        assertEquals("uid-ana", store.settings.first().restoreFor)
+
+        store.update { it.copy(restoreFor = null) }
+        assertNull(store.settings.first().restoreFor)
+    }
+
+    @Test
     // Real time (runBlocking): the waits below must really happen, runTest would skip them.
     fun theChangeSourceStaysQuietUntilTheDataChanges() = runBlocking {
         val source = RoomLocalChangeSource(database)

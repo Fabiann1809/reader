@@ -242,7 +242,7 @@ class SyncCoordinatorTest {
     fun signingOutWithTheSyncOffErasesNothing() = runTest {
         val sync = coordinator()
 
-        val result = sync.saveBeforeSignOut()
+        val result = sync.saveBeforeSignOut("ana")
 
         assertTrue(result.isSuccess)
         assertEquals(0, eraser.erased)
@@ -254,14 +254,14 @@ class SyncCoordinatorTest {
         settings.settings.value = SyncSettings(enabled = true, wifiOnly = false, lastSyncAt = 10)
         val sync = coordinator()
 
-        val result = sync.saveBeforeSignOut()
+        val result = sync.saveBeforeSignOut("ana")
 
         assertTrue(result.isSuccess)
         assertEquals(1, repository.calls)
         assertEquals(1, eraser.erased)
         assertEquals(1, scheduler.cancelled)
-        // Off and forgotten, but the user's Wi-Fi choice stays.
-        assertEquals(SyncSettings(enabled = false, wifiOnly = false, lastSyncAt = null), settings.settings.value)
+        // Off and forgotten, but the Wi-Fi choice stays and the account is remembered, to bring its library back.
+        assertEquals(SyncSettings(enabled = false, wifiOnly = false, lastSyncAt = null, restoreFor = "ana"), settings.settings.value)
         assertEquals(SyncStatus.Disabled, sync.currentStatus())
     }
 
@@ -271,7 +271,7 @@ class SyncCoordinatorTest {
         repository.next = Result.failure(SyncError.NoInternet(java.io.IOException()))
         val sync = coordinator()
 
-        val result = sync.saveBeforeSignOut()
+        val result = sync.saveBeforeSignOut("ana")
 
         assertTrue(result.exceptionOrNull() is SyncError.NoInternet)
         assertEquals(0, eraser.erased)
@@ -285,7 +285,7 @@ class SyncCoordinatorTest {
         changes.lastChange = Long.MAX_VALUE
         val sync = coordinator()
 
-        val result = sync.saveBeforeSignOut()
+        val result = sync.saveBeforeSignOut("ana")
 
         assertTrue(result.isFailure)
         assertEquals(0, eraser.erased)
@@ -300,7 +300,7 @@ class SyncCoordinatorTest {
         repository.onSync = { now += 1_000 }
         val sync = coordinator()
 
-        val result = sync.saveBeforeSignOut()
+        val result = sync.saveBeforeSignOut("ana")
 
         assertTrue(result.isSuccess)
         assertEquals(2, repository.calls)

@@ -37,10 +37,12 @@ import io.github.fabiann1809.reader.data.sync.DefaultSyncRepository
 import io.github.fabiann1809.reader.data.sync.LocalChangeApplier
 import io.github.fabiann1809.reader.data.sync.RoomLocalDataEraser
 import io.github.fabiann1809.reader.data.sync.LocalSnapshotReader
+import io.github.fabiann1809.reader.data.sync.LocalChangeSource
 import io.github.fabiann1809.reader.data.sync.RoomLocalChangeSource
 import io.github.fabiann1809.reader.data.sync.RoomLocalSyncData
 import io.github.fabiann1809.reader.data.sync.SyncCoordinator
 import io.github.fabiann1809.reader.data.sync.SyncRepository
+import io.github.fabiann1809.reader.data.sync.SyncRestorer
 import io.github.fabiann1809.reader.data.sync.SyncSettingsStore
 import io.github.fabiann1809.reader.data.sync.WorkManagerSyncScheduler
 import io.github.fabiann1809.reader.data.sync.auth.DriveAuthorizer
@@ -261,15 +263,21 @@ class AppContainer(context: Context) {
         DefaultSyncRepository(local, cloudStorage)
     }
 
+    private val localChangeSource: LocalChangeSource by lazy { RoomLocalChangeSource(database) }
+
     val syncCoordinator: SyncCoordinator by lazy {
         SyncCoordinator(
             syncSettings,
             syncRepository,
             WorkManagerSyncScheduler(appContext),
-            RoomLocalChangeSource(database),
+            localChangeSource,
             RoomLocalDataEraser(database, bookFiles, voiceFiles),
             applicationScope,
         )
+    }
+
+    val syncRestorer: SyncRestorer by lazy {
+        SyncRestorer(syncSettings, driveAuthorizer, cloudStorage, syncCoordinator, localChangeSource)
     }
 
     val aiProvider: AiProvider by lazy {

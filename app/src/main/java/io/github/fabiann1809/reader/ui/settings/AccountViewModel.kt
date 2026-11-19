@@ -43,7 +43,7 @@ class AccountViewModel(private val auth: AuthRepository, private val sync: SyncC
         if (signOutState.value.signingOut) return
         signOutState.update { it.copy(signingOut = true, saveFailed = false) }
         viewModelScope.launch {
-            val saved = sync.saveBeforeSignOut()
+            val saved = sync.saveBeforeSignOut(auth.currentUser.value?.uid)
             if (saved.isSuccess) auth.signOut()
             signOutState.update { it.copy(signingOut = false, saveFailed = saved.isFailure) }
         }

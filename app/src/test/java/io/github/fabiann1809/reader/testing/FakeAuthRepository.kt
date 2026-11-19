@@ -11,6 +11,11 @@ class FakeAuthRepository(signedIn: AuthUser? = null) : AuthRepository {
     private val user = MutableStateFlow(signedIn)
     override val currentUser: StateFlow<AuthUser?> = user
 
+    /** Signs in as a person with a known uid, as if the session came from Firebase. */
+    fun signInAs(person: AuthUser) {
+        user.value = person
+    }
+
     private val accounts = mutableMapOf<String, String>()
     val resetEmails = mutableListOf<String>()
     var failWith: AuthError? = null

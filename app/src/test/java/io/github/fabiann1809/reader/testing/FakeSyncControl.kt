@@ -10,12 +10,16 @@ class FakeSyncControl(initial: SyncStatus = SyncStatus.Disabled) : SyncControl {
     override val status = MutableStateFlow(initial)
     val calls = mutableListOf<String>()
 
-    /** What saving before signing out answers. */
+    /** What saving before signing out answers, and for which account it was asked. */
     var saveResult: Result<Unit> = Result.success(Unit)
+    var savedFor: String? = null
+
+    /** What the status becomes once the sync is turned on, as if its first run had ended that way. */
+    var statusAfterEnable: SyncStatus = SyncStatus.Synced(null)
 
     override suspend fun setEnabled(enabled: Boolean) {
         calls += "enabled:$enabled"
-        status.value = if (enabled) SyncStatus.Synced(null) else SyncStatus.Disabled
+        status.value = if (enabled) statusAfterEnable else SyncStatus.Disabled
     }
 
     override suspend fun setWifiOnly(wifiOnly: Boolean) {
@@ -26,8 +30,9 @@ class FakeSyncControl(initial: SyncStatus = SyncStatus.Disabled) : SyncControl {
         calls += "syncNow"
     }
 
-    override suspend fun saveBeforeSignOut(): Result<Unit> {
+    override suspend fun saveBeforeSignOut(userId: String?): Result<Unit> {
         calls += "saveBeforeSignOut"
+        savedFor = userId
         return saveResult
     }
 }

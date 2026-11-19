@@ -26,8 +26,9 @@ interface SyncControl {
      * Before signing out (T18.8): with the sync on, saves everything to the cloud and, only if that
      * went well and nothing is left to upload, empties this device and turns the sync off. If it
      * fails nothing is erased, and the sign-out must not go on. With the sync off it does nothing.
+     * [userId] is the account signing out: it is remembered, so its library comes back when it signs in again (T18.9b).
      */
-    suspend fun saveBeforeSignOut(): Result<Unit>
+    suspend fun saveBeforeSignOut(userId: String?): Result<Unit>
 }
 
 /**
@@ -95,21 +96,21 @@ class SyncCoordinator(
         scheduler.schedule(saved.wifiOnly, delayMillis = 0, replace = true)
     }
 
-    override suspend fun saveBeforeSignOut(): Result<Unit> {
+    override suspend fun saveBeforeSignOut(userId: String?): Result<Unit> {
         // Nothing is in the cloud, so nothing may be erased.
         if (!settings.settings.first().enabled) return Result.success(Unit)
         // A sync that applies a deletion leaves a fresh tombstone, so the first pass can still show changes: one more settles it.
         repeat(SAVE_PASSES) {
             runSync().onFailure { return Result.failure(it) }
-            if (!hasPending.value) return erase()
+            if (!hasPending.value) return erase(userId)
         }
         return Result.failure(SyncError.Unknown("The data kept changing while it was saved"))
     }
 
-    private suspend fun erase(): Result<Unit> = runCatching {
+    private suspend fun erase(userId: String?): Result<Unit> = runCatching {
         eraser.eraseAll()
         scheduler.cancel()
-        settings.update { it.copy(enabled = false, lastSyncAt = null) }
+        settings.update { it.copy(enabled = false, lastSyncAt = null, restoreFor = userId) }
         lastError.value = null
         hasPending.value = false
     }

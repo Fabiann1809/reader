@@ -27,11 +27,20 @@ class AndroidReviewNotifierTest {
     @After
     fun cleanUp() = manager.cancelAll()
 
+    /** The system registers a posted notification a moment later, so this waits (up to 3 s) for one to show. */
+    private fun shownNotifications(): Array<android.service.notification.StatusBarNotification> {
+        val deadline = System.currentTimeMillis() + 3_000
+        while (manager.activeNotifications.isEmpty() && System.currentTimeMillis() < deadline) Thread.sleep(100)
+        // A second reminder replaces the first; let that settle too.
+        Thread.sleep(200)
+        return manager.activeNotifications
+    }
+
     @Test
     fun postsOneNotificationSayingHowManyCardsAreDue() {
         AndroidReviewNotifier(context).notifyDue(3)
 
-        val shown = manager.activeNotifications.single()
+        val shown = shownNotifications().single()
         assertEquals("Hora de repasar", shown.notification.extras.getString("android.title"))
         assertEquals("Tienes 3 fichas por repasar", shown.notification.extras.getString("android.text"))
     }
@@ -42,7 +51,7 @@ class AndroidReviewNotifierTest {
         notifier.notifyDue(3)
         notifier.notifyDue(1)
 
-        val shown = manager.activeNotifications
+        val shown = shownNotifications()
         assertEquals(1, shown.size)
         assertTrue(shown.single().notification.extras.getString("android.text") == "Tienes 1 ficha por repasar")
     }

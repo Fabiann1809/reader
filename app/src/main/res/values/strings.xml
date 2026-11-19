@@ -807,7 +807,7 @@
     <string name="settings_account_signed_in">Sesión iniciada como %1$s</string>
     <string name="settings_account_sign_out">Cerrar sesión</string>
     <string name="settings_account_sign_out_confirm_title">¿Cerrar sesión?</string>
-    <string name="settings_account_sign_out_confirm_body">Primero se guarda todo en tu Google Drive y después se quita de este teléfono. Todo vuelve cuando inicies sesión y actives la sincronización.</string>
+    <string name="settings_account_sign_out_confirm_body">Primero se guarda todo en tu Google Drive y después se quita de este teléfono. Todo vuelve solo cuando inicies sesión de nuevo con esta cuenta.</string>
     <string name="settings_account_sign_out_confirm">Guardar y cerrar sesión</string>
     <string name="settings_account_sign_out_saving">Guardando tus datos en Drive…</string>
     <string name="settings_account_sign_out_failed">No se pudo guardar en tu Drive, así que no se cerró la sesión para no perder tus datos. Revisa tu conexión e inténtalo de nuevo.</string>
@@ -820,6 +820,13 @@
     <string name="settings_sync_wifi_hint">Los libros pesan: así no gastas tus datos móviles.</string>
     <string name="settings_sync_now">Sincronizar ahora</string>
     <string name="settings_sync_retry">Reintentar</string>
+    <string name="restore_title">Recuperando tu biblioteca</string>
+    <string name="restore_body">Estamos trayendo tus libros, notas y fichas desde tu Google Drive. Puede tardar un poco.</string>
+    <string name="restore_wifi_hint">Con datos móviles no empezará hasta que tengas Wi-Fi. Puedes apagar «Solo con Wi-Fi» en Ajustes.</string>
+    <string name="restore_continue">Continuar sin esperar</string>
+    <string name="restore_failed_title">No pudimos recuperar tu biblioteca</string>
+    <string name="restore_retry">Reintentar</string>
+    <string name="restore_failed_continue">Continuar</string>
     <string name="sync_status_syncing">Sincronizando…</string>
     <string name="sync_status_synced">Todo está sincronizado.</string>
     <string name="sync_status_synced_at">Todo está sincronizado · %1$s</string>

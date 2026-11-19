@@ -43,7 +43,7 @@ class SignOutLiveTest {
             coordinator.setEnabled(true)
 
             // What "Cerrar sesión" does with the sync on.
-            coordinator.saveBeforeSignOut().getOrThrow()
+            coordinator.saveBeforeSignOut("live-test-user").getOrThrow()
 
             assertTrue("the phone is empty", books.observeBooks().first().isEmpty())
             assertFalse("the sync is off", coordinator.status.first() != SyncStatus.Disabled)
@@ -57,6 +57,7 @@ class SignOutLiveTest {
             assertEquals(listOf("Sign out live test"), books.observeBooks().first().map { it.title })
         } finally {
             coordinator.setEnabled(false)
+            container.syncSettings.update { it.copy(restoreFor = null) }
             books.observeBooks().first().forEach { books.deleteBook(it) }
             cloud.deleteFile("manifest.json")
         }
