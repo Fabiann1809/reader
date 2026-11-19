@@ -47,7 +47,6 @@
     <string name="import_duplicate_ok">Entendido</string>
     <string name="library_search">Buscar</string>
     <string name="library_search_hint">Buscar por título o autor</string>
-    <string name="library_search_close">Cerrar búsqueda</string>
     <string name="library_search_cancel">Cancelar</string>
     <string name="library_search_prompt">Escribe para buscar en tus libros</string>
     <plurals name="library_search_results">
@@ -61,7 +60,6 @@
     <string name="library_search_empty_message">Ningún libro coincide con «%1$s».</string>
     <string name="library_filters_empty_message">Ningún libro coincide con los filtros elegidos.</string>
     <string name="library_arrange">Ordenar y filtrar</string>
-    <string name="arrange_view">Vista</string>
     <string name="arrange_books_per_row">Libros por fila</string>
     <string name="view_shelves">Estantes</string>
     <string name="view_collections">Colecciones</string>
@@ -93,7 +91,6 @@
     <string name="book_badge_new">Nuevo</string>
     <string name="book_untitled">Libro sin título</string>
     <string name="book_read">Leer</string>
-    <string name="book_continue">Continuar</string>
     <string name="library_continue">Continuar</string>
     <string name="library_continue_reading">Sigues leyendo</string>
     <string name="collection_add_books">Añadir libros</string>
@@ -147,7 +144,6 @@
     <string name="selection_highlight">Resaltar</string>
     <string name="selection_note">Nota</string>
     <string name="highlights_title">Resaltados</string>
-    <string name="note_in_book">En el libro</string>
     <string name="note_edit">Editar nota</string>
     <string name="highlight_yellow">Resaltar en amarillo</string>
     <string name="highlight_green">Resaltar en verde</string>
@@ -165,7 +161,6 @@
     <string name="reading_settings_size_smaller">Texto más pequeño</string>
     <string name="reading_settings_size_bigger">Texto más grande</string>
     <string name="reading_settings_size_value">%d %%</string>
-    <string name="reading_settings_sample_letter" translatable="false">A</string>
     <string name="reading_settings_line_height">Interlineado</string>
     <string name="reading_settings_margins">Márgenes</string>
     <string name="reading_settings_alignment">Alineación</string>
@@ -203,7 +198,6 @@
     <string name="reader_index">Índice</string>
     <string name="reader_text_settings">Aa</string>
     <string name="reader_text_settings_description">Ajustes de lectura</string>
-    <string name="reader_voice">Voz</string>
     <string name="reader_voice_description">Leer en voz alta</string>
     <string name="read_aloud_title">Lectura en voz alta</string>
     <string name="read_aloud_preparing">Preparando la voz…</string>
@@ -294,10 +288,7 @@
     <string name="book_not_found">Este libro ya no está en tu biblioteca</string>
     <string name="book_not_found_message">Puede que lo hayas eliminado. Tus otros libros siguen en sus estantes.</string>
     <string name="book_back_to_library">Volver a la biblioteca</string>
-    <string name="book_added_on">Agregado el %1$s</string>
     <string name="update_progress_title">Actualizar progreso</string>
-    <string name="update_progress_short">Progreso</string>
-    <string name="book_meta">%1$s · %2$s</string>
     <string name="book_progress_percent">%1$d %%</string>
     <string name="more_options">Más opciones</string>
     <string name="book_field_current_page">Página actual</string>
@@ -308,7 +299,6 @@
     <string name="delete_book_message">Se eliminará «%1$s» junto con todas sus notas. Esta acción no se puede deshacer.</string>
 
     <!-- Notes -->
-    <string name="notes_title">Notas</string>
     <string name="notes_empty">Aún no tienes notas</string>
     <string name="notes_empty_message">Fotografía una página o escribe una nota.</string>
     <string name="note_page">Pág. %1$d</string>
@@ -352,7 +342,6 @@
 
     <!-- Extracted text -->
     <string name="extracted_text_title">Texto reconocido</string>
-    <string name="extracted_text_label">Texto reconocido</string>
     <string name="extracted_text_recognizing">Leyendo el texto de la imagen…</string>
     <string name="extracted_text_hint">Revisa y corrige el texto antes de enviarlo. Puedes borrar lo que no necesites.</string>
     <string name="extracted_text_counter">%1$d / %2$d caracteres</string>
@@ -568,7 +557,6 @@
         <item quantity="one">%d página restante</item>
         <item quantity="other">%d páginas restantes</item>
     </plurals>
-    <string name="detail_estimated">%1$s · %2$s estimadas</string>
     <string name="detail_fact_time">Tiempo leído</string>
     <string name="detail_fact_sessions">Sesiones</string>
     <string name="detail_fact_notes">Notas</string>
@@ -588,10 +576,6 @@
     </plurals>
     <string name="detail_cards_review">Repasar</string>
     <string name="detail_review_short">Repasar libro</string>
-    <plurals name="detail_review_book">
-        <item quantity="one">Repasa este libro (%d ficha)</item>
-        <item quantity="other">Repasa este libro (%d fichas)</item>
-    </plurals>
     <string name="detail_quiz_needs_notes">Para un quiz de este libro, guarda antes alguna nota o ficha.</string>
     <string name="detail_cards_empty">Sin fichas de este libro</string>
     <string name="detail_cards_empty_message">Crea fichas desde sus notas, explicaciones o con «Nueva ficha».</string>
