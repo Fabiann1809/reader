@@ -70,10 +70,11 @@ We read a lot, understand part of it and forget most of it within days. Reader c
 
 ### 🔒 Your data stays yours
 - **No servers of ours.** Everything lives on your phone; the sign-in only controls access.
+- **Optional sync with your own Google Drive.** Turn it on in Ajustes to see your books, covers, notes, cards and reading progress on all your devices. Reader only uses a hidden folder of its own in your Drive (it can't see anything else there), syncs by itself, and can wait for Wi-Fi. Signing out saves everything to Drive first and then empties the phone, so nothing is lost.
 
 ## 📦 Install
 
-1. Download `Reader-0.1.0.apk` from the [**Releases**](https://github.com/Fabiann1809/reader/releases) page, or [build it yourself](#️-build-from-source).
+1. Download the latest `Reader-x.y.z.apk` from the [**Releases**](https://github.com/Fabiann1809/reader/releases) page, or [build it yourself](#️-build-from-source).
 2. Open it on your phone. Android will ask you to **allow installing apps from this source**: allow it.
 3. Open **Reader**, add your first book and you're ready.
 
@@ -88,7 +89,7 @@ Reader uses **Google Gemini** with your own API key (*bring your own key*). It's
 3. Tap **Create API key** and copy it.
 4. In Reader, go to **Más → Configuración → Clave de IA**, paste it and tap **Guardar clave**. Use **Probar clave** to check it.
 
-> 🔐 The key is stored **encrypted** on your phone (Android Keystore) and is only sent to Google when you ask for an explanation, a quiz or a transcription. It is never included in backups.
+> 🔐 The key is stored **encrypted** on your phone (Android Keystore) and is only sent to your AI provider when you ask for an explanation, a quiz or a transcription. It is never synced.
 
 Everything else (library, reader, OCR, notes, reviews) works without a key.
 
