@@ -158,6 +158,25 @@ io.github.fabiann1809.reader
 └── util/   small shared helpers
 ```
 
+## Technical decisions
+
+| Decision | Why |
+|---|---|
+| **Native Kotlin and Jetpack Compose**, not Flutter or React Native | Camera, on-device OCR, the Keystore and text-to-speech are Android APIs. A cross-platform bridge adds friction, and the app only targets Android. |
+| **Bring your own key (BYOK)**, no backend | No server to run and no cost for the author. The key never passes through a third party. |
+| **`AiProvider` interface** with four implementations | Gemini, OpenAI, Claude and any OpenAI-compatible service can be swapped without touching the UI. |
+| **On-device OCR** (ML Kit) | Free, works offline, and the photo of the page stays on the phone. Only the recognized text is sent, after the user has corrected it. |
+| **Local first (Room)**, optional Drive sync | Data lives on the phone. Sync is opt-in and limited to the app's hidden Drive folder. |
+| **MVVM with manual dependency injection** (`AppContainer`), no Hilt | This is also a learning project: no framework magic, and the wiring is visible in one place. |
+| **Simplified SM-2** for flashcards | A well-known algorithm, easy to cover with unit tests and enough for this use case. |
+| **Readium** for EPUB and PDF | It already solves text selection, locators, themes and read aloud, so there is no reading engine to write. |
+
+### The API key
+The key is stored encrypted with the Android Keystore, kept separately for each provider, and never written to the repository, the logs or exception messages. It is only sent to the provider the user chose, when the user asks for something, and it is not part of the Drive sync. Every model call goes through `AiProvider`, so the rest of the app does not know which service answers. The structured-output schemas of the other providers are converted from the Gemini ones.
+
+### Sync without a server
+Reader has no backend. Sync uses the Drive REST API over OkHttp and only the `appDataFolder` scope, a hidden folder that belongs to the app, so it cannot read or list anything else in the user's Drive. Every record carries an id and an `updatedAt` timestamp, kept by SQLite triggers, and deletions are recorded as tombstones. The merge engine is a pure function: the most recent change wins, and a deletion wins a tie. Because it has no Android dependencies it is covered by plain unit tests, and an instrumented test syncs two simulated devices through one fake cloud. Each Reader account has its own prefix in the folder, so two accounts on one phone never see each other's library.
+
 ## License
 
 [MIT](LICENSE) © 2026 Fabiann1809
