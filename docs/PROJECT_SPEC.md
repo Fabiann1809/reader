@@ -1,6 +1,6 @@
 # Asistente de Lectura — Documento de proyecto y tareas
 
-> Documento pensado para ser entregado a Claude Code. Contiene el contexto, las decisiones tomadas, el alcance y una lista de tareas cortas y verificables.
+> Contexto, decisiones tomadas, alcance y lista de tareas cortas y verificables del proyecto.
 
 ---
 
@@ -124,7 +124,7 @@ Tablas posteriores (post-MVP): `Flashcard`, `Quiz`, `QuizQuestion`, `VoiceNote`.
 
 ---
 
-## 7. Reglas de trabajo para Claude Code
+## 7. Reglas de trabajo
 
 1. **Una tarea a la vez.** No adelantes tareas de otras fases.
 2. Al terminar cada tarea, verifica que el proyecto **compila** y cumple su criterio de "Hecho cuando".
@@ -428,7 +428,7 @@ Fuentes: backlog original B1–B10 y el paquete de diseño del usuario ("Reader:
 ## 12. Convenciones del repositorio
 
 - **Repositorio:** público en GitHub, `Fabiann1809/reader`, rama principal `main`.
-- **Autoría:** todos los commits van solo a nombre de `Fabiann1809 <leiderfabian538@gmail.com>`. Sin `Co-Authored-By` ni firmas de herramientas de IA.
+- **Autoría:** todos los commits van solo a nombre de `Fabiann1809 <leiderfabian538@gmail.com>`.
 - **Commits:** uno por tarea o fix, con [Conventional Commits](https://www.conventionalcommits.org/) en inglés: `type(scope): imperative summary`.
   - Tipos: `feat`, `fix`, `refactor`, `test`, `docs`, `build`, `chore`, `style`.
   - Scopes: `data`, `library`, `notes`, `ai`, `ocr`, `camera`, `ui`, `build`, `reader`, `voice`, `review`, `quiz`, `progress`, `backup`, `sync`, `auth`.
