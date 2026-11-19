@@ -14,6 +14,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import java.time.LocalDate
+import java.time.ZoneId
 
 class ProgressViewModelTest {
 
@@ -34,7 +36,8 @@ class ProgressViewModelTest {
         }
     }
 
-    private val now = 1_790_900_000_000L
+    // Midday in the local zone, so the sessions below never cross midnight whatever zone the tests run in.
+    private val now = LocalDate.of(2026, 10, 1).atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
     private val goalStore = FakeGoalStore()
 
     @Test
