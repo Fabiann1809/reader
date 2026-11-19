@@ -152,15 +152,6 @@ io.github.fabiann1809.reader
 └── util/   small shared helpers
 ```
 
-## Roadmap
-
-- Read aloud with sentence highlighting
-- TXT and comic (CBZ) reading
-- Add paper books by scanning the ISBN
-- Daily review and reading reminders
-- Home screen widget and shortcuts
-- Alternative sync providers (Dropbox)
-
 ## License
 
 [MIT](LICENSE) © 2026 Fabiann1809
