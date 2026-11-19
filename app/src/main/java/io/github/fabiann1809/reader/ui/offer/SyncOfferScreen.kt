@@ -31,21 +31,35 @@ import io.github.fabiann1809.reader.ui.account.SyncUiState
 import io.github.fabiann1809.reader.ui.account.SyncViewModel
 import io.github.fabiann1809.reader.ui.auth.ReaderLogo
 import io.github.fabiann1809.reader.ui.components.PrimaryButton
+import io.github.fabiann1809.reader.ui.restore.RestoreScreen
+import io.github.fabiann1809.reader.ui.restore.RestoreState
 
-/** The invitation to sync with Drive shown once after signing in (T18.9d). [onAnswered] ends it, yes or no. */
+/**
+ * The invitation to sync with Drive shown once after signing in (T18.9d). When it is accepted the loading
+ * screen takes over until the first sync ends, so the library never shows empty while the books come in.
+ * [onAnswered] ends it, yes or no.
+ */
 @Composable
 fun SyncOfferScreen(onAnswered: () -> Unit, sync: SyncViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
     val state by sync.uiState.collectAsStateWithLifecycle()
     SyncConsentEffect(state, sync)
-    // The sync turned on (Google's permission was given and Drive accepted it): the question is answered.
+    // The first sync ended: the library is there.
     LaunchedEffect(state.status) {
-        if (state.status != SyncStatus.Disabled) onAnswered()
+        val status = state.status
+        if (status is SyncStatus.Synced && status.at != null) onAnswered()
     }
-    SyncOfferContent(state, onEnable = { sync.setEnabled(true) }, onSkip = onAnswered)
+    SyncOfferContent(state, onEnable = { sync.setEnabled(true) }, onSkip = onAnswered, onRetry = sync::retry)
 }
 
 @Composable
-fun SyncOfferContent(state: SyncUiState, onEnable: () -> Unit, onSkip: () -> Unit) {
+fun SyncOfferContent(state: SyncUiState, onEnable: () -> Unit, onSkip: () -> Unit, onRetry: () -> Unit = {}) {
+    // Turned on: wait for the first sync with the same loading screen as a returning account's restore.
+    val status = state.status
+    if (status != SyncStatus.Disabled) {
+        val loading = if (status is SyncStatus.Failed) RestoreState.Failed(status.error) else RestoreState.Restoring
+        RestoreScreen(loading, onContinue = onSkip, onRetry = onRetry)
+        return
+    }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,

@@ -8,6 +8,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.github.fabiann1809.reader.R
+import io.github.fabiann1809.reader.data.sync.SyncStatus
+import io.github.fabiann1809.reader.data.sync.cloud.SyncError
 import io.github.fabiann1809.reader.ui.account.SyncUiState
 import io.github.fabiann1809.reader.ui.theme.ReaderTheme
 import org.junit.Assert.assertEquals
@@ -27,7 +29,9 @@ class SyncOfferScreenTest {
 
     private fun show(state: SyncUiState = SyncUiState()) {
         composeRule.setContent {
-            ReaderTheme { SyncOfferContent(state, onEnable = { calls += "enable" }, onSkip = { calls += "skip" }) }
+            ReaderTheme {
+                SyncOfferContent(state, onEnable = { calls += "enable" }, onSkip = { calls += "skip" }, onRetry = { calls += "retry" })
+            }
         }
     }
 
@@ -43,6 +47,28 @@ class SyncOfferScreenTest {
         composeRule.onNodeWithText(string(R.string.offer_skip)).performClick()
 
         assertEquals(listOf("enable", "skip"), calls)
+    }
+
+    @Test
+    fun onceTheSyncIsOnItShowsTheLoadingScreenInsteadOfAnEmptyLibrary() {
+        show(SyncUiState(status = SyncStatus.Synced(null)))
+
+        composeRule.onNodeWithText(string(R.string.restore_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.offer_title)).assertDoesNotExist()
+
+        composeRule.onNodeWithText(string(R.string.restore_continue)).performClick()
+
+        assertEquals(listOf("skip"), calls)
+    }
+
+    @Test
+    fun ifTheFirstSyncFailsItSaysWhyAndCanRetry() {
+        show(SyncUiState(status = SyncStatus.Failed(SyncError.QuotaExceeded())))
+
+        composeRule.onNodeWithText(string(R.string.sync_error_quota)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.restore_retry)).performClick()
+
+        assertEquals(listOf("retry"), calls)
     }
 
     @Test

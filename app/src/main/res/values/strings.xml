@@ -827,7 +827,7 @@
     <string name="offer_later_hint">Puedes activarlo o apagarlo cuando quieras en Más → Cuenta.</string>
     <string name="offer_enable">Activar sincronización</string>
     <string name="offer_skip">Ahora no</string>
-    <string name="restore_title">Recuperando tu biblioteca</string>
+    <string name="restore_title">Sincronizando tu biblioteca</string>
     <string name="restore_body">Estamos trayendo tus libros, notas y fichas desde tu Google Drive. Puede tardar un poco.</string>
     <string name="restore_wifi_hint">Con datos móviles no empezará hasta que tengas Wi-Fi. Puedes apagar «Solo con Wi-Fi» en Ajustes.</string>
     <string name="restore_continue">Continuar sin esperar</string>
