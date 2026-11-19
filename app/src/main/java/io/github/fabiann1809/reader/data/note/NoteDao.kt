@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface NoteDao {
 
-    /** Every row, for a backup (T17.2). */
+    /** Every row. */
     @Query("SELECT * FROM notes")
     suspend fun getAll(): List<Note>
 

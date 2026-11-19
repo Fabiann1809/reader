@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface BookmarkDao {
 
-    /** Every row, for a backup (T17.2). */
+    /** Every row. */
     @Query("SELECT * FROM bookmarks")
     suspend fun getAll(): List<Bookmark>
 

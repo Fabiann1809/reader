@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface HighlightDao {
 
-    /** Every row, for a backup (T17.2). */
+    /** Every row. */
     @Query("SELECT * FROM highlights")
     suspend fun getAll(): List<Highlight>
 

@@ -71,10 +71,6 @@ import io.github.fabiann1809.reader.data.note.DefaultNoteRepository
 import io.github.fabiann1809.reader.data.note.NoteRepository
 import io.github.fabiann1809.reader.data.prefs.AppPreferences
 import io.github.fabiann1809.reader.data.prefs.DataStoreAppPreferences
-import io.github.fabiann1809.reader.data.backup.BackupExporter
-import io.github.fabiann1809.reader.data.backup.BackupImporter
-import io.github.fabiann1809.reader.data.backup.BackupRepository
-import io.github.fabiann1809.reader.data.backup.DefaultBackupRepository
 import io.github.fabiann1809.reader.data.prefs.AppSettingsStore
 import io.github.fabiann1809.reader.data.prefs.ChapterSuggestions
 import io.github.fabiann1809.reader.data.prefs.DataStoreAppSettingsStore
@@ -206,14 +202,6 @@ class AppContainer(context: Context) {
 
     val readAloud: ReadAloud by lazy {
         ReadiumReadAloud(appContext as Application, readerSession, readAloudPreferences, applicationScope)
-    }
-
-    val backupRepository: BackupRepository by lazy {
-        DefaultBackupRepository(
-            appContext.contentResolver,
-            BackupExporter(database, appContext.filesDir),
-            BackupImporter(database, appContext.filesDir, appContext.cacheDir),
-        )
     }
 
     val chapterSuggestions: ChapterSuggestions by lazy { DataStoreChapterSuggestions(appContext, appSettings) }

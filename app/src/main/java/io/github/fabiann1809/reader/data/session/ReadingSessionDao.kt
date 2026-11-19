@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ReadingSessionDao {
 
-    /** Every row, for a backup (T17.2). */
+    /** Every row. */
     @Query("SELECT * FROM reading_sessions")
     suspend fun getAll(): List<ReadingSession>
 

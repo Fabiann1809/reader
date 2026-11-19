@@ -108,10 +108,6 @@ class ReaderNavHostTest {
         composeRule.onNodeWithText(string(R.string.all_notes_title)).assertIsDisplayed()
         pressBack()
 
-        composeRule.onNodeWithText(string(R.string.backup_title)).performClick()
-        composeRule.onNodeWithText(string(R.string.backup_no_key)).assertIsDisplayed()
-        pressBack()
-
         composeRule.onNodeWithText(string(R.string.settings_privacy)).performClick()
         composeRule.onNodeWithText(string(R.string.privacy_sent_title)).assertIsDisplayed()
         pressBack()

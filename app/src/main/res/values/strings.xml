@@ -668,25 +668,6 @@
 
     <!-- More -->
     <string name="all_notes_title">Todas las notas</string>
-    <string name="backup_title">Respaldo</string>
-    <string name="backup_export_title">Exportar respaldo</string>
-    <string name="backup_export_message">Guarda en un archivo tus libros, notas, resaltados, fichas y sesiones, con los archivos de los libros y las notas de voz. Elige dónde: en el teléfono o en Google Drive.</string>
-    <string name="backup_no_key">Tu clave de IA nunca se incluye: se queda en este teléfono.</string>
-    <string name="backup_export">Exportar respaldo</string>
-    <string name="backup_exporting">Preparando el respaldo…</string>
-    <string name="backup_exported">Respaldo guardado: %1$d libros, %2$d notas, %3$d fichas y %4$d archivos.</string>
-    <string name="backup_import_title">Importar respaldo</string>
-    <string name="backup_import_message">Restaura un respaldo en este teléfono, por ejemplo al cambiar de celular. Reemplaza tu biblioteca actual por la del archivo.</string>
-    <string name="backup_import">Importar respaldo</string>
-    <string name="backup_import_confirm_title">¿Reemplazar tu biblioteca?</string>
-    <string name="backup_import_confirm_message">Tus libros, notas, fichas y sesiones actuales se cambiarán por los del respaldo. Esto no se puede deshacer.</string>
-    <string name="backup_import_confirm">Reemplazar</string>
-    <string name="backup_importing">Restaurando el respaldo…</string>
-    <string name="backup_imported">Respaldo restaurado: %1$d libros, %2$d notas, %3$d fichas y %4$d archivos.</string>
-    <string name="backup_import_not_a_backup">Ese archivo no es un respaldo de Reader, o está dañado. No se cambió nada.</string>
-    <string name="backup_import_newer">Ese respaldo es de una versión más nueva de Reader. Actualiza la app para restaurarlo.</string>
-    <string name="backup_import_unreadable">No se pudo leer el archivo. No se cambió nada.</string>
-    <string name="backup_export_failed">No se pudo guardar el respaldo. Prueba en otra carpeta.</string>
     <string name="about_title">Acerca de</string>
     <string name="more_key_active">Clave de IA activa</string>
     <string name="more_key_active_note">Solo se envían fragmentos</string>
@@ -702,7 +683,6 @@
         <item quantity="one">%d libro</item>
         <item quantity="other">%d libros</item>
     </plurals>
-    <string name="more_backup_hint">Exportar o importar ZIP</string>
     <string name="more_settings_hint">Clave de IA, apariencia, lectura</string>
     <string name="more_privacy_hint">Qué se envía y qué no</string>
     <string name="more_about_hint">Versión y licencias</string>

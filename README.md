@@ -69,8 +69,7 @@ We read a lot, understand part of it and forget most of it within days. Reader c
 - Per-book summary: time read, sessions, notes and cards.
 
 ### 🔒 Your data stays yours
-- **No accounts, no servers.** Everything lives on your phone.
-- **Backup and restore** everything (books, notes, cards, voice notes) to a single ZIP file.
+- **No servers of ours.** Everything lives on your phone; the sign-in only controls access.
 
 ## 📦 Install
 

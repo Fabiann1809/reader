@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FlashcardDao {
 
-    /** Every row, for a backup (T17.2). */
+    /** Every row. */
     @Query("SELECT * FROM flashcards")
     suspend fun getAll(): List<Flashcard>
 

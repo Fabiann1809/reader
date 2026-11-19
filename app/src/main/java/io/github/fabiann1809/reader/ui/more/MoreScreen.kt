@@ -28,7 +28,6 @@ import io.github.fabiann1809.reader.ui.AppViewModelProvider
 /** Secondary destinations of the "Más" tab, in the design's order. [hint] is null when it depends on data. */
 enum class MoreEntry(@StringRes val title: Int, @DrawableRes val icon: Int, @StringRes val hint: Int?) {
     ALL_NOTES(R.string.all_notes_title, R.drawable.ic_note_pencil, null),
-    BACKUP(R.string.backup_title, R.drawable.ic_archive, R.string.more_backup_hint),
     SETTINGS(R.string.settings_title, R.drawable.ic_gear_six, R.string.more_settings_hint),
     PRIVACY(R.string.settings_privacy, R.drawable.ic_shield_check, R.string.more_privacy_hint),
     ABOUT(R.string.about_title, R.drawable.ic_info, R.string.more_about_hint),

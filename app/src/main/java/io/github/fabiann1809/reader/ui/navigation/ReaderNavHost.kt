@@ -36,7 +36,6 @@ import io.github.fabiann1809.reader.ui.interpretation.InterpretationScreen
 import io.github.fabiann1809.reader.ui.quiz.QuizScreen
 import io.github.fabiann1809.reader.ui.library.LibraryScreen
 import io.github.fabiann1809.reader.ui.more.AboutScreen
-import io.github.fabiann1809.reader.ui.more.BackupScreen
 import io.github.fabiann1809.reader.ui.more.MoreEntry
 import io.github.fabiann1809.reader.ui.more.MoreScreen
 import io.github.fabiann1809.reader.ui.newcollection.NewCollectionScreen
@@ -194,7 +193,6 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                     navController.navigate(
                         when (entry) {
                             MoreEntry.ALL_NOTES -> AllNotesRoute
-                            MoreEntry.BACKUP -> BackupRoute
                             MoreEntry.SETTINGS -> SettingsRoute
                             MoreEntry.PRIVACY -> PrivacyRoute
                             MoreEntry.ABOUT -> AboutRoute
@@ -209,9 +207,6 @@ private fun ReaderNavGraph(navController: NavHostController, startDestination: A
                 onNoteClick = { note -> navController.navigate(NoteEditorRoute(note.bookId, note.id)) },
                 onOpenNoteInBook = { note -> navController.navigate(ReaderRoute(note.bookId, note.location)) },
             )
-        }
-        composable<BackupRoute> {
-            BackupScreen(onNavigateUp = { navController.navigateUp() })
         }
         composable<AboutRoute> {
             AboutScreen(onNavigateUp = { navController.navigateUp() })
