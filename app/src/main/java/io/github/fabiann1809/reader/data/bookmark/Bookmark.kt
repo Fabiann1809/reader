@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.data.bookmark
 
+import io.github.fabiann1809.reader.data.sync.newSyncId
 import kotlinx.serialization.Serializable
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -19,7 +20,7 @@ import io.github.fabiann1809.reader.data.book.Book
             onDelete = ForeignKey.CASCADE,
         ),
     ],
-    indices = [Index("bookId")],
+    indices = [Index("bookId"), Index(value = ["syncId"], unique = true)],
 )
 @Serializable
 data class Bookmark(
@@ -36,4 +37,8 @@ data class Bookmark(
     val progression: Double? = null,
     // Epoch milliseconds.
     val createdAt: Long = System.currentTimeMillis(),
+    // Identifies the record on every device (T18.1); the local `id` differs between devices.
+    val syncId: String = newSyncId(),
+    // Epoch milliseconds of the last change; SQLite triggers keep it up to date (see SyncTriggers).
+    val updatedAt: Long = System.currentTimeMillis(),
 )

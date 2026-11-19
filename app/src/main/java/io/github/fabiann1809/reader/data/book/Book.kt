@@ -1,11 +1,13 @@
 package io.github.fabiann1809.reader.data.book
 
+import androidx.room.Index
+import io.github.fabiann1809.reader.data.sync.newSyncId
 import kotlinx.serialization.Serializable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "books")
+@Entity(tableName = "books", indices = [Index(value = ["syncId"], unique = true)])
 @Serializable
 data class Book(
     @PrimaryKey(autoGenerate = true)
@@ -42,4 +44,8 @@ data class Book(
     // Epoch milliseconds when it was marked finished, for "Libros terminados" of the year (T16.2).
     // Null while not finished, and for books finished before version 12.
     val finishedAt: Long? = null,
+    // Identifies the record on every device (T18.1); the local `id` differs between devices.
+    val syncId: String = newSyncId(),
+    // Epoch milliseconds of the last change; SQLite triggers keep it up to date (see SyncTriggers).
+    val updatedAt: Long = System.currentTimeMillis(),
 )

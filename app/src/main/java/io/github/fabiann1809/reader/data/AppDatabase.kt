@@ -20,10 +20,13 @@ import io.github.fabiann1809.reader.data.note.Note
 import io.github.fabiann1809.reader.data.note.NoteDao
 import io.github.fabiann1809.reader.data.session.ReadingSession
 import io.github.fabiann1809.reader.data.session.ReadingSessionDao
+import io.github.fabiann1809.reader.data.sync.SyncTombstone
+import io.github.fabiann1809.reader.data.sync.SyncTombstoneDao
+import io.github.fabiann1809.reader.data.sync.SyncTriggersCallback
 
 @Database(
-    entities = [Book::class, Note::class, Collection::class, BookCollectionCrossRef::class, Bookmark::class, Highlight::class, Flashcard::class, ReadingSession::class],
-    version = 13,
+    entities = [Book::class, Note::class, Collection::class, BookCollectionCrossRef::class, Bookmark::class, Highlight::class, Flashcard::class, ReadingSession::class, SyncTombstone::class],
+    version = 14,
     exportSchema = true,
     autoMigrations = [
         // 1 → 2: new optional Book columns (kind, format, filePath, coverPath, language, lastOpenedAt).
@@ -66,12 +69,15 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun readingSessionDao(): ReadingSessionDao
 
+    abstract fun syncTombstoneDao(): SyncTombstoneDao
+
     companion object {
         private const val DATABASE_NAME = "reader.db"
 
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, DATABASE_NAME)
                 .addMigrations(*ALL_MIGRATIONS)
+                .addCallback(SyncTriggersCallback)
                 .build()
     }
 }

@@ -71,6 +71,9 @@ class MigrationTest {
             assertNull(book.fileHash)
             // Added in version 12: when it was finished is unknown.
             assertNull(book.finishedAt)
+            // Added in version 14: it got a syncId, and its last activity is when it was created.
+            assertTrue(book.syncId.isNotBlank())
+            assertEquals(1000L, book.updatedAt)
             // Added in version 5: no bookmarks yet.
             assertTrue(database.bookmarkDao().observeByBook(1).first().isEmpty())
             // Added in version 6: no highlights yet.
@@ -90,6 +93,8 @@ class MigrationTest {
             // Added in version 9: not a voice note.
             assertNull(note.audioPath)
             assertNull(note.tag)
+            assertTrue(note.syncId.isNotBlank())
+            assertEquals(2000L, note.updatedAt)
         } finally {
             database.close()
         }
@@ -110,6 +115,39 @@ class MigrationTest {
             assertEquals(1, cursor.getInt(1))
             assertTrue(cursor.moveToNext())
             assertEquals(0, cursor.getInt(1))
+        }
+    }
+
+    @Test
+    fun syncColumnsGetUniqueIdsAndTheLastActivityAndTheTriggersWork() {
+        helper.createDatabase(TEST_DB, 13).apply {
+            execSQL("INSERT INTO books (id, title, author, currentPage, status, createdAt, kind, isFavorite) VALUES (1, 'A', 'x', 0, 'TO_READ', 1000, 'PHYSICAL', 0)")
+            execSQL("INSERT INTO books (id, title, author, currentPage, status, createdAt, kind, isFavorite, lastOpenedAt) VALUES (2, 'B', 'x', 0, 'READING', 1000, 'PHYSICAL', 0, 5000)")
+            execSQL("INSERT INTO reading_sessions (id, bookId, startedAt, endedAt, pagesRead) VALUES (1, 1, 100, 300, 5)")
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TEST_DB, 14, true, MIGRATION_13_14)
+
+        db.query("SELECT syncId, updatedAt FROM books ORDER BY id").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            val first = cursor.getString(0)
+            assertEquals(36, first.length)
+            assertEquals(1000L, cursor.getLong(1))
+            assertTrue(cursor.moveToNext())
+            assertTrue(first != cursor.getString(0))
+            assertEquals(5000L, cursor.getLong(1))
+        }
+        db.query("SELECT updatedAt FROM reading_sessions").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(300L, cursor.getLong(0))
+        }
+        // The triggers were installed: deleting a book remembers it.
+        db.execSQL("DELETE FROM books WHERE id = 1")
+        db.query("SELECT entityType FROM sync_tombstones").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("book", cursor.getString(0))
+            assertEquals(1, cursor.count)
         }
     }
 

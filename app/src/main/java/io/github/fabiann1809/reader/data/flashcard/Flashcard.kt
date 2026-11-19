@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.data.flashcard
 
+import io.github.fabiann1809.reader.data.sync.newSyncId
 import kotlinx.serialization.Serializable
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -24,7 +25,7 @@ import io.github.fabiann1809.reader.data.note.NoteTag
             onDelete = ForeignKey.CASCADE,
         ),
     ],
-    indices = [Index("bookId"), Index("nextReviewAt")],
+    indices = [Index("bookId"), Index("nextReviewAt"), Index(value = ["syncId"], unique = true)],
 )
 @Serializable
 data class Flashcard(
@@ -44,6 +45,10 @@ data class Flashcard(
     // Correct reviews in a row; SM-2 restarts it on a miss.
     val repetitions: Int = 0,
     val createdAt: Long = System.currentTimeMillis(),
+    // Identifies the record on every device (T18.1); the local `id` differs between devices.
+    val syncId: String = newSyncId(),
+    // Epoch milliseconds of the last change; SQLite triggers keep it up to date (see SyncTriggers).
+    val updatedAt: Long = System.currentTimeMillis(),
 ) {
     companion object {
         const val INITIAL_EASE = 2.5

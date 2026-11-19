@@ -1,5 +1,6 @@
 package io.github.fabiann1809.reader.data.session
 
+import io.github.fabiann1809.reader.data.sync.newSyncId
 import kotlinx.serialization.Serializable
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -23,7 +24,7 @@ import io.github.fabiann1809.reader.data.book.Book
             onDelete = ForeignKey.CASCADE,
         ),
     ],
-    indices = [Index("bookId"), Index("startedAt")],
+    indices = [Index("bookId"), Index("startedAt"), Index(value = ["syncId"], unique = true)],
 )
 @Serializable
 data class ReadingSession(
@@ -34,6 +35,10 @@ data class ReadingSession(
     val startedAt: Long,
     val endedAt: Long,
     val pagesRead: Int = 0,
+    // Identifies the record on every device (T18.1); the local `id` differs between devices.
+    val syncId: String = newSyncId(),
+    // Epoch milliseconds of the last change; SQLite triggers keep it up to date (see SyncTriggers).
+    val updatedAt: Long = System.currentTimeMillis(),
 ) {
     val durationMillis: Long get() = endedAt - startedAt
 }
