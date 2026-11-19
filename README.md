@@ -19,81 +19,85 @@ and makes sure you don't forget what you read.
 
 ---
 
-## ✨ The idea
+## The idea
 
-We read a lot, understand part of it and forget most of it within days. Reader closes that loop:
+Most readers retain only part of what they read and forget much of it within days. Reader closes that loop:
 
 ```
-   📖 Read  ──▶  💡 Understand  ──▶  📝 Save  ──▶  🔁 Review  ──▶  ✅ Test yourself
-      ▲                                                                   │
-      └──────────────────── what you miss comes back as a card ◀──────────┘
+   Read  ──▶  Understand  ──▶  Save  ──▶  Review  ──▶  Test yourself
+     ▲                                                       │
+     └───────────── what you miss comes back as a card ◀─────┘
 ```
 
-> **Snap a page** of a paper book (or select text in an ebook) → the text is **recognized on your phone** → the AI **explains it in plain words** (Feynman method) → you **save it as a note** and turn the key ideas into **flashcards**.
+Photograph a page of a paper book, or select text in an ebook. The text is recognized on the device, the AI explains it in plain words (Feynman method), and you save the result as a note and turn the key ideas into flashcards.
 
-## 📱 Screenshots
+## Screenshots
 
 <div align="center">
 
-| Library | Book | Capture + OCR | Review | Flashcard |
+| Library | Book | Capture and OCR | Review | Flashcard |
 |:---:|:---:|:---:|:---:|:---:|
 | <img src="docs/images/library.png" width="160" alt="Library shelves" /> | <img src="docs/images/book-detail.png" width="160" alt="Book detail" /> | <img src="docs/images/capture-ocr.png" width="160" alt="Recognized text from a photo" /> | <img src="docs/images/review.png" width="160" alt="Cards due today" /> | <img src="docs/images/review-session.png" width="160" alt="Review session" /> |
 
 </div>
 
-## 🚀 Features
+## Features
 
-### 📚 Library and reading
-- **Shelves, grid or list** view, with collections, search, sorting and filters.
+### Library and reading
+- **Shelves, grid or list** views, with collections, search, sorting and filters.
 - **Ebooks** (EPUB and PDF) read inside the app: themes, fonts, table of contents, bookmarks and highlights.
 - **Paper books** too: register them and track your page, progress and remaining time.
-- **Watch a folder**: books you drop into it are imported automatically.
+- **Watched folder**: books placed in it are imported automatically.
 
-### 💡 Understand with AI
-- **Select text** in an EPUB, **mark an area** of a PDF or **take a photo** of a paper page.
-- On-device **OCR** (ML Kit) extracts the text, warns you when it isn't sure, and lets you fix it.
-- The AI **explains it simply**, with everyday analogies.
-- **"Ahora tú"**: write your own interpretation and get feedback on it.
+### Understand with AI
+- Select text in an EPUB, mark an area of a PDF, or take a photo of a paper page.
+- On-device **OCR** (ML Kit) extracts the text, warns when it is not confident, and lets you correct it.
+- The AI **explains the passage simply**, using everyday analogies.
+- **"Ahora tú"**: write your own interpretation and receive feedback on it.
 
-### 📝 Notes
-- **Written notes**, **AI explanations** and **voice notes** (with optional transcription), each one linked to its book and page.
+### Notes
+- **Written notes**, **AI explanations** and **voice notes** (with optional transcription), each linked to its book and page.
 - Search every note by text and filter by type.
 
-### 🔁 Remember
-- **Flashcards** from your notes, explanations, selected text or failed quiz questions. The AI can suggest the question and answer.
-- **Spaced repetition** (simplified SM-2): each card comes back right before you would forget it.
-- **Quizzes** on a chapter, a paragraph, your cards or your notes, and the questions you miss become new cards.
+### Remember
+- **Flashcards** created from notes, explanations, selected text or missed quiz questions. The AI can suggest the question and answer.
+- **Spaced repetition** (simplified SM-2): each card returns shortly before you would forget it.
+- **Quizzes** on a chapter, a paragraph, your cards or your notes, and missed questions become new cards.
 
-### 📈 Progress
+### Progress
 - Daily reading goal, streak, weekly chart and finished books.
 - Per-book summary: time read, sessions, notes and cards.
 
-### 🔒 Your data stays yours
-- **No servers of ours.** Everything lives on your phone; the sign-in only controls access.
-- **Optional sync with your own Google Drive.** Turn it on in Ajustes to see your books, covers, notes, cards and reading progress on all your devices. Reader only uses a hidden folder of its own in your Drive (it can't see anything else there), syncs by itself, and can wait for Wi-Fi. Signing out saves everything to Drive first and then empties the phone, so nothing is lost.
+### Account and Google Drive sync
+- **Sign in** with email and password or with Google. Each account has its own library: another person signing in on the same phone never sees your books.
+- **Optional sync with your own Google Drive.** After signing in, Reader offers to save the library to Drive; it can also be turned on or off in **Más → Cuenta**. Books, covers, notes, flashcards, bookmarks and reading progress are kept in step across devices, and the most recent change wins.
+- **Limited access.** Reader requests only the Drive application-data scope: a hidden folder that belongs to the app. It cannot read or list anything else in your Drive.
+- **Automatic or manual.** Changes are uploaded in the background a few seconds after they are made, optionally only on Wi-Fi, and **Sincronizar ahora** forces a pass.
+- **Signing out is safe.** Reader first saves everything to Drive and then clears the phone. Signing in again with the same account restores the library, with a loading screen while it downloads. Accounts without data in Drive go straight to an empty library.
+- **No servers of our own.** Your data lives on your phone and in your own Drive.
 
-## 📦 Install
+## Install
 
-1. Download the latest `Reader-x.y.z.apk` from the [**Releases**](https://github.com/Fabiann1809/reader/releases) page, or [build it yourself](#️-build-from-source).
+1. Download the latest `Reader-x.y.z.apk` from the [**Releases**](https://github.com/Fabiann1809/reader/releases) page, or [build it yourself](#build-from-source).
 2. Open it on your phone. Android will ask you to **allow installing apps from this source**: allow it.
-3. Open **Reader**, add your first book and you're ready.
+3. Open **Reader**, sign in, add your first book and start reading.
 
 > Requires **Android 8.0 (API 26)** or newer.
 
-## 🔑 Get your free AI key
+## Get your free AI key
 
-Reader uses **Google Gemini** with your own API key (*bring your own key*). It's free and takes a minute:
+Reader uses **Google Gemini** with your own API key (*bring your own key*). The key is free and takes a minute to create:
 
-1. Open [**aistudio.google.com/apikey**](https://aistudio.google.com/apikey).
+1. Open [aistudio.google.com/apikey](https://aistudio.google.com/apikey).
 2. Sign in with your Google account.
-3. Tap **Create API key** and copy it.
-4. In Reader, go to **Más → Configuración → Clave de IA**, paste it and tap **Guardar clave**. Use **Probar clave** to check it.
+3. Select **Create API key** and copy it.
+4. In Reader, go to **Más → Configuración → Clave de IA**, paste it and select **Guardar clave**. Use **Probar clave** to check it.
 
-> 🔐 The key is stored **encrypted** on your phone (Android Keystore) and is only sent to your AI provider when you ask for an explanation, a quiz or a transcription. It is never synced.
+> The key is stored **encrypted** on your phone (Android Keystore) and is only sent to your AI provider when you ask for an explanation, a quiz or a transcription. It is never synced.
 
 Everything else (library, reader, OCR, notes, reviews) works without a key.
 
-## 🛠️ Build from source
+## Build from source
 
 **Requirements:** Android Studio (recent), JDK 17 or newer and the Android SDK (compile SDK 37).
 
@@ -125,7 +129,7 @@ cd reader
 
 Without `keystore.properties`, the release APK is built unsigned. Release builds are minified and shrunk with R8.
 
-## 🧱 Tech stack
+## Tech stack
 
 | Layer | Technology |
 |---|---|
@@ -136,6 +140,8 @@ Without `keystore.properties`, the release APK is built unsigned. Release builds
 | Camera & OCR | CameraX, ML Kit Text Recognition (on-device) |
 | AI | Google Gemini over OkHttp + kotlinx.serialization, behind an `AiProvider` interface |
 | Background work | WorkManager |
+| Account | Firebase Authentication (email and Google sign-in) |
+| Sync | Google Drive REST API (application-data folder) over OkHttp, with a pure merge engine |
 
 ```
 io.github.fabiann1809.reader
@@ -146,15 +152,15 @@ io.github.fabiann1809.reader
 └── util/   small shared helpers
 ```
 
-## 🗺️ Roadmap
+## Roadmap
 
-- 🔊 Read aloud with sentence highlighting
-- 📄 TXT and comic (CBZ) reading
-- 🔎 Add paper books by scanning the ISBN
-- 🔔 Daily review and reading reminders
-- 🧩 Home screen widget and shortcuts
-- ☁️ Optional sync with Google Drive or Dropbox
+- Read aloud with sentence highlighting
+- TXT and comic (CBZ) reading
+- Add paper books by scanning the ISBN
+- Daily review and reading reminders
+- Home screen widget and shortcuts
+- Alternative sync providers (Dropbox)
 
-## 📄 License
+## License
 
 [MIT](LICENSE) © 2026 Fabiann1809
