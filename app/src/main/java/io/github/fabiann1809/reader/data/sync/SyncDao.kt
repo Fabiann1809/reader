@@ -89,6 +89,16 @@ interface SyncDao {
     @Query("DELETE FROM book_collections WHERE bookId = :bookId AND collectionId = :collectionId")
     suspend fun deleteLink(bookId: Long, collectionId: Long)
 
+    // Everything goes with the books and collections: notes, cards, sessions and links cascade.
+    @Query("DELETE FROM books")
+    suspend fun deleteAllBooks()
+
+    @Query("DELETE FROM collections")
+    suspend fun deleteAllCollections()
+
+    @Query("DELETE FROM sync_tombstones")
+    suspend fun deleteAllTombstones()
+
     // The +1 keeps the update trigger from moving updatedAt to now: it would make this device's copy look
     // newer than the cloud's. A millisecond is nothing, and only matters for ties.
     @Query("UPDATE books SET syncId = :newSyncId, updatedAt = updatedAt + 1 WHERE syncId = :oldSyncId")

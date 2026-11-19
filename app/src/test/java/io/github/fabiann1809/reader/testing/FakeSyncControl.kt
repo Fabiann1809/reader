@@ -10,6 +10,9 @@ class FakeSyncControl(initial: SyncStatus = SyncStatus.Disabled) : SyncControl {
     override val status = MutableStateFlow(initial)
     val calls = mutableListOf<String>()
 
+    /** What saving before signing out answers. */
+    var saveResult: Result<Unit> = Result.success(Unit)
+
     override suspend fun setEnabled(enabled: Boolean) {
         calls += "enabled:$enabled"
         status.value = if (enabled) SyncStatus.Synced(null) else SyncStatus.Disabled
@@ -21,5 +24,10 @@ class FakeSyncControl(initial: SyncStatus = SyncStatus.Disabled) : SyncControl {
 
     override suspend fun syncNow() {
         calls += "syncNow"
+    }
+
+    override suspend fun saveBeforeSignOut(): Result<Unit> {
+        calls += "saveBeforeSignOut"
+        return saveResult
     }
 }

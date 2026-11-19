@@ -54,6 +54,7 @@ class TwoDeviceSyncTest {
             LocalChangeApplier(database, bookFiles, voiceFiles),
         )
         private val repository = DefaultSyncRepository(local, cloud)
+        val eraser = RoomLocalDataEraser(database, bookFiles, voiceFiles)
 
         init {
             devices += this
@@ -212,6 +213,66 @@ class TwoDeviceSyncTest {
         b.sync()
 
         assertEquals("kept", b.notes().single().content)
+    }
+
+    @Test
+    fun aDeviceEmptiedOnSigningOutGetsEverythingBackFromTheCloud() = runTest {
+        val a = Device("a")
+        val book = a.addBook("Dune", "the epub", "the cover")
+        a.addVoiceNote(book.id, "the audio")
+        val collectionId = a.database.collectionDao().insert(Collection(name = "Clásicos"))
+        a.database.collectionDao().addBook(BookCollectionCrossRef(book.id, collectionId))
+        a.database.flashcardDao().insert(Flashcard(bookId = book.id, front = "Q", back = "A"))
+        a.sync()
+        val manifestBefore = cloud.manifest!!.content
+
+        // What signing out does once everything is saved.
+        a.eraser.eraseAll()
+
+        assertTrue(a.books().isEmpty())
+        assertTrue(a.notes().isEmpty())
+        assertTrue(a.database.collectionDao().getAll().isEmpty())
+        assertTrue(a.database.collectionDao().getAllLinks().isEmpty())
+        assertTrue(a.database.flashcardDao().getAll().isEmpty())
+        // The erasing is not a deletion to tell the cloud about.
+        assertTrue(a.database.syncTombstoneDao().getAll().isEmpty())
+        assertFalse(a.dir.resolve("books").exists())
+        assertFalse(a.dir.resolve("covers").exists())
+        assertFalse(a.dir.resolve("voice").exists())
+
+        // Signing in again and turning the sync on brings it all back, and the cloud is left as it was.
+        val report = a.sync()
+
+        assertFalse(report.dataUploaded)
+        assertEquals(manifestBefore, cloud.manifest!!.content)
+        val back = a.books().single()
+        assertEquals(book.syncId, back.syncId)
+        assertEquals("the epub", a.file(back.filePath!!).readText())
+        assertEquals("the cover", a.file(back.coverPath!!).readText())
+        assertEquals("the audio", a.file(a.notes().single().audioPath!!).readText())
+        assertEquals(1, a.database.collectionDao().getAllLinks().size)
+        assertEquals(1, a.database.flashcardDao().getAll().size)
+    }
+
+    @Test
+    fun anotherPersonSigningInAfterTheEraseSeesNoneOfTheFirstPersonsData() = runTest {
+        val a = Device("a")
+        a.addBook("Dune", "epub", "cover")
+        a.sync()
+        a.eraser.eraseAll()
+
+        // A different cloud (another account) is empty: syncing the erased device uploads nothing and keeps it empty.
+        val otherCloud = FakeCloudStorage()
+        val local = RoomLocalSyncData(
+            a.database,
+            LocalSnapshotReader(a.database, a.bookFiles, a.voiceFiles),
+            LocalChangeApplier(a.database, a.bookFiles, a.voiceFiles),
+        )
+        val report = DefaultSyncRepository(local, otherCloud).sync().getOrThrow()
+
+        assertEquals(SyncReport(0, 0, 0, false), report)
+        assertTrue(a.books().isEmpty())
+        assertEquals(null, otherCloud.manifest)
     }
 
     @Test

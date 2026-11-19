@@ -806,6 +806,11 @@
     <string name="settings_account">Cuenta</string>
     <string name="settings_account_signed_in">Sesión iniciada como %1$s</string>
     <string name="settings_account_sign_out">Cerrar sesión</string>
+    <string name="settings_account_sign_out_confirm_title">¿Cerrar sesión?</string>
+    <string name="settings_account_sign_out_confirm_body">Primero se guarda todo en tu Google Drive y después se quita de este teléfono. Todo vuelve cuando inicies sesión y actives la sincronización.</string>
+    <string name="settings_account_sign_out_confirm">Guardar y cerrar sesión</string>
+    <string name="settings_account_sign_out_saving">Guardando tus datos en Drive…</string>
+    <string name="settings_account_sign_out_failed">No se pudo guardar en tu Drive, así que no se cerró la sesión para no perder tus datos. Revisa tu conexión e inténtalo de nuevo.</string>
     <string name="settings_sync">Sincronización</string>
     <string name="settings_sync_toggle">Sincronizar con Google Drive</string>
     <string name="settings_sync_toggle_hint">Tus libros, notas y fichas, en todos tus dispositivos. Reader solo usa una carpeta oculta suya: no puede ver el resto de tu Drive.</string>

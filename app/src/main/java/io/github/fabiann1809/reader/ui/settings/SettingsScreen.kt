@@ -53,6 +53,7 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val generalState by general.uiState.collectAsStateWithLifecycle()
     val accountEmail by account.email.collectAsStateWithLifecycle()
+    val accountState by account.uiState.collectAsStateWithLifecycle()
     val syncState by sync.uiState.collectAsStateWithLifecycle()
     SettingsContent(
         uiState = uiState,
@@ -67,7 +68,7 @@ fun SettingsScreen(
         onNavigateUp = onNavigateUp,
         // T17.1: appearance, reading defaults and the AI features, around the API key.
         generalSettings = {
-            AccountSection(accountEmail, onSignOut = account::signOut)
+            AccountSection(accountEmail, accountState, onSignOut = account::signOut)
             SyncSection(syncState, sync)
             AppearanceSection(generalState, onTheme = general::setTheme, onView = general::setLibraryView, onBooksPerRow = general::setBooksPerRow)
             ReadingDefaultsSection(onOpen = general::showReadingSettings)

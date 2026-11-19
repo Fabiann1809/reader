@@ -35,6 +35,7 @@ import io.github.fabiann1809.reader.data.auth.FirebaseAuthRepository
 import io.github.fabiann1809.reader.data.sync.DataStoreSyncSettingsStore
 import io.github.fabiann1809.reader.data.sync.DefaultSyncRepository
 import io.github.fabiann1809.reader.data.sync.LocalChangeApplier
+import io.github.fabiann1809.reader.data.sync.RoomLocalDataEraser
 import io.github.fabiann1809.reader.data.sync.LocalSnapshotReader
 import io.github.fabiann1809.reader.data.sync.RoomLocalChangeSource
 import io.github.fabiann1809.reader.data.sync.RoomLocalSyncData
@@ -261,7 +262,14 @@ class AppContainer(context: Context) {
     }
 
     val syncCoordinator: SyncCoordinator by lazy {
-        SyncCoordinator(syncSettings, syncRepository, WorkManagerSyncScheduler(appContext), RoomLocalChangeSource(database), applicationScope)
+        SyncCoordinator(
+            syncSettings,
+            syncRepository,
+            WorkManagerSyncScheduler(appContext),
+            RoomLocalChangeSource(database),
+            RoomLocalDataEraser(database, bookFiles, voiceFiles),
+            applicationScope,
+        )
     }
 
     val aiProvider: AiProvider by lazy {

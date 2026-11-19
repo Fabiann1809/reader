@@ -16,6 +16,11 @@ class VoiceFiles(private val filesDir: File) {
     fun newSyncedRecording(): File =
         File(File(filesDir, VOICE_DIR).apply { mkdirs() }, "voice-${UUID.randomUUID()}.m4a")
 
+    /** Deletes every recording (when the library is emptied on signing out). */
+    fun deleteAll() {
+        File(filesDir, VOICE_DIR).deleteRecursively()
+    }
+
     fun storedPath(file: File): String = file.relativeTo(filesDir).invariantSeparatorsPath
 
     fun resolve(storedPath: String): File = File(filesDir, storedPath)

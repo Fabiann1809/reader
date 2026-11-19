@@ -47,11 +47,20 @@ class SyncCoordinatorTest {
         var next: Result<SyncReport> = Result.success(SyncReport(0, 0, 0, false))
         var calls = 0
         var gate: CompletableDeferred<Unit>? = null
+        var onSync: () -> Unit = {}
 
         override suspend fun sync(): Result<SyncReport> {
             calls++
+            onSync()
             gate?.await()
             return next
+        }
+    }
+
+    private class FakeEraser : LocalDataEraser {
+        var erased = 0
+        override suspend fun eraseAll() {
+            erased++
         }
     }
 
@@ -60,9 +69,10 @@ class SyncCoordinatorTest {
     private val scheduler = FakeScheduler()
     private val changes = FakeChanges()
     private val repository = FakeRepository()
+    private val eraser = FakeEraser()
 
     private fun TestScope.coordinator() =
-        SyncCoordinator(settings, repository, scheduler, changes, backgroundScope + UnconfinedTestDispatcher(testScheduler)) { now }
+        SyncCoordinator(settings, repository, scheduler, changes, eraser, backgroundScope + UnconfinedTestDispatcher(testScheduler)) { now }
 
     private suspend fun SyncCoordinator.currentStatus() = status.first()
 
@@ -226,6 +236,75 @@ class SyncCoordinatorTest {
 
         assertEquals(listOf(FakeScheduler.Call(wifiOnly = false, delayMillis = 0, replace = true)), scheduler.calls)
         assertEquals(false, settings.settings.value.wifiOnly)
+    }
+
+    @Test
+    fun signingOutWithTheSyncOffErasesNothing() = runTest {
+        val sync = coordinator()
+
+        val result = sync.saveBeforeSignOut()
+
+        assertTrue(result.isSuccess)
+        assertEquals(0, eraser.erased)
+        assertEquals(0, repository.calls)
+    }
+
+    @Test
+    fun signingOutSavesToTheCloudThenErasesTheDeviceAndTurnsTheSyncOff() = runTest {
+        settings.settings.value = SyncSettings(enabled = true, wifiOnly = false, lastSyncAt = 10)
+        val sync = coordinator()
+
+        val result = sync.saveBeforeSignOut()
+
+        assertTrue(result.isSuccess)
+        assertEquals(1, repository.calls)
+        assertEquals(1, eraser.erased)
+        assertEquals(1, scheduler.cancelled)
+        // Off and forgotten, but the user's Wi-Fi choice stays.
+        assertEquals(SyncSettings(enabled = false, wifiOnly = false, lastSyncAt = null), settings.settings.value)
+        assertEquals(SyncStatus.Disabled, sync.currentStatus())
+    }
+
+    @Test
+    fun ifSavingFailsNothingIsErased() = runTest {
+        settings.settings.value = SyncSettings(enabled = true)
+        repository.next = Result.failure(SyncError.NoInternet(java.io.IOException()))
+        val sync = coordinator()
+
+        val result = sync.saveBeforeSignOut()
+
+        assertTrue(result.exceptionOrNull() is SyncError.NoInternet)
+        assertEquals(0, eraser.erased)
+        assertTrue(settings.settings.value.enabled)
+    }
+
+    @Test
+    fun changesStillWaitingAfterSavingStopTheErasing() = runTest {
+        settings.settings.value = SyncSettings(enabled = true)
+        // Something is always newer than the sync, as if the user kept editing.
+        changes.lastChange = Long.MAX_VALUE
+        val sync = coordinator()
+
+        val result = sync.saveBeforeSignOut()
+
+        assertTrue(result.isFailure)
+        assertEquals(0, eraser.erased)
+        assertTrue(settings.settings.value.enabled)
+    }
+
+    @Test
+    fun aDeletionTheSyncJustAppliedIsSettledByAnotherPassBeforeErasing() = runTest {
+        settings.settings.value = SyncSettings(enabled = true)
+        // The first pass leaves a tombstone newer than its start; the second begins later and covers it.
+        changes.lastChange = 1_500
+        repository.onSync = { now += 1_000 }
+        val sync = coordinator()
+
+        val result = sync.saveBeforeSignOut()
+
+        assertTrue(result.isSuccess)
+        assertEquals(2, repository.calls)
+        assertEquals(1, eraser.erased)
     }
 
     @Test

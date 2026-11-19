@@ -231,7 +231,7 @@ object AppViewModelProvider {
             )
         }
         initializer {
-            AccountViewModel(readerApplication().container.authRepository)
+            AccountViewModel(readerApplication().container.authRepository, readerApplication().container.syncCoordinator)
         }
         initializer {
             val container = readerApplication().container

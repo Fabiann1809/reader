@@ -37,6 +37,11 @@ class BookFiles(private val filesDir: File) {
         if (relativePath != null) resolve(relativePath).delete()
     }
 
+    /** Deletes every book file and cover (when the library is emptied on signing out). */
+    fun deleteAll() {
+        listOf(BOOKS_DIR, COVERS_DIR).forEach { File(filesDir, it).deleteRecursively() }
+    }
+
     private fun newFileIn(dir: String, extension: String): File =
         File(File(filesDir, dir).apply { mkdirs() }, "${UUID.randomUUID()}.$extension")
 
