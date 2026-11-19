@@ -32,6 +32,16 @@ import io.github.fabiann1809.reader.data.aiconfig.AiConfigStore
 import io.github.fabiann1809.reader.data.aiconfig.DataStoreAiConfigStore
 import io.github.fabiann1809.reader.data.auth.AuthRepository
 import io.github.fabiann1809.reader.data.auth.FirebaseAuthRepository
+import io.github.fabiann1809.reader.data.sync.DataStoreSyncSettingsStore
+import io.github.fabiann1809.reader.data.sync.DefaultSyncRepository
+import io.github.fabiann1809.reader.data.sync.LocalChangeApplier
+import io.github.fabiann1809.reader.data.sync.LocalSnapshotReader
+import io.github.fabiann1809.reader.data.sync.RoomLocalChangeSource
+import io.github.fabiann1809.reader.data.sync.RoomLocalSyncData
+import io.github.fabiann1809.reader.data.sync.SyncCoordinator
+import io.github.fabiann1809.reader.data.sync.SyncRepository
+import io.github.fabiann1809.reader.data.sync.SyncSettingsStore
+import io.github.fabiann1809.reader.data.sync.WorkManagerSyncScheduler
 import io.github.fabiann1809.reader.data.sync.auth.DriveAuthorizer
 import io.github.fabiann1809.reader.data.sync.auth.GoogleDriveAuthorizer
 import io.github.fabiann1809.reader.data.sync.cloud.CloudStorage
@@ -237,6 +247,21 @@ class AppContainer(context: Context) {
         // Books are big: a transfer may take minutes, so it is limited by progress (30 s of silence), not by total time.
         val client = httpClient.newBuilder().readTimeout(30, TimeUnit.SECONDS).writeTimeout(30, TimeUnit.SECONDS).build()
         DriveCloudStorage(DriveApi(client, driveAuthorizer))
+    }
+
+    val syncSettings: SyncSettingsStore by lazy { DataStoreSyncSettingsStore(appContext) }
+
+    private val syncRepository: SyncRepository by lazy {
+        val local = RoomLocalSyncData(
+            database,
+            LocalSnapshotReader(database, bookFiles, voiceFiles),
+            LocalChangeApplier(database, bookFiles, voiceFiles),
+        )
+        DefaultSyncRepository(local, cloudStorage)
+    }
+
+    val syncCoordinator: SyncCoordinator by lazy {
+        SyncCoordinator(syncSettings, syncRepository, WorkManagerSyncScheduler(appContext), RoomLocalChangeSource(database), applicationScope)
     }
 
     val aiProvider: AiProvider by lazy {

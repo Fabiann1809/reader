@@ -1,0 +1,126 @@
+package io.github.fabiann1809.reader.data.sync
+
+import io.github.fabiann1809.reader.data.sync.cloud.SyncError
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+
+/**
+ * Decides when the sync runs and tells how it is going (T18.6). It syncs when the app opens, a few
+ * seconds after the data changes, and when the user asks; WorkManager runs it, waiting for the network.
+ */
+class SyncCoordinator(
+    private val settings: SyncSettingsStore,
+    private val repository: SyncRepository,
+    private val scheduler: SyncScheduler,
+    private val changeSource: LocalChangeSource,
+    private val scope: CoroutineScope,
+    private val clock: () -> Long = System::currentTimeMillis,
+) {
+    private val running = MutableStateFlow(false)
+    private val lastError = MutableStateFlow<SyncError?>(null)
+    private val hasPending = MutableStateFlow(false)
+    private var started = false
+
+    val status: Flow<SyncStatus> = combine(settings.settings, running, lastError, hasPending) { saved, isRunning, error, pending ->
+        when {
+            !saved.enabled -> SyncStatus.Disabled
+            isRunning -> SyncStatus.Syncing
+            error != null -> SyncStatus.Failed(error)
+            pending -> SyncStatus.Pending
+            else -> SyncStatus.Synced(saved.lastSyncAt)
+        }
+    }
+
+    /** The app came to the front: starts watching the data (once) and syncs if it is on. */
+    fun onAppOpened() {
+        start()
+        scope.launch {
+            val saved = settings.settings.first()
+            if (saved.enabled) {
+                refreshPending()
+                scheduler.schedule(saved.wifiOnly, delayMillis = 0, replace = false)
+            }
+        }
+    }
+
+    suspend fun setEnabled(enabled: Boolean) {
+        settings.update { it.copy(enabled = enabled) }
+        if (enabled) {
+            lastError.value = null
+            refreshPending()
+            syncNow()
+        } else {
+            scheduler.cancel()
+        }
+    }
+
+    suspend fun setWifiOnly(wifiOnly: Boolean) {
+        settings.update { it.copy(wifiOnly = wifiOnly) }
+        // The waiting sync was asked with the old rule.
+        if (settings.settings.first().enabled) syncNow()
+    }
+
+    /** "Sincronizar ahora" and "Reintentar". A sync that is running already covers it. */
+    suspend fun syncNow() {
+        val saved = settings.settings.first()
+        if (!saved.enabled || running.value) return
+        lastError.value = null
+        scheduler.schedule(saved.wifiOnly, delayMillis = 0, replace = true)
+    }
+
+    /** What the background job runs. */
+    suspend fun runSync(): Result<SyncReport> {
+        if (!settings.settings.first().enabled) return Result.success(SyncReport(0, 0, 0, false))
+        // The time it began, so a change made while it runs still counts as pending afterwards.
+        val startedAt = clock()
+        running.value = true
+        val result = try {
+            repository.sync()
+        } finally {
+            running.value = false
+        }
+        result.onSuccess {
+            settings.update { it.copy(lastSyncAt = startedAt) }
+            lastError.value = null
+        }.onFailure { lastError.value = it as? SyncError ?: SyncError.Unknown("The sync failed", it) }
+        refreshPending()
+        if (result.isSuccess && hasPending.value) scheduleForChanges()
+        return result
+    }
+
+    private fun start() {
+        if (started) return
+        started = true
+        scope.launch { changeSource.changes.debounceChanges().collect { onLocalChange() } }
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun Flow<Unit>.debounceChanges() = debounce(CHANGE_DELAY_MILLIS)
+
+    private suspend fun onLocalChange() {
+        if (!settings.settings.first().enabled) return
+        refreshPending()
+        scheduleForChanges()
+    }
+
+    private suspend fun scheduleForChanges() {
+        val saved = settings.settings.first()
+        if (saved.enabled) scheduler.schedule(saved.wifiOnly, CHANGE_DELAY_MILLIS, replace = false)
+    }
+
+    private suspend fun refreshPending() {
+        val lastSync = settings.settings.first().lastSyncAt ?: 0L
+        hasPending.value = changeSource.lastChangeAt() > lastSync
+    }
+
+    private companion object {
+        // Waits for a burst of changes (reading saves progress often) to end before syncing.
+        const val CHANGE_DELAY_MILLIS = 5_000L
+    }
+}

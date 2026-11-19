@@ -59,6 +59,12 @@ class MainActivity : FragmentActivity() {
         }
     }
 
+    // Each time the app comes to the front: brings in what another device changed, if the sync is on.
+    override fun onStart() {
+        super.onStart()
+        container.syncCoordinator.onAppOpened()
+    }
+
     // The activity is singleTask, so files shared while Reader is open arrive here instead of a new copy.
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)

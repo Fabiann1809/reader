@@ -97,6 +97,17 @@ interface SyncDao {
     @Query("UPDATE collections SET syncId = :newSyncId, updatedAt = updatedAt + 1 WHERE syncId = :oldSyncId")
     suspend fun renameCollection(oldSyncId: String, newSyncId: String)
 
+    /** The newest change or deletion in the synced tables (epoch milliseconds), or null when there is none. */
+    @Query(
+        "SELECT MAX(m) FROM (" +
+            "SELECT MAX(updatedAt) AS m FROM books UNION ALL SELECT MAX(updatedAt) FROM notes " +
+            "UNION ALL SELECT MAX(updatedAt) FROM collections UNION ALL SELECT MAX(updatedAt) FROM bookmarks " +
+            "UNION ALL SELECT MAX(updatedAt) FROM highlights UNION ALL SELECT MAX(updatedAt) FROM flashcards " +
+            "UNION ALL SELECT MAX(updatedAt) FROM reading_sessions UNION ALL SELECT MAX(addedAt) FROM book_collections " +
+            "UNION ALL SELECT MAX(deletedAt) FROM sync_tombstones)",
+    )
+    suspend fun lastChangeAt(): Long?
+
     /** The audio of every voice note of the book with [bookSyncId], to delete with it. */
     @Query("SELECT audioPath FROM notes WHERE audioPath IS NOT NULL AND bookId = (SELECT id FROM books WHERE syncId = :bookSyncId)")
     suspend fun voiceAudioOfBook(bookSyncId: String): List<String>
